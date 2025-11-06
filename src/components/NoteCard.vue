@@ -25,6 +25,8 @@ main {
 }
 
 .preview {
+  width: 90%;
 
+  margin: 0 5%;
 }
 </style>
