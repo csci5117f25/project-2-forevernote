@@ -1,62 +1,44 @@
-# Module 2 Group Assignment
+# vue-project
 
-CSCI 5117, Fall 2025, [assignment description](https://canvas.umn.edu/courses/518559/pages/project-2)
+This template should help get you started developing with Vue 3 in Vite.
 
-## App Info
+## Recommended IDE Setup
 
-* Team Name: The Hot Takers
-* App Name: For-Evernote
-* App Link: <https://TODO.com/>
+[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-### Students
+## Recommended Browser Setup
 
-* William Lin, <lin00682@umn.edu>
-* ...
+- Chromium-based browsers (Chrome, Edge, Brave, etc.):
+  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
+  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
+- Firefox:
+  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
+  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
 
-## Key Features
+## Customize configuration
 
-**Describe the most challenging features you implemented
-(one sentence per bullet, maximum 4 bullets):**
+See [Vite Configuration Reference](https://vite.dev/config/).
 
-* ...
+## Project Setup
 
-Which (if any) device integration(s) does your app support?
+```sh
+npm install
+```
 
-* ...
+### Compile and Hot-Reload for Development
 
-Which (if any) progressive web app feature(s) does your app support?
+```sh
+npm run dev
+```
 
-* ...
+### Compile and Minify for Production
 
-## Mockup images
+```sh
+npm run build
+```
 
-**[Add images/photos that show your mockup](https://stackoverflow.com/questions/10189356/how-to-add-screenshot-to-readmes-in-github-repository) along with a very brief caption:**
+### Lint with [ESLint](https://eslint.org/)
 
-![Patrick No Todos](https://media.giphy.com/media/26ufnwz3wDUli7GU0/giphy.gif)
-
-## Testing Notes
-
-**Is there anything special we need to know in order to effectively test your app? (optional):**
-
-* ...
-
-## Screenshots of Site (complete)
-
-**[Add a screenshot of each key page](https://stackoverflow.com/questions/10189356/how-to-add-screenshot-to-readmes-in-github-repository)
-along with a very brief caption:**
-
-![Cat Slapping Keyboard](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
-
-## External Dependencies
-
-**Document integrations with 3rd Party code or services here.
-Please do not document required libraries (e.g., VUE, Firebase, vuefire).**
-
-* Library or service name: description of use
-* ...
-
-**If there's anything else you would like to disclose about how your project
-relied on external code, expertise, or anything else, please disclose that
-here:**
-
-...
+```sh
+npm run lint
+```
