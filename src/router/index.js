@@ -1,23 +1,51 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+
+import SplashView from '@/views/SplashView.vue';
+import NotesView from '@/views/NotesView.vue';
+
+import { useUserStore } from '@/stores/UserState';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      name: 'root',
+      redirect: { name: 'splash' },
+      meta: {},
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/splash',
+      name: 'splash',
+      component: SplashView,
+      meta: {},
+    },
+    {
+      path: '/notes',
+      name: 'notes',
+      component: NotesView,
+      meta: {
+        requiresAuth: true,
+      },
     },
   ],
-})
+});
 
-export default router
+router.beforeEach((to, _, next) => {
+  const state = useUserStore();
+
+  if (to.meta.requiresAuth) {
+    // Auth required
+    if (!state.isLoggedIn) {
+      // If not logged in
+      next({ name: 'splash' });
+    } else {
+      next();
+    }
+  } else {
+    // Auth not required
+    next();
+  }
+});
+
+export default router;
