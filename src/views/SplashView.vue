@@ -1,7 +1,15 @@
 <script setup>
+import { useRouter } from 'vue-router';
+import { getRedirectResult, signInWithRedirect, signOut } from 'firebase/auth';
+import { onMounted } from 'vue';
+import { useFirebaseAuth } from 'vuefire';
+
 import { useUserStore } from '@/stores/UserState';
 
+const auth = useFirebaseAuth();
+
 const state = useUserStore();
+const router = useRouter();
 </script>
 
 <template>
@@ -14,6 +22,6 @@ const state = useUserStore();
       <span v-else>Not Logged In</span>!
     </p>
 
-    <button @click="state.isLoggedIn = !state.isLoggedIn">Login</button>
+    <button @click="router.push({ name: "login" })">Login</button>
   </main>
 </template>
