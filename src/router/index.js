@@ -43,16 +43,25 @@ const router = createRouter({
 router.beforeEach((to, _, next) => {
   const state = useUserStore();
 
+  console.log(to.path);
+  console.log(state.isLoggedIn);
+
   if (to.meta.requiresAuth) {
-    // Auth required
+    // Navigating to a page that requires authentication
+
     if (!state.isLoggedIn) {
       // If not logged in
       next({ name: 'splash' });
     } else {
       next();
     }
+  } else if ((to.path === '/' || to.path === '/splash') && state.isLoggedIn) {
+    // Navigating to root when logged in, redirect to notes page
+
+    next({ name: 'notes' });
   } else {
-    // Auth not required
+    // Navigating to a page that does not require authentication; navigate as normal
+
     next();
   }
 });
