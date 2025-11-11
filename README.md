@@ -30,9 +30,8 @@ Which (if any) progressive web app feature(s) does your app support?
 
 ## Mockup images
 
-**[Add images/photos that show your mockup](https://stackoverflow.com/questions/10189356/how-to-add-screenshot-to-readmes-in-github-repository) along with a very brief caption:**
-
-![Patrick No Todos](https://media.giphy.com/media/26ufnwz3wDUli7GU0/giphy.gif)
+Our mockup is located at this link:
+[Canva Mockup](https://www.canva.com/design/DAG4aRBi1ik/_6ksbP7Fwn0vtPdezELpkg/edit?utm_content=DAG4aRBi1ik&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 ## Testing Notes
 
