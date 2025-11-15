@@ -1,15 +1,20 @@
 <script setup>
+import { defineProps } from 'vue';
+
+const props = defineProps({
+  title: {
+    type: String,
+    required: true,
+  },
+  tag: {
+    type: String,
+  },
+});
 </script>
 
 <template>
   <main>
-    <p>Title</p>
-
-    <div class="preview">
-      <p>
-        Placeholder for preview
-      </p>
-    </div>
+    <h1>{{ props.title }}</h1>
   </main>
 </template>
 

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import SplashView from '@/views/SplashView.vue';
 import NotesView from '@/views/NotesView.vue';
+import EditorView from '@/views/EditorView.vue';
 
 import { useUserStore } from '@/stores/UserState';
 
@@ -24,6 +25,14 @@ const router = createRouter({
       path: '/notes',
       name: 'notes',
       component: NotesView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/editor',
+      name: 'editor',
+      component: EditorView,
       meta: {
         requiresAuth: true,
       },

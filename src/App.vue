@@ -1,24 +1,17 @@
 <script setup>
-import NavBar from './components/NavBar.vue'
-import SplashWelcome from './components/SplashWelcome.vue';
-import { RouterLink, RouterView } from 'vue-router';
+import NavBar from './components/NavBar.vue';
 </script>
 
 <template>
-
   <header>
-    <NavBar/>
-    <nav>
-      <RouterLink to="/notes">Notes</RouterLink>
-    </nav>
+    <NavBar />
   </header>
-  <body>
-    <SplashWelcome/>
-  </body>
 
+  <RouterView />
 </template>
+
 <style>
-#app{
+#app {
   background-color: white;
 }
 </style>

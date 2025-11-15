@@ -7,7 +7,7 @@ import NoteCard from '@/components/NoteCard.vue';
     <h1>This is the notes page</h1>
 
     <div>
-      <NoteCard />
+      <NoteCard title="Sample Title" />
     </div>
   </main>
 </template>
