@@ -43,9 +43,6 @@ const router = createRouter({
 router.beforeEach((to, _, next) => {
   const state = useUserStore();
 
-  console.log(to.path);
-  console.log(state.isLoggedIn);
-
   if (to.meta.requiresAuth) {
     // Navigating to a page that requires authentication
 

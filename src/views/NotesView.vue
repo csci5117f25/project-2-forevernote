@@ -13,8 +13,6 @@ const coll = useCollection(collection(db, "notes"));
 
 <template>
   <main>
-    <h1>This is the notes page</h1>
-
     <li v-for="doc in coll" :key="doc.id">
       <NoteCard :title="doc.title" />
     </li>
