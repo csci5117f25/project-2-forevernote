@@ -1,5 +1,12 @@
 <script setup>
 import imgSrc from '../assets/images/Logo.png'
+
+const emit = defineEmits(['open-login'])
+
+function handleLoginClick(){
+  console.log("Emit open login from NavBar")
+  emit('open-login');
+}
 </script>
 
 <template>
@@ -9,7 +16,7 @@ import imgSrc from '../assets/images/Logo.png'
         </div>
         <div class="navbar-end">
             <div class="navbar-item">
-            <button class="button is-primary is-rounded">Get Started</button>
+            <button class="button is-primary is-rounded" @click="handleLoginClick">Get Started</button>
             </div>
         </div>
     </nav>
@@ -25,5 +32,20 @@ import imgSrc from '../assets/images/Logo.png'
 
 .navbar{
     border-bottom: 1pt solid gray;
+}
+
+@media (max-width: 768px) {
+  #logo {
+    max-height: 2rem;
+  }
+
+  .button.is-rounded {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.9rem;
+  }
+
+  #main-navbar {
+    padding: 0.4rem 0.8rem;
+  }
 }
 </style>
