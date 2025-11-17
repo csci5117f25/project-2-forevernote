@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import SplashView from '@/views/SplashView.vue';
 import NotesView from '@/views/NotesView.vue';
+import EditorView from '@/views/EditorView.vue';
 
 import { useUserStore } from '@/stores/UserState';
 
@@ -28,6 +29,14 @@ const router = createRouter({
         requiresAuth: true,
       },
     },
+    {
+      path: '/editor',
+      name: 'editor',
+      component: EditorView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
   ],
 });
 
@@ -35,15 +44,21 @@ router.beforeEach((to, _, next) => {
   const state = useUserStore();
 
   if (to.meta.requiresAuth) {
-    // Auth required
+    // Navigating to a page that requires authentication
+
     if (!state.isLoggedIn) {
       // If not logged in
       next({ name: 'splash' });
     } else {
       next();
     }
+  } else if ((to.path === '/' || to.path === '/splash') && state.isLoggedIn) {
+    // Navigating to root when logged in, redirect to notes page
+
+    next({ name: 'notes' });
   } else {
-    // Auth not required
+    // Navigating to a page that does not require authentication; navigate as normal
+
     next();
   }
 });

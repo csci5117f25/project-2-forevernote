@@ -18,7 +18,6 @@ function closeLoginModal(){
 </script>
 
 <template>
-
   <header>
     <NavBar @open-login="openLoginModal"/>
   </header>
@@ -28,9 +27,11 @@ function closeLoginModal(){
     <LoginModal v-if="showLogin" @close="closeLoginModal"/>
   </main>
 
+  <RouterView />
 </template>
+
 <style>
-#app{
+#app {
   background-color: white;
 }
 </style>

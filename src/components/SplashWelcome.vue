@@ -24,6 +24,9 @@ import imgSrc from '../assets/images/scratch_notes.jpg'
           </div>
         </div>
     </div>
+
+    <div class="column splash-img"></div>
+  </div>
 </template>
 
 <style scoped>
@@ -90,5 +93,9 @@ import imgSrc from '../assets/images/scratch_notes.jpg'
     max-width: 90%;
     margin: 0 auto;
   }
+}
+
+.splash-img {
+  border: 2px solid black;
 }
 </style>
