@@ -1,5 +1,4 @@
 <script setup>
-import imgSrc from '../assets/images/Logo.png'
 
 const emit = defineEmits(['open-login'])
 

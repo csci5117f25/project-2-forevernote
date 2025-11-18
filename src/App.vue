@@ -22,7 +22,6 @@ function closeLoginModal(){
     <NavBar @open-login="openLoginModal"/>
   </header>
   <main>
-    <SplashWelcome/>
      
     <LoginModal v-if="showLogin" @close="closeLoginModal"/>
   </main>
@@ -31,7 +30,4 @@ function closeLoginModal(){
 </template>
 
 <style>
-#app {
-  background-color: white;
-}
 </style>
