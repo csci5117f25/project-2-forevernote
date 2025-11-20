@@ -6,6 +6,7 @@ import EditorView from '@/views/EditorView.vue';
 
 import { useUserStore } from '@/stores/UserState';
 import DashboardView from '@/views/DashboardView.vue';
+import TranscriptionView from '@/views/LiveTranscriptionView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,9 +40,14 @@ const router = createRouter({
       },
     },
     {
-      path: '/dashboard', 
-      name: 'dashboard', 
+      path: '/dashboard',
+      name: 'dashboard',
       component: DashboardView
+    },
+    {
+      path: '/live-transcription',
+      name: 'live-transcription',
+      component: TranscriptionView
     }
   ],
 });

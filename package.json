@@ -23,7 +23,8 @@
     "tinymce": "^8.2.1",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3",
-    "vuefire": "^3.2.2"
+    "vuefire": "^3.2.2",
+    "web-audio-api": "^0.2.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
