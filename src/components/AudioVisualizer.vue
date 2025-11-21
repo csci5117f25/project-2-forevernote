@@ -1,12 +1,19 @@
 <script setup>
 import { onMounted, ref} from 'vue'
 
-//vue model for toggling record button
+//for toggling record button
 const isRecording = defineModel('isRecording')
-//DOM element
+//DOM element for canvas
 const audioCanvas = ref(null);
-
+//for toggling transcription
 const isSending = ref(false);
+
+const emit = defineEmits(['send'])
+
+
+defineProps({
+  transcript: String,
+})
 
 
 //event handler for toggling record button
@@ -15,18 +22,10 @@ const toggle = ()=> {
 }
 
 
-defineProps({
-  transcript: String,
-})
-
-const emit = defineEmits(['send'])
-
 onMounted(()=> {
   //access canvas only once it is safe to manipulate DOM elements
   const canvas = audioCanvas.value;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = 'red'
-  ctx.fillRect(50, 50, 150, 150)
 
 })
 
@@ -46,13 +45,9 @@ const handleTranscribed = () => {
 
 <template>
   <div class="audio-visuals">
-
-        <h2>Live Audio Transcription</h2>
-
         <canvas  ref="audioCanvas"></canvas>
 
         <h2 v-if="isSending">{{ transcript }}</h2>
-
 
         <button @click="toggle">
           <span v-if="isRecording">Stop Recording</span>
@@ -64,10 +59,6 @@ const handleTranscribed = () => {
           <span v-else>Transcription Disabled</span>
 
         </button>
-
-
-
-
 
   </div>
 </template>
