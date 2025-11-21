@@ -6,7 +6,11 @@ import { onMounted } from 'vue';
 import Flickity from 'flickity'; 
 import 'flickity/css/flickity.css'
 import { ref } from 'vue';
-console.log("I'm from the Dashboard Component")
+import { defineEmits } from 'vue';
+import NewExamModal from './NewExamModal.vue';
+
+const modalEmits = defineEmits("close-new-modal")
+const showModal = ref(false);
 const props = defineProps(
     {
         user: String
@@ -79,6 +83,11 @@ onMounted(() => {
     })
 })
 
+function displayNewExamModal(){
+    showModal.value = true;
+
+}
+
 </script>
 <template>
     <div id="dashboard-page-container">
@@ -101,7 +110,10 @@ onMounted(() => {
 
         </div>
         <div class="dash-exams-div">
-            <h2>Upcoming Exams⏳</h2>
+            <div class="dash-exams-top-div">
+                <h2>Upcoming Exams⏳</h2>
+                <a @click="displayNewExamModal" class="button is-dark is-rounded is-small is-primary create-exam-button">Create New Exam</a>
+            </div>
             <div class="gallery exam-gallery" ref="examGallery">
                 <div v-for="exam in exams" class="gallery-cell exam-cell">
                     <div class="gallery-cell-title-div dash-exam-title-div">
@@ -114,20 +126,28 @@ onMounted(() => {
                         <ul v-if="exam.topics != []">
                             <li v-for="topic in exam.topics">💡{{ topic }}</li>
                         </ul>
-
-                        
                     </div>
                 </div>
                 
             </div>
 
-
         </div>
+        <new-exam-modal v-if="showModal" @close-modal="showModal = false"></new-exam-modal>
     </div>
 
 </template>
 
 <style scoped>
+
+.dash-exams-top-div{
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 2%;
+}
+
+.create-exam-button{
+    align-items: flex-end;
+}
 
 #dashboard-page-container {
     display: flex;
