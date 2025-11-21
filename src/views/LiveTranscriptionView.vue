@@ -6,8 +6,12 @@ import AudioVisualizer from '@/components/AudioVisualizer.vue'
 const isRecording = ref(false);
 const transcript = ref('');
 
-function handleSent(text) {
+const handleSent = (text) => {
   transcript.value = text
+}
+
+const handleToggle = () => {
+  isRecording.value = !isRecording.value;
 }
 
 </script>
@@ -31,8 +35,8 @@ function handleSent(text) {
       <div class="column is-full-mobile is-three-fifths">
         <section class="audio-visuals hero is-light is-fullheight">
           <div class="hero-body">
-            <AudioVisualizer v-model:isRecording="isRecording" @send="handleSent"  :transcript="transcript"/>
-
+            <AudioVisualizer :isRecording="isRecording" :transcript="transcript" @toggle-recording="handleToggle"
+              @send-transcript="handleSent" />
 
           </div>
         </section>
@@ -47,21 +51,20 @@ function handleSent(text) {
 </template>
 
 <style scoped>
-main{
+main {
   display: flex;
   flex-direction: column;
 
 
 }
 
-.hero{
+.hero {
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.card{
+.card {
 
   min-height: 50px;
 }
-
 </style>
