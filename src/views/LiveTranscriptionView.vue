@@ -1,12 +1,14 @@
 <script setup>
 
-import {ref} from 'vue'
+import { ref } from 'vue'
 import AudioVisualizer from '@/components/AudioVisualizer.vue'
 
 const isRecording = ref(false);
 const transcript = ref('');
 
-
+function handleSent(text) {
+  transcript.value = text
+}
 
 </script>
 
@@ -24,31 +26,25 @@ const transcript = ref('');
 
     <div class="columns">
       <div class="column is-hidden-mobile is-one-fifths">
-
       </div>
 
       <div class="column is-full-mobile is-three-fifths">
         <section class="audio-visuals hero is-light is-fullheight">
           <div class="hero-body">
-            <AudioVisualizer v-model:isRecording="isRecording" :transcript="transcript" />
+            <AudioVisualizer v-model:isRecording="isRecording" @send="handleSent"  :transcript="transcript"/>
+
 
           </div>
-
         </section>
 
       </div>
-
       <div class="column is-hidden-mobile is-one-fifths">
-
       </div>
-
     </div>
 
   </main>
 
 </template>
-
-
 
 <style scoped>
 main{
