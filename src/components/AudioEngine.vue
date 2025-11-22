@@ -6,23 +6,25 @@ const props = defineProps({
   isRecording: Boolean
 })
 
-// This is the key part: Watch for changes in the prop
-watch(() => props.isRecording, (newValue) => {
-  if (newValue === true) {
-    startMicrophone();
-  } else {
-    stopMicrophone();
+const plotFrequency = async () => {
+  let stream =await navigator.mediaDevices.getUserMedia({
+     audio: true,
+   });
+
+}
+
+
+watch (() => props.isRecording, (newVal) => {
+  if (newVal) {
+    plotFrequency()
   }
-})
+  else{
+    //close buffer and resources
+  }
 
-const startMicrophone = async () => {
-  console.log("Microphone starting...")
 
-}
 
-const stopMicrophone = () => {
-  console.log("Microphone stopping...")
-}
+});
 
 </script>
 
