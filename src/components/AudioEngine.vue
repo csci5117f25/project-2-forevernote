@@ -13,6 +13,7 @@ watch (() => props.isRecording, (newVal) => {
   }
   else{
     //close buffer and resources
+    stopAudio();
   }
 });
 
@@ -21,10 +22,17 @@ let audioContext = null;
 let analyser = null;
 let dataArray = null;
 let bufferLength = null;
+let stream = null;
 //make the canvas reactive
 let canvasRef = ref(null);
 let canvas =null;
 let ctx = null;
+//microphone variables
+let recorder = null;
+let audioChunks = [];
+let allChunks = [];
+
+
 
 //wait until DOM is loaded
 onMounted(() => {
@@ -47,7 +55,7 @@ async function initAudio(){
 
   if (audioContext !== undefined) {
   //get the audio device
-    const stream = await navigator.mediaDevices.getUserMedia({audio : true});
+     stream = await navigator.mediaDevices.getUserMedia({audio : true});
     const source = audioContext.createMediaStreamSource(stream);
 
     analyser = audioContext.createAnalyser();
@@ -57,10 +65,42 @@ async function initAudio(){
     bufferLength = analyser.frequencyBinCount;
     dataArray = new Uint8Array(bufferLength);
 
-    drawAudio();
+    recordAudio(stream);
 
+    drawAudio();
   }
 
+}
+//https://stackoverflow.com/questions/51325136/record-5-seconds-segments-of-audio-using-mediarecorder-and-then-upload-to-the-se
+
+
+
+async function recordAudio(stream) {
+  recorder = new MediaRecorder(stream);
+
+  recorder.ondataavailable = (event) => {
+    audioChunks.push(event.data);
+  }
+
+  recorder.onstop = () => {
+     if (!props.isRecording) return;
+
+     const blob = new Blob(audioChunks, { type: "audio/webm" });
+     processAudio(blob);
+     //clear buffer
+
+     audioChunks.length = 0;
+     recorder.start();
+     //prevent a timeout from misfiring if recording is disabled and staying in a hanging state
+      if (props.isRecording) {
+      setTimeout(() => {if (!props.isRecording) return; recorder.stop();}, 5000);
+       }
+  }
+
+  recorder.start();
+   if (props.isRecording) {
+      setTimeout(() => {if (!props.isRecording) return; recorder.stop();}, 5000);
+     }
 }
 
 function drawAudio() {
@@ -90,12 +130,42 @@ function drawAudio() {
 
    // ctx.fillStyle = "rgb(215,255,255)";
    // ctx.fillRect(x, HEIGHT / 2 - barHeight, barWidth, barHeight * 2);
-    barHeight = dataArray[i]/2;
+    barHeight = Math.pow(dataArray[i]/8, 1.5);
 
     ctx.fillStyle = `rgb(${barHeight + 100} 50 50)`;
     ctx.fillRect(x, HEIGHT - barHeight/ 2, barWidth, barHeight);
     x += barWidth + 1;
   }
+}
+
+async function processAudio(audioChunk){
+  console.log("New 5-second chunk generated:", audioChunk);
+
+  allChunks.push(audioChunk);
+  console.log("Saved chunks:", allChunks);
+  window.allChunks = allChunks;
+
+
+}
+
+function stopAudio(){
+  if (recorder && recorder.state != "inactive") {
+    //prevent restart
+    recorder.onstop = null;
+    recorder.stop();
+  }
+
+  if (audioContext) {
+    audioContext.close();
+    audioContext = null;
+  }
+
+  const tracks = stream.getTracks();
+
+  tracks.forEach((track) => {
+    track.stop();
+  });
+
 }
 
 
