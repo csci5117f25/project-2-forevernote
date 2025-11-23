@@ -1,6 +1,7 @@
 <script setup>
 import NavBar from './components/NavBar.vue'
-import SplashWelcome from './components/SplashWelcome.vue';
+// import SplashWelcome from './components/SplashWelcome.vue';
+import SplashView from '@/views/SplashView.vue'
 import { RouterLink, RouterView } from 'vue-router';
 import { ref } from 'vue'
 import LoginModal from './components/LoginModal.vue';

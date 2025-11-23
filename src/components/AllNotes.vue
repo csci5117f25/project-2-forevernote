@@ -1,0 +1,479 @@
+<script setup>
+import { ref, computed } from 'vue'
+import NoteDropdownIcon from '@/components/icons/NoteDropdownIcon.vue'
+
+const notes = ref([
+  {
+    id: 1,
+    title: 'Linear Algebra — Eigenvalues & Eigenvectors',
+    tags: ['CSCI 4511', 'Linear Algebra', 'Lecture'],
+    lastEdited: '2026-10-22',
+    dueDate: '2026-10-26',
+    isPinned: true,
+    
+    notes:
+      "Eigenvalues and eigenvectors describe how linear transformations stretch or rotate vectors. They are essential in PCA, differential equations, and analyzing systems that evolve over time. Understanding them helps simplify complex matrix operations."
+  },
+  {
+    id: 2,
+    title: 'Cognitive Psychology — Memory Encoding',
+    tags: ['PSY 3041', 'Psych', 'Reading'],
+    lastEdited: '2026-10-12',
+    dueDate: '2026-10-19',
+    isPinned: false,
+    
+    notes:
+      "Memory encoding is the process of converting sensory input into a form the brain can store. Encoding quality is influenced by attention, depth of processing, and emotional context. It forms the foundation for later retrieval and long-term learning."
+  },
+  {
+    id: 3,
+    title: 'Organic Chemistry — SN1 vs SN2',
+    tags: ['CHEM 2301', 'Organic Chem', 'Exam Prep'],
+    lastEdited: '2026-09-30',
+    dueDate: '2026-10-04',
+    isPinned: false,
+    notes:
+      "SN1 reactions proceed through a carbocation intermediate and are favored by stable intermediates and polar protic solvents. SN2 reactions occur in one concerted step and require strong nucleophiles. The substrate structure determines which mechanism occurs."
+  },
+  {
+    id: 4,
+    title: 'Computer Networks — TCP Congestion Control',
+    tags: ['CSCI 4211', 'Networks', 'Project'],
+    lastEdited: '2026-10-01',
+    dueDate: '2026-10-10',
+    isPinned: true,
+    
+    notes:
+      "TCP uses algorithms like slow start, congestion avoidance, and fast recovery to regulate packet flow. These mechanisms adjust transmission speed based on perceived network congestion, improving reliability and preventing network overload during communication."
+  },
+  {
+    id: 5,
+    title: 'Microeconomics — Elasticity of Demand',
+    tags: ['ECON 1101', 'Econ', 'Lecture'],
+    lastEdited: '2026-09-10',
+    dueDate: '2026-09-20',
+    isPinned: false,
+    
+    notes:
+      "Elasticity measures how sensitive consumer demand is to price changes. Goods with close substitutes tend to have higher elasticity. Understanding elasticity helps predict revenue changes and guides pricing strategies in competitive markets."
+  }
+].map((n) => ({
+  ...n,
+  _titleLc: n.title.toLowerCase(),
+  _classLc: `${n.tags.join(' ')}`.toLowerCase(),
+  lastEditedTs: new Date(n.lastEdited).getTime(),
+  dueDateTs: n.dueDate ? new Date(n.dueDate).getTime() : null,
+  isSelected: false
+})))
+
+// ---------- FILTER STATE ----------
+const filters = ref({
+  titleQuery: '',
+  classQuery: '',
+  showPinnedOnly: false,
+  sortBy: 'updatedDesc' // updatedDesc | updatedAsc | dueAsc | dueDesc | titleAsc | titleDesc
+})
+
+// ---------- CORE FILTER FUNCTION ----------
+const filteredNotes = computed(() => {
+  const {
+    titleQuery,
+    classQuery,
+    showPinnedOnly,
+    sortBy // updatedDesc | updatedAsc | dueAsc | dueDesc | titleAsc | titleDesc
+  } = filters.value
+
+  const titleLc = titleQuery.trim().toLowerCase()
+  const classLc = classQuery.trim().toLowerCase()
+
+  let result = notes.value.filter((note) => {
+    if (showPinnedOnly && !note.isPinned) return false
+    if (titleLc && !note._titleLc.includes(titleLc)) return false
+    if (classLc && !note._classLc.includes(classLc)) return false
+    return true
+  })
+  // console.log("result", result)
+
+  result = [...result].sort((a, b) => {
+    if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1
+    switch (sortBy) {
+      case 'updatedDesc':
+        return b.lastEditedTs - a.lastEditedTs
+      case 'updatedAsc':
+        return a.lastEditedTs - b.lastEditedTs
+      case 'dueAsc':
+        return (a.dueDateTs ?? Infinity) - (b.dueDateTs ?? Infinity)
+      case 'dueDesc':
+        return (b.dueDateTs ?? -Infinity) - (a.dueDateTs ?? -Infinity)
+      case 'titleAsc':
+        return a.title.localeCompare(b.title)
+      case 'titleDesc':
+        return b.title.localeCompare(a.title)
+      default:
+        return 0
+    }
+  })
+
+  return result
+})
+
+// ---------- UI ACTIONS ----------
+function toggleSelected(note) {
+  note.isSelected = !note.isSelected
+}
+
+function togglePinned(note) {
+  note.isPinned = !note.isPinned
+}
+
+
+function deleteNote(id) {
+  notes.value = notes.value.filter((n) => n.id !== id)
+}
+
+function openNote(note) {
+  console.log('open note', note.id)
+}
+
+function createNewNote() {
+  console.log('create new note')
+}
+</script>
+
+<template>
+  <div class="notes-page">
+    <!-- searching features -->
+    <section class="search-row">
+      <div class="search-box">
+        <input
+          v-model="filters.titleQuery"
+          type="text"
+          placeholder="<search by title>"
+        />
+      </div>
+      <div class="search-box">
+        <input
+          v-model="filters.classQuery"
+          type="text"
+          placeholder="<search by class or tags>"
+        />
+      </div>
+    </section>
+
+    <section class="controls-row">
+      <label class="control-chip">
+        <input
+          type="checkbox"
+          v-model="filters.showPinnedOnly"
+        />
+        <span>Pinned only</span>
+      </label>
+
+      <select v-model="filters.sortBy">
+        <option value="updatedDesc">Sort: Last edited ↓</option>
+        <option value="updatedAsc">Sort: Last edited ↑</option>
+        <option value="dueAsc">Sort: Due date ↑</option>
+        <option value="dueDesc">Sort: Due date ↓</option>
+        <option value="titleAsc">Sort: Title A-Z</option>
+        <option value="titleDesc">Sort: Title Z-A</option>
+      </select>
+    </section>
+
+    <!-- NOTES LIST -->
+    <section class="notes-list">
+      <article
+        v-for="note in filteredNotes"
+        :key="note.id"
+        class="note-row"
+      >
+        <button
+          class="select-circle"
+          :class="{ selected: note.isSelected }"
+          @click.stop="toggleSelected(note)"
+        />
+
+        <div class="note-main" @click="openNote(note)"> <!-- clicking on this note should redirect to the /editor route? -->
+          <div class="note-title">
+            {{ note.title }}
+          </div>
+          <div class="note-subline">
+            <span
+              v-for="(tag, idx) in note.tags"
+              :key="`${tag}-${idx}`"
+              :class="idx === 0 ? 'tag-pill' : 'tag-pill'"
+            >
+              {{ tag }}
+            </span>
+          </div>
+        </div>
+
+        <div class="note-meta">
+          <div class="meta-line">
+            last edited: {{ note.lastEdited }}
+          </div>
+          <div class="meta-line">
+            due: {{ note.dueDate || '—' }} <!-- TODO: make this red if its less than a 3 days left -->
+          </div>
+        </div>
+
+        <!-- Row actions -->
+        <div class="note-actions">
+          <button
+            class="icon-btn"
+            :class="{ active: note.isPinned }"
+            title="Pin"
+            @click.stop="togglePinned(note)"
+          >
+            📌
+          </button>
+          <button
+            class="icon-btn delete"
+            title="Delete"
+            @click.stop="deleteNote(note.id)"
+          >
+            🗑
+          </button>
+          
+          <button
+            class="icon-btn expand"
+            title="More"
+          >
+            <NoteDropdownIcon :size="18" className="expand-icon" />
+          </button>
+        </div>
+      </article>
+    </section>
+
+    <!-- Floating add button -->
+    <button class="add-note-btn" @click="createNewNote">
+      +
+    </button>
+  </div>
+</template>
+
+<style scoped>
+.notes-page {
+  position: relative;
+  width: 98%;
+  margin: 1% auto;
+  padding: 1.2rem 1.8rem 4rem;
+  background: #f5f5f5;
+  box-sizing: border-box;
+}
+
+/* SEARCH BAR ROW (purple rectangles) */
+.search-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.search-box {
+  background: #f0b5ff;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.6rem;
+}
+
+.search-box input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.3rem 0.4rem;
+  font-size: 0.95rem;
+}
+
+.search-box input:focus {
+  outline: none;
+}
+
+/* CONTROLS ROW */
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+  align-items: center;
+}
+
+.control-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.control-chip input {
+  margin: 0;
+}
+
+.controls-row select {
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  background: #fff;
+}
+
+/* NOTES LIST */
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.note-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 2.5fr) minmax(0, 1.3fr) auto;
+  align-items: center;
+  column-gap: 0.6rem;
+  background: #f5821f;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.1rem;
+}
+
+/* Notion-style checkbox */
+.select-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid #000;
+  background: #fff;
+  cursor: pointer;
+}
+
+.select-circle.selected {
+  background: #000;
+}
+
+/* Main note content */
+.note-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  cursor: pointer;
+}
+
+.note-title {
+  background: #f5821f;
+  border: 2px solid #000;
+  padding: 0.25rem 0.4rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.note-subline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+/* .course-pill {
+  border-radius: 999px;
+  border: 1px solid #000;
+  padding: 0.1rem 0.4rem;
+  background: #f5821f;
+  font-size: 0.75rem;
+} */
+
+.tag-pill {
+  border-radius: 999px;
+  border: 1px solid #000;
+  padding: 0.05rem 0.4rem;
+  background: #ffd9b5;
+  font-size: 0.7rem;
+}
+
+/* Meta info */
+.note-meta {
+  font-size: 0.75rem;
+  color: #2b2b2b;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+}
+
+
+/* Actions */
+.note-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.icon-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.05rem;
+  padding: 0.15rem;
+}
+
+.icon-btn.active {
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
+}
+
+.icon-btn.delete {
+  font-size: 1.1rem;
+}
+
+.icon-btn.expand {
+  font-size: 1.2rem;
+}
+
+/* Floating add button */
+.add-note-btn {
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  border: 3px solid #000;
+  background: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .note-row {
+    grid-template-columns: auto minmax(0, 2fr);
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      'circle main actions'
+      'circle meta actions';
+  }
+
+  .select-circle {
+    grid-area: circle;
+  }
+
+  .note-main {
+    grid-area: main;
+  }
+
+  .note-meta {
+    grid-area: meta;
+  }
+
+  .note-actions {
+    grid-area: actions;
+    justify-content: flex-end;
+  }
+}
+</style>

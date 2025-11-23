@@ -6,6 +6,7 @@ import EditorView from '@/views/EditorView.vue';
 
 import { useUserStore } from '@/stores/UserState';
 import DashboardView from '@/views/DashboardView.vue';
+import AllNotesView from '@/views/AllNotesView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,6 +43,11 @@ const router = createRouter({
       path: '/dashboard', 
       name: 'dashboard', 
       component: DashboardView
+    },
+    {
+      path: '/allNotes', 
+      name: 'allNotes', 
+      component: AllNotesView
     }
   ],
 });
