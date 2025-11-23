@@ -6,10 +6,8 @@ import { onMounted } from 'vue';
 import Flickity from 'flickity'; 
 import 'flickity/css/flickity.css'
 import { ref } from 'vue';
-import { defineEmits } from 'vue';
 import NewExamModal from './NewExamModal.vue';
 
-const modalEmits = defineEmits("close-new-modal")
 const showModal = ref(false);
 const props = defineProps(
     {
