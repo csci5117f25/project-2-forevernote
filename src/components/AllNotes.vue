@@ -190,9 +190,9 @@ function createNewNote() {
           class="select-circle"
           :class="{ selected: note.isSelected }"
           @click.stop="toggleSelected(note)"
-        />
+        /> <!-- TODO: add a global delete or pin button here -->
 
-        <div class="note-main" @click="openNote(note)"> <!-- clicking on this note should redirect to the /editor route? -->
+        <div class="note-main" @click="openNote(note)"> <!-- TODO: clicking on this note should redirect to the /editor route? -->
           <div class="note-title">
             {{ note.title }}
           </div>
@@ -216,7 +216,7 @@ function createNewNote() {
           </div>
         </div>
 
-        <!-- Row actions -->
+        <!-- notes actions -->
         <div class="note-actions">
           <button
             class="icon-btn"
@@ -226,28 +226,33 @@ function createNewNote() {
           >
             📌
           </button>
+          <!-- TODO: might remove this and just have a global delete or pin button with the select multiple notes features -->
+
           <button
-            class="icon-btn delete"
+            class="icon-btn icon-delete"
             title="Delete"
             @click.stop="deleteNote(note.id)"
+            aria-label="Delete note"
           >
-            🗑
+            <span aria-hidden="true">🗑</span> 
+            <!-- TODO: make this trash a little transparent when it is not hovered on -->
           </button>
+          <!-- TODO: might remove this and just have a global delete or pin button with the select multiple notes features -->
           
           <button
             class="icon-btn expand"
             title="More"
-          >
+          > <!-- TODO: display the notes slightly? or redirect the the edit page -->
             <NoteDropdownIcon :size="18" className="expand-icon" />
           </button>
         </div>
       </article>
     </section>
 
-    <!-- Floating add button -->
     <button class="add-note-btn" @click="createNewNote">
       +
     </button>
+    <!-- TODO: add the functionality for this button. redirect to the /editor route??? -->
   </div>
 </template>
 
@@ -421,8 +426,9 @@ function createNewNote() {
   filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
 }
 
-.icon-btn.delete {
-  font-size: 1.1rem;
+ .icon-btn.icon-delete {
+  font-size: 1.2rem;
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", system-ui, sans-serif;
 }
 
 .icon-btn.expand {
