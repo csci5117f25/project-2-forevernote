@@ -51,6 +51,7 @@ onMounted(() => {
 
       <div id="navbar" class="navbar-menu">
         <div class="navbar-start">
+          <RouterLink to="/dashboard" class="navbar-item">Home</RouterLink>
           <RouterLink to="/notes" class="navbar-item">Notes</RouterLink>
           <RouterLink to="/exams" class="navbar-item">Exams</RouterLink>
           <RouterLink to="/editor" class="navbar-item">Editor</RouterLink>
@@ -87,5 +88,20 @@ nav {
 
 .navbar {
   border-bottom: 1pt solid gray;
+}
+
+@media (max-width: 768px) {
+  #logo {
+    max-height: 2rem;
+  }
+
+  .button.is-rounded {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.9rem;
+  }
+
+  #main-navbar {
+    padding: 0.4rem 0.8rem;
+  }
 }
 </style>

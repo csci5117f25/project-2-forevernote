@@ -1,7 +1,7 @@
 <script setup>
-import SplashWelcome from '@/components/SplashWelcome.vue';
+import Splash from '@/components/SplashComponent.vue';
 </script>
 
 <template>
-  <SplashWelcome />
+  <Splash />
 </template>

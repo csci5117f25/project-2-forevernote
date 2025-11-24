@@ -1,10 +1,10 @@
 <script setup>
-import NavBar from '@/components/NavBar.vue';
+import NavBar from '@/components/NavBar.vue'
 </script>
 
 <template>
   <header>
-    <NavBar />
+    <NavBar @open-login="openLoginModal"/>
   </header>
 
   <body class="container">
@@ -12,8 +12,14 @@ import NavBar from '@/components/NavBar.vue';
   </body>
 </template>
 
-<style>
-#app {
-  background-color: white;
+<style scoped>
+header {
+  width: 100vw;
+  height: 15vh;
+}
+
+body {
+  width: 100vw;
+  height: 85vh;
 }
 </style>

@@ -1,3 +1,13 @@
 html, body {
   background-color: white;
+  font-family: 'Momo Trust Display', sans-serif;
+  font-weight: 200;
+}
+
+html h1{
+  color:orange
+}
+
+html h2{
+  color: black;
 }

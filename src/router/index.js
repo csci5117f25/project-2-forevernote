@@ -1,16 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { getCurrentUser } from 'vuefire';
 
 import SplashView from '@/views/SplashView.vue';
-import EditorView from '@/views/EditorView.vue';
-import NoteList from '@/views/NoteList.vue';
-import NoteView from '@/views/NoteView.vue';
-import ExamList from '@/views/ExamList.vue';
-
+import DashboardView from '@/views/DashboardView.vue';
 import ProfileView from '@/views/ProfileView.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 
-import { getCurrentUser } from 'vuefire';
+// Dev/Testing pages (for now)
+import NoteList from '@/views/NoteList.vue';
+import NoteView from '@/views/NoteView.vue';
+import ExamList from '@/views/ExamList.vue';
 import ExamView from '@/views/ExamView.vue';
+import EditorView from '@/views/EditorView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +27,14 @@ const router = createRouter({
       name: 'splash',
       component: SplashView,
       meta: {},
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: '/editor',
@@ -57,7 +66,7 @@ const router = createRouter({
       component: ExamList,
       meta: {
         requiresAuth: true,
-      }
+      },
     },
     {
       path: '/exam/:id',
@@ -65,7 +74,7 @@ const router = createRouter({
       component: ExamView,
       meta: {
         requiresAuth: true,
-      }
+      },
     },
     {
       path: '/profile',
@@ -94,7 +103,7 @@ router.beforeEach(async (to, _, next) => {
   } else if ((to.path === '/' || to.path === '/splash') && isLoggedIn) {
     // Navigating to root when logged in, redirect to notes page
 
-    next({ name: 'note_list' });
+    next({ name: 'dashboard' });
   } else {
     // Navigating to a page that does not require authentication; navigate as normal
 

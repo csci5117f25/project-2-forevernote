@@ -16,5 +16,7 @@ async function logout() {
 <template>
   <p class="title has-text-dark">Profile View</p>
 
-  <button class="button" @click="logout">Logout</button>
+  <div class="field is-grouped is-grouped-center">
+    <button class="button" @click="logout">Logout</button>
+  </div>
 </template>
