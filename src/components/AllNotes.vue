@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import NoteDropdownIcon from '@/components/icons/NoteDropdownIcon.vue'
 
+// TODO: replace with real data from backend or local storage
 const notes = ref([
   {
     id: 1,
