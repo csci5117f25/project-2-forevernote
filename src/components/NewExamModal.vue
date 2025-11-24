@@ -1,7 +1,31 @@
 <script setup>
-import { defineEmits } from 'vue';
+import { ref, defineEmits } from 'vue';
+import { useFirestore } from 'vuefire';
+import { collection, getDocs, addDoc } from 'firebase/firestore';
 
-const emit = defineEmits(["close-modal"]);
+const emit = defineEmits(['close-modal']);
+
+// ALL REFS
+const newExamTitle = ref('');
+const newExamLocation = ref('');
+const newExamType = ref('');
+const newExamDatetime = ref('');
+const newExamTopics = ref('');
+
+const db = useFirestore();
+const examCollection = collection(db, 'users', 'YW5XdZJdMeON3zH7zXHaFqPDYuO2', 'exams');
+const docs = getDocs(examCollection);
+console.log('Docs:', docs);
+
+async function addExam() {
+  await addDoc(examCollection, {
+    subject: newExamTitle.value,
+    location: newExamLocation.value,
+    topics: newExamTopics.value.split(',').map((t) => t.trim()),
+  });
+
+  emit('close-modal');
+}
 </script>
 
 <template>
@@ -12,14 +36,20 @@ const emit = defineEmits(["close-modal"]);
         <div class="field">
           <label class="label">Exam:</label>
           <div class="control">
-            <input class="input  is-rounded" type="text" required placeholder="exam name" />
+            <input
+              class="input is-rounded"
+              type="text"
+              required
+              placeholder="exam name"
+              v-model="newExamTitle"
+            />
           </div>
         </div>
         <div class="field">
           <label class="label">Type of Exam:</label>
           <div class="control">
             <div class="select is-fullwidth">
-              <select>
+              <select v-model="newExamType">
                 <option>Midterm</option>
                 <option>Final</option>
                 <option>Quiz</option>
@@ -30,24 +60,34 @@ const emit = defineEmits(["close-modal"]);
         <div class="field">
           <label class="label">Date & Time:</label>
           <div class="control">
-            <input class="input is-rounded" type="datetime-local" />
+            <input class="input is-rounded" type="datetime-local" v-model="newExamDatetime" />
           </div>
         </div>
         <div class="field">
           <label class="label">Location:</label>
           <div class="control">
-            <input class="input is-rounded" type="text" placeholder="room or hall" />
+            <input
+              class="input is-rounded"
+              type="text"
+              placeholder="room or hall"
+              v-model="newExamLocation"
+            />
           </div>
         </div>
         <div class="field">
           <label class="label">Topics:</label>
           <div class="control">
-            <input class="input is-rounded" type="text" placeholder="covered topics" />
+            <input
+              class="input is-rounded"
+              type="text"
+              placeholder="covered topics"
+              v-model="newExamTopics"
+            />
           </div>
         </div>
 
         <div class="field has-text-centered mt-5">
-          <button class="button is-primary is-fullwidth rounded-btn" type="submit">
+          <button class="button is-primary is-fullwidth rounded-btn" @click="addExam">
             Save Exam
           </button>
         </div>
@@ -85,7 +125,7 @@ const emit = defineEmits(["close-modal"]);
 }
 
 label {
-  color: rgb(0, 0, 0)
+  color: rgb(0, 0, 0);
 }
 
 input,

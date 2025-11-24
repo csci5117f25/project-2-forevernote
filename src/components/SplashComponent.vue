@@ -1,5 +1,5 @@
 <script setup>
-import imgSrc from '@/assets/img/scratch_notes.jpg'
+import imgSrc from '@/assets/img/scratch_notes.jpg';
 </script>
 
 <template>
@@ -10,7 +10,7 @@ import imgSrc from '@/assets/img/scratch_notes.jpg'
         <span class="college-notes-span">Time to start taking college notes like it.</span>
       </div>
       <div class="splash-img">
-        <img :src=imgSrc id="scratch-notes-img" />
+        <img :src="imgSrc" id="scratch-notes-img" />
       </div>
     </div>
 
@@ -28,7 +28,6 @@ import imgSrc from '@/assets/img/scratch_notes.jpg'
           <li>⭐️ Focus Mode for those Zen Study sessions</li>
         </ul>
       </div>
-
     </div>
   </div>
 </template>
@@ -63,7 +62,6 @@ import imgSrc from '@/assets/img/scratch_notes.jpg'
   color: rgb(0, 0, 0);
   font-size: 4rem;
   font-weight: 700;
-
 }
 
 .college-notes-span {
@@ -111,7 +109,6 @@ import imgSrc from '@/assets/img/scratch_notes.jpg'
   width: 100%;
   height: 100%;
   /* border-radius: 20px; */
-
 }
 
 .forever-note-title-div {
@@ -142,8 +139,6 @@ import imgSrc from '@/assets/img/scratch_notes.jpg'
   align-items: center;
   gap: 0.25rem;
   color: #dcdcdc;
-
-
 }
 
 @media (max-width: 768px) {
@@ -167,6 +162,5 @@ import imgSrc from '@/assets/img/scratch_notes.jpg'
   .splash-img img {
     max-width: 90%;
   }
-
 }
 </style>

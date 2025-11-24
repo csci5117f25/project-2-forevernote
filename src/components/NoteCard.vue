@@ -27,7 +27,7 @@ const props = defineProps({
       <p v-if="props.tag" class="tag">{{ props.tag }}</p>
     </div>
 
-    <textarea class="textarea has-text-black" :value="props.content"></textarea>
+    <textarea class="textarea preview has-text-black" :value="props.content"></textarea>
 
     <RouterLink :to="'/note/' + props.id">
       <IconEnter />
@@ -47,8 +47,6 @@ main {
 }
 
 .preview {
-  width: 90%;
-
-  margin: 0 5%;
+  background-color: white;
 }
 </style>

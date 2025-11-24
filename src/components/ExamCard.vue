@@ -1,4 +1,6 @@
 <script setup>
+import { Timestamp } from 'firebase/firestore';
+
 const props = defineProps({
   id: {
     type: String,
@@ -8,12 +10,17 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  examDate: {
+    type: Timestamp,
+    required: true,
+  },
   location: {
     type: String,
+    required: true,
   },
   topics: {
-    type: Array
-  }
+    type: Array,
+  },
 });
 </script>
 
@@ -22,9 +29,18 @@ const props = defineProps({
     <div>
       <p class="is-size-6 has-text-dark">{{ props.subject }}</p>
 
-      <p class="is-size-7 has-text-dark">{{ props.location }}</p>
+      <p v-if="props.examDate" class="is-size-7 has-text-dark">
+        🗓️ {{ props.examDate.toDate().toLocaleDateString() }}
+      </p>
+      <p v-if="props.examDate" class="is-size-7 has-text-dark">
+        🕐 {{ props.examDate.toDate().toLocaleTimeString() }}
+      </p>
 
-      <p v-for="topic in props.topics" :key="topic" class="is-size-7 has-text-dark">{{ topic }}</p>
+      <p class="is-size-7 has-text-dark">📍 {{ props.location }}</p>
+
+      <p v-for="topic in props.topics" :key="topic" class="is-size-7 has-text-dark">
+        💡 {{ topic }}
+      </p>
     </div>
   </main>
 </template>

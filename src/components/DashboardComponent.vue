@@ -1,9 +1,9 @@
 <script setup>
 import 'vue3-carousel/carousel.css';
-import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel';
 
 import { ref, computed } from 'vue';
 import { useCollection, useCurrentUser, useFirestore } from 'vuefire';
+import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel';
 import { collection } from 'firebase/firestore';
 
 import CreateExamModal from './NewExamModal.vue';
@@ -22,7 +22,7 @@ const carouselConfig = {
   itemsToShow: 2.5,
   mouseWheel: true,
   wrapAround: true,
-}
+};
 
 const showModal = ref(false);
 function showNewExamModal() {
@@ -61,7 +61,11 @@ function showNewExamModal() {
       <div id="upcoming-exams-h">
         <h2>Upcoming Exams⏳</h2>
 
-        <button id="add-exam-button" class="button is-primary is-dark is-small is-rounded" @click="showNewExamModal">
+        <button
+          id="add-exam-button"
+          class="button is-primary is-dark is-small is-rounded"
+          @click="showNewExamModal"
+        >
           Create New Exam
         </button>
       </div>
@@ -73,12 +77,12 @@ function showNewExamModal() {
           </div>
 
           <div class="exam-details">
-            <h2 v-if="exam.date">🗓️ {{ exam.date.toDate().toLocaleDateString() }}</h2>
-            <h2 v-if="exam.date">🕐 {{ exam.date.toDate().toLocaleTimeString() }}</h2>
+            <h2 v-if="exam.examDate">🗓️ {{ exam.examDate.toDate().toLocaleDateString() }}</h2>
+            <h2 v-if="exam.examDate">🕐 {{ exam.examDate.toDate().toLocaleTimeString() }}</h2>
             <h2 v-if="exam.location">📍 {{ exam.location }}</h2>
             <h2 v-if="exam.topics.length !== 0">💡 Topics:</h2>
             <ul v-if="exam.topics.length !== 0">
-              <li v-for="topic in exam.topics" :key="topic"> 💡{{ topic }}</li>
+              <li v-for="topic in exam.topics" :key="topic">💡{{ topic }}</li>
             </ul>
           </div>
         </Slide>
@@ -88,7 +92,6 @@ function showNewExamModal() {
           <Pagination />
         </template>
       </Carousel>
-
     </div>
 
     <CreateExamModal v-if="showModal" @close-modal="showModal = false"></CreateExamModal>
@@ -114,7 +117,7 @@ function showNewExamModal() {
   text-align: left;
 }
 
-#greeting>h1 {
+#greeting > h1 {
   color: rgb(0, 0, 0);
   width: 100%;
   font-size: 4rem;
@@ -158,7 +161,6 @@ function showNewExamModal() {
 
 .note-cell {
   border: 3px solid rgb(252, 164, 0);
-
 }
 
 .exam-cell {
@@ -172,7 +174,7 @@ function showNewExamModal() {
   padding: 0.8rem;
 }
 
-.gallery-cell-header>h2 {
+.gallery-cell-header > h2 {
   display: -webkit-box;
   -webkit-box-orient: vertical;
 

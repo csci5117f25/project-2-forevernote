@@ -1,6 +1,6 @@
 <script setup>
-import { collection } from 'firebase/firestore';
 import { useFirestore, useCollection, useCurrentUser } from 'vuefire';
+import { collection } from 'firebase/firestore';
 
 import ExamCard from '@/components/ExamCard.vue';
 
@@ -13,7 +13,13 @@ const coll = useCollection(collection(db, 'users', user.value.uid, 'exams'));
 <template>
   <div v-for="doc in coll" :key="doc.id">
     <RouterLink :to="'/exam/' + doc.id">
-      <ExamCard :id="doc.id" :subject="doc.subject" :location="doc.location" :topics="doc.topics" />
+      <ExamCard
+        :id="doc.id"
+        :subject="doc.subject"
+        :examDate="doc.examDate"
+        :location="doc.location"
+        :topics="doc.topics"
+      />
     </RouterLink>
   </div>
 </template>

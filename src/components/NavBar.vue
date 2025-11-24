@@ -24,7 +24,7 @@ async function login() {
 
 onMounted(() => {
   const navBurger = document.getElementById('nav-burger');
-  const navBar = document.getElementById('nav-bar')
+  const navBar = document.getElementById('nav-bar');
 
   navBurger?.addEventListener('click', () => {
     navBurger.classList.toggle('is-active');
@@ -62,7 +62,9 @@ onMounted(() => {
             <button class="button is-primary is-rounded" @click="login">Get Started</button>
           </div>
           <div v-else class="buttons">
-            <button class="button is-primary is-rounded" @click="router.push({ name: 'profile' })">View Profile</button>
+            <button class="button is-primary is-rounded" @click="router.push({ name: 'profile' })">
+              View Profile
+            </button>
           </div>
         </div>
       </div>

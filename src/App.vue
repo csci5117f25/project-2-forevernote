@@ -1,10 +1,10 @@
 <script setup>
-import NavBar from '@/components/NavBar.vue'
+import NavBar from '@/components/NavBar.vue';
 </script>
 
 <template>
   <header>
-    <NavBar @open-login="openLoginModal"/>
+    <NavBar @open-login="openLoginModal" />
   </header>
 
   <body class="container">

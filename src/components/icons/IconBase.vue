@@ -10,7 +10,8 @@ const props = defineProps({
 </script>
 
 <template>
-  <span class="icon" :style="'width: ' + (props.size || '1rem') + '; height: ' + (props.size || '1rem') + ';'">
+  <!-- <span class="icon" :style="'width: ' + (props.size || '1rem') + '; height: ' + (props.size || '1rem') + ';'"> -->
+  <span class="icon">
     <svg :fill="props.color || 'currentColor'" viewBox="0 0 16 16">
       <slot />
     </svg>
