@@ -1,5 +1,4 @@
 <script setup>
-// eslint-disable-next-line no-unused-vars
 import tinymce from 'tinymce';
 
 // TinyMCE default icons (required)
@@ -49,10 +48,18 @@ const tinyMCEConfig = {
   resize: false,
   promotion: false,
 };
+
+function submit() {
+  console.log(tinymce.activeEditor.getContent());
+}
 </script>
 
 <template>
-  <editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" />
+  <main>
+    <editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" />
+
+    <button class="button" @click="submit">Submit</button>
+  </main>
 </template>
 
 <style scoped></style>

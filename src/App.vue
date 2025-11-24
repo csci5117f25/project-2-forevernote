@@ -1,5 +1,5 @@
 <script setup>
-import NavBar from './components/NavBar.vue';
+import NavBar from '@/components/NavBar.vue';
 </script>
 
 <template>
@@ -7,7 +7,9 @@ import NavBar from './components/NavBar.vue';
     <NavBar />
   </header>
 
-  <RouterView />
+  <body class="container">
+    <RouterView />
+  </body>
 </template>
 
 <style>

@@ -3,7 +3,5 @@ import EditorArea from '@/components/EditorArea.vue';
 </script>
 
 <template>
-  <main>
-    <EditorArea />
-  </main>
+  <EditorArea />
 </template>

@@ -1,37 +1,31 @@
 <script setup>
-import IconEnter from './icons/IconEnter.vue';
-
 const props = defineProps({
   id: {
     type: String,
     required: true,
   },
-  title: {
+  subject: {
     type: String,
     required: true,
   },
-  tag: {
+  location: {
     type: String,
   },
-  content: {
-    type: String,
-  },
+  topics: {
+    type: Array
+  }
 });
 </script>
 
 <template>
   <main>
     <div>
-      <p class="is-size-6 has-text-dark">{{ props.title }}</p>
+      <p class="is-size-6 has-text-dark">{{ props.subject }}</p>
 
-      <p v-if="props.tag" class="tag">{{ props.tag }}</p>
+      <p class="is-size-7 has-text-dark">{{ props.location }}</p>
+
+      <p v-for="topic in props.topics" :key="topic" class="is-size-7 has-text-dark">{{ topic }}</p>
     </div>
-
-    <textarea class="textarea has-text-black" :value="props.content"></textarea>
-
-    <RouterLink :to="'/note/' + props.id">
-      <IconEnter />
-    </RouterLink>
   </main>
 </template>
 

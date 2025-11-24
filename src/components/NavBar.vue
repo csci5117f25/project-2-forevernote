@@ -1,69 +1,83 @@
+<script>
+import { GoogleAuthProvider } from 'firebase/auth';
+
+const googleAuthProvider = new GoogleAuthProvider();
+</script>
+
 <script setup>
-import { useUserStore } from '@/stores/UserState';
-import { useRouter } from 'vue-router';
-import { RouterLink } from 'vue-router';
-
-import imgSrc from '../assets/images/Logo.png';
 import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useCurrentUser, useFirebaseAuth } from 'vuefire';
+import { signInWithPopup } from 'firebase/auth';
 
-const state = useUserStore();
+import logoImg from '@/assets/img/logo.png';
+
 const router = useRouter();
+const auth = useFirebaseAuth();
+const user = useCurrentUser();
 
-function login() {
-  state.isLoggedIn = true;
+async function login() {
+  await signInWithPopup(auth, googleAuthProvider);
 
-  router.push({ name: 'notes' });
-}
-
-function goToRoot() {
   router.push({ name: 'root' });
 }
 
 onMounted(() => {
-  const el = document.getElementById("nav-burger");
+  const navBurger = document.getElementById('nav-burger');
+  const navBar = document.getElementById('nav-bar')
 
-  el.addEventListener('click', () => {
-    const target = el.dataset.target;
-    const $target = document.getElementById(target);
-
-    el.classList.toggle('is-active');
-    $target.classList.toggle('is-active')
-  })
+  navBurger?.addEventListener('click', () => {
+    navBurger.classList.toggle('is-active');
+    navBar?.classList.toggle('is-active');
+  });
 });
 </script>
 
 <template>
-  <nav class="navbar is-white">
-    <div class="navbar-brand">
-      <a class="navbar-item" @click="goToRoot">
-        <img :src="imgSrc" alt="Logo" id="logo" />
-      </a>
+  <main>
+    <nav class="navbar is-white">
+      <div class="navbar-brand">
+        <RouterLink class="navbar-item" to="/">
+          <img :src="logoImg" alt="Logo" id="logo" />
+        </RouterLink>
 
-      <a id="nav-burger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
-        data-target="navbar" @click="onMenuClick">
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-      </a>
-    </div>
-
-    <div id="navbar" class="navbar-menu">
-      <div class="navbar-start">
-        <RouterLink to="/notes" class="navbar-item">Notes</RouterLink>
-        <RouterLink to="/editor" class="navbar-item">Editor</RouterLink>
-      </div>
-
-      <div class="navbar-end">
-        <div class="navbar-item">
-          <button class="button is-primary is-rounded" @click="login">Get Started</button>
+        <div id="nav-burger" class="navbar-burger">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
       </div>
-    </div>
-  </nav>
+
+      <div id="navbar" class="navbar-menu">
+        <div class="navbar-start">
+          <RouterLink to="/notes" class="navbar-item">Notes</RouterLink>
+          <RouterLink to="/exams" class="navbar-item">Exams</RouterLink>
+          <RouterLink to="/editor" class="navbar-item">Editor</RouterLink>
+        </div>
+
+        <div class="navbar-end">
+          <div v-if="!user" class="buttons">
+            <button class="button is-primary is-rounded" @click="login">Get Started</button>
+          </div>
+          <div v-else class="buttons">
+            <button class="button is-primary is-rounded" @click="router.push({ name: 'profile' })">View Profile</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </main>
 </template>
 
 <style scoped>
+main {
+  margin-bottom: 1rem;
+}
+
+nav {
+  padding-right: 0.5rem;
+}
+
 #logo {
   max-height: 3.5rem;
   width: auto;
