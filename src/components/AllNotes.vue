@@ -20,7 +20,7 @@ const notes = ref([
     title: 'Cognitive Psychology — Memory Encoding',
     tags: ['PSY 3041', 'Psych', 'Reading'],
     lastEdited: '2026-10-12',
-    dueDate: '2026-10-19',
+    dueDate: '2026-11-24',
     isPinned: false,
     
     notes:
@@ -102,10 +102,16 @@ const filteredNotes = computed(() => {
         return b.lastEditedTs - a.lastEditedTs
       case 'updatedAsc':
         return a.lastEditedTs - b.lastEditedTs
-      case 'dueAsc':
-        return (a.dueDateTs ?? Infinity) - (b.dueDateTs ?? Infinity)
-      case 'dueDesc':
-        return (b.dueDateTs ?? -Infinity) - (a.dueDateTs ?? -Infinity)
+      case 'dueAsc': {
+        const aDue = a.dueDateTs != null ? Number(a.dueDateTs) : (a.dueDate ? new Date(a.dueDate).getTime() : Infinity)
+        const bDue = b.dueDateTs != null ? Number(b.dueDateTs) : (b.dueDate ? new Date(b.dueDate).getTime() : Infinity)
+        return aDue - bDue
+      }
+      case 'dueDesc': {
+        const aDue = a.dueDateTs != null ? Number(a.dueDateTs) : (a.dueDate ? new Date(a.dueDate).getTime() : -Infinity)
+        const bDue = b.dueDateTs != null ? Number(b.dueDateTs) : (b.dueDate ? new Date(b.dueDate).getTime() : -Infinity)
+        return bDue - aDue
+      }
       case 'titleAsc':
         return a.title.localeCompare(b.title)
       case 'titleDesc':
@@ -138,6 +144,24 @@ function openNote(note) {
 
 function createNewNote() {
   console.log('create new note')
+}
+
+// ---------- DUE DATE HELPERS ----------
+function isDueSoon(note, days = 3) {
+  console.log(note.dueDateTs, note.dueDate)
+  const dueTs = note.dueDateTs != null ? Number(note.dueDateTs) : (note.dueDate ? new Date(note.dueDate).getTime() : null)
+  if (dueTs == null) return false
+  const now = Date.now()
+  const diff = dueTs - now
+  if (diff < 0) return false // already past due -> handled by isOverdue
+  const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24))
+  return daysLeft <= days
+}
+
+function isOverdue(note) {
+  const dueTs = note.dueDateTs != null ? Number(note.dueDateTs) : (note.dueDate ? new Date(note.dueDate).getTime() : null)
+  if (dueTs == null) return false
+  return dueTs < Date.now()
 }
 </script>
 
@@ -214,8 +238,8 @@ function createNewNote() {
           <div class="meta-line">
             last edited: {{ note.lastEdited }}
           </div>
-          <div class="meta-line">
-            due: {{ note.dueDate || '—' }} <!-- TODO: make this red if its less than a 3 days left -->
+          <div class="meta-line" :class="{ 'due-soon': isDueSoon(note), overdue: isOverdue(note) }">
+            due: {{ note.dueDate || '—' }}
           </div>
         </div>
 
@@ -279,8 +303,10 @@ function createNewNote() {
 }
 
 .search-box {
-  background: #f0b5ff;
-  border-radius: 0.5rem;
+  background: #FFFFFF;
+  /* border-color: #00D1B2; */
+  border: 3px solid #00D1B2;
+  border-radius: 1rem;
   padding: 0.35rem 0.6rem;
 }
 
@@ -311,7 +337,8 @@ function createNewNote() {
   gap: 0.25rem;
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
+  border: 1px solid #00D1B2;
   background: #fff;
   font-size: 0.8rem;
   cursor: pointer;
@@ -323,7 +350,8 @@ function createNewNote() {
 
 .controls-row select {
   border-radius: 999px;
-  border: 1px solid #ccc;
+  border: 1px solid #00D1B2;
+  /* border: 1px solid #ccc; */
   padding: 0.25rem 0.6rem;
   font-size: 0.8rem;
   background: #fff;
@@ -341,9 +369,10 @@ function createNewNote() {
   grid-template-columns: auto minmax(0, 2.5fr) minmax(0, 1.3fr) auto;
   align-items: center;
   column-gap: 0.6rem;
-  background: #f5821f;
+  background: rgb(252, 164, 0);
+  background-image: linear-gradient(to right, rgb(252, 164, 0), rgb(183, 119, 0));
   padding: 0.4rem 0.6rem;
-  border-radius: 0.1rem;
+  border-radius: 0.5rem;
 }
 
 /* Notion-style checkbox */
@@ -369,13 +398,15 @@ function createNewNote() {
 }
 
 .note-title {
-  background: #f5821f;
+  background: rgb(252, 143, 0);
+  /* background-image: linear-gradient(to right, rgb(252, 164, 0), rgb(183, 119, 0)); */
   border: 2px solid #000;
   padding: 0.25rem 0.4rem;
   font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  color: #000;
 }
 
 .note-subline {
@@ -398,6 +429,7 @@ function createNewNote() {
   padding: 0.05rem 0.4rem;
   background: #ffd9b5;
   font-size: 0.7rem;
+  color: rgb(100,100,50)
 }
 
 /* Meta info */
@@ -408,6 +440,20 @@ function createNewNote() {
   flex-direction: column;
   justify-content: center;
   gap: 0.1rem;
+}
+
+.meta-line {
+  line-height: 1.1;
+}
+
+.meta-line.due-soon {
+  color: #c62828; 
+  font-weight: 700;
+}
+
+.meta-line.overdue {
+  color: #b71c1c; 
+  font-weight: 800;
 }
 
 
