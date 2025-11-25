@@ -46,14 +46,20 @@ const router = createRouter({
       },
     },
     {
-      path: '/dashboard', 
-      name: 'dashboard', 
-      component: DashboardView
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
-      path: '/allNotes', 
-      name: 'allNotes', 
-      component: AllNotesView
+      path: '/allNotes',
+      name: 'allNotes',
+      component: AllNotesView,
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: '/notes',
