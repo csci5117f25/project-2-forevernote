@@ -1,34 +1,25 @@
 <script setup>
-import NavBar from './components/NavBar.vue'
-// import SplashWelcome from './components/SplashWelcome.vue';
-import SplashView from '@/views/SplashView.vue'
-import { RouterLink, RouterView } from 'vue-router';
-import { ref } from 'vue'
-import LoginModal from './components/LoginModal.vue';
-
-const showLogin = ref(false)
-
-function openLoginModal(){
-  console.log("Modal is opened")
-  showLogin.value = true
-}
-
-function closeLoginModal(){
-  showLogin.value = false
-}
+import NavBar from '@/components/NavBar.vue';
 </script>
 
 <template>
   <header>
-    <NavBar @open-login="openLoginModal"/>
+    <NavBar @open-login="openLoginModal" />
   </header>
-  <main>
-     
-    <LoginModal v-if="showLogin" @close="closeLoginModal"/>
-  </main>
 
-  <RouterView />
+  <body class="container">
+    <RouterView />
+  </body>
 </template>
 
-<style>
+<style scoped>
+header {
+  width: 100vw;
+  height: 15vh;
+}
+
+body {
+  width: 100vw;
+  height: 85vh;
+}
 </style>

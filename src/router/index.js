@@ -1,12 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { getCurrentUser } from 'vuefire';
 
 import SplashView from '@/views/SplashView.vue';
-import NotesView from '@/views/NotesView.vue';
-import EditorView from '@/views/EditorView.vue';
-
-import { useUserStore } from '@/stores/UserState';
 import DashboardView from '@/views/DashboardView.vue';
+import ProfileView from '@/views/ProfileView.vue';
+import NotFoundView from '@/views/NotFoundView.vue';
 import AllNotesView from '@/views/AllNotesView.vue';
+
+// Dev/Testing pages (for now)
+import NoteList from '@/views/NoteList.vue';
+import NoteView from '@/views/NoteView.vue';
+import ExamList from '@/views/ExamList.vue';
+import ExamView from '@/views/ExamView.vue';
+import EditorView from '@/views/EditorView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,9 +30,9 @@ const router = createRouter({
       meta: {},
     },
     {
-      path: '/notes',
-      name: 'notes',
-      component: NotesView,
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
       meta: {
         requiresAuth: true,
       },
@@ -48,26 +54,67 @@ const router = createRouter({
       path: '/allNotes', 
       name: 'allNotes', 
       component: AllNotesView
-    }
+    },
+    {
+      path: '/notes',
+      name: 'note_list',
+      component: NoteList,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/note/:id',
+      name: 'note',
+      component: NoteView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/exams',
+      name: 'exam_list',
+      component: ExamList,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/exam/:id',
+      name: 'exam',
+      component: ExamView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: ProfileView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
   ],
 });
 
-router.beforeEach((to, _, next) => {
-  const state = useUserStore();
+router.beforeEach(async (to, _, next) => {
+  const isLoggedIn = (await getCurrentUser()) ? true : false;
 
   if (to.meta.requiresAuth) {
     // Navigating to a page that requires authentication
-
-    if (!state.isLoggedIn) {
+    if (!isLoggedIn) {
       // If not logged in
+
       next({ name: 'splash' });
     } else {
       next();
     }
-  } else if ((to.path === '/' || to.path === '/splash') && state.isLoggedIn) {
+  } else if ((to.path === '/' || to.path === '/splash') && isLoggedIn) {
     // Navigating to root when logged in, redirect to notes page
 
-    next({ name: 'notes' });
+    next({ name: 'dashboard' });
   } else {
     // Navigating to a page that does not require authentication; navigate as normal
 

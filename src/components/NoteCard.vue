@@ -1,5 +1,11 @@
 <script setup>
+import IconEnter from './icons/IconEnter.vue';
+
 const props = defineProps({
+  id: {
+    type: String,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
@@ -7,12 +13,25 @@ const props = defineProps({
   tag: {
     type: String,
   },
+  content: {
+    type: String,
+  },
 });
 </script>
 
 <template>
   <main>
-    <h1>{{ props.title }}</h1>
+    <div>
+      <p class="is-size-6 has-text-dark">{{ props.title }}</p>
+
+      <p v-if="props.tag" class="tag">{{ props.tag }}</p>
+    </div>
+
+    <textarea class="textarea preview has-text-black" :value="props.content"></textarea>
+
+    <RouterLink :to="'/note/' + props.id">
+      <IconEnter />
+    </RouterLink>
   </main>
 </template>
 
@@ -22,14 +41,12 @@ main {
   height: 300px;
 
   margin: 1rem;
-  border: 1px solid white;
+  border: 1px solid black;
   border-radius: 20px;
   padding: 1rem;
 }
 
 .preview {
-  width: 90%;
-
-  margin: 0 5%;
+  background-color: white;
 }
 </style>

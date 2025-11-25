@@ -1,10 +1,7 @@
-<script setup> 
-import Dashboard from '@/components/Dashboard.vue';
-import { ref } from 'vue';
-const user = ref('Yaseen')
-console.log(`Hello ${user.value} from DashboardView`)
+<script setup>
+import Dashboard from '@/components/DashboardComponent.vue';
 </script>
 
 <template>
-    <Dashboard :user="user"></Dashboard>
+  <Dashboard />
 </template>

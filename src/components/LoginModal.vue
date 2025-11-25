@@ -1,5 +1,5 @@
 <script setup>
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close']);
 </script>
 
 <template>
@@ -14,8 +14,9 @@ const emit = defineEmits(['close'])
         <input class="input is-primary" type="password" placeholder="Password" />
 
         <button class="button is-primary is-fullwidth mt-3">Login</button>
-        <span class="modal-span">New Here? 
-            <a>Sign up Now</a>
+        <span class="modal-span"
+          >New Here?
+          <a>Sign up Now</a>
         </span>
       </form>
     </div>
@@ -23,7 +24,6 @@ const emit = defineEmits(['close'])
 </template>
 
 <style scoped>
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -44,7 +44,6 @@ const emit = defineEmits(['close'])
   max-width: 400px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
 }
-
 
 .modal-form {
   display: flex;
