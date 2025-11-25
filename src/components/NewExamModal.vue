@@ -1,9 +1,10 @@
 <script setup>
 import { ref, defineEmits } from 'vue';
-import { useFirestore } from 'vuefire';
+import { useCurrentUser, useFirestore } from 'vuefire';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
 
 const emit = defineEmits(['close-modal']);
+const user = useCurrentUser();
 
 // ALL REFS
 const newExamTitle = ref('');
@@ -13,16 +14,23 @@ const newExamDatetime = ref('');
 const newExamTopics = ref('');
 
 const db = useFirestore();
-const examCollection = collection(db, 'users', 'YW5XdZJdMeON3zH7zXHaFqPDYuO2', 'exams');
-const docs = getDocs(examCollection);
-console.log('Docs:', docs);
+console.log(`Exams from ${user.value.uid} in new exam modal`)
+const examCollection = collection(db, 'users', user.value.uid, 'exams');
+console.log(`exam collection loaded: ${Object.entries(examCollection)} from new exam modal`)
 
 async function addExam() {
-  await addDoc(examCollection, {
+  console.log("raw:", newExamDatetime.value);
+
+  const dt = new Date(newExamDatetime.value);
+
+  console.log("converted:", dt);
+  const newExamPromise = await addDoc(examCollection, {
     subject: newExamTitle.value,
     location: newExamLocation.value,
+    examDate: dt,
     topics: newExamTopics.value.split(',').map((t) => t.trim()),
   });
+  console.log(`new exam promise: ${newExamPromise}`)
 
   emit('close-modal');
 }
@@ -32,7 +40,7 @@ async function addExam() {
   <div class="modal-backdrop" @click="emit('close-modal')">
     <div class="modal-content frosted-container" @click.stop>
       <h1 class="title is-4 has-text-centered">New Exam📝</h1>
-      <form class="form-area">
+      <form class="form-area" @submit.prevent="addExam">
         <div class="field">
           <label class="label">Exam:</label>
           <div class="control">

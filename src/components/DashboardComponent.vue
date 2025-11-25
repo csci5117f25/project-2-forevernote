@@ -17,12 +17,18 @@ const notesRef = computed(() => collection(db, 'users', user.value.uid, 'notes')
 const notes = useCollection(notesRef);
 const examsRef = computed(() => collection(db, 'users', user.value.uid, 'exams'));
 const exams = useCollection(examsRef);
+console.log(`exams for user: ${user.value.uid}: ${exams.value}`)
 
 const carouselConfig = {
   itemsToShow: 2.5,
   mouseWheel: true,
   wrapAround: true,
 };
+
+const carouselConfigForOne = {
+  itemsToShow: 0.75, 
+  wrapAround: false
+}
 
 const showModal = ref(false);
 function showNewExamModal() {
@@ -70,7 +76,7 @@ function showNewExamModal() {
         </button>
       </div>
 
-      <Carousel id="exam-carousel" class="gallery" v-bind="carouselConfig">
+      <Carousel id="exam-carousel" class="gallery" v-bind="carouselConfigForOne">
         <Slide v-for="exam in exams" :key="exam.id" class="gallery-cell exam-cell">
           <div class="gallery-cell-header">
             <h2>{{ exam.subject }}</h2>
