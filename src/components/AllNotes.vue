@@ -7,9 +7,9 @@ const notes = ref([
   {
     id: 1,
     title: 'Linear Algebra — Eigenvalues & Eigenvectors',
-    tags: ['CSCI 4511', 'Linear Algebra', 'Lecture'],
+    subject: 'CSCI 4511',
+    tags: ['Linear Algebra', 'Lecture'],
     lastEdited: '2026-10-22',
-    dueDate: '2026-10-26',
     isPinned: true,
     
     notes:
@@ -18,9 +18,9 @@ const notes = ref([
   {
     id: 2,
     title: 'Cognitive Psychology — Memory Encoding',
-    tags: ['PSY 3041', 'Psych', 'Reading'],
+    subject: 'PSY 3041',
+    tags: ['Psych', 'Reading'],
     lastEdited: '2026-10-12',
-    dueDate: '2026-11-24',
     isPinned: false,
     
     notes:
@@ -29,9 +29,9 @@ const notes = ref([
   {
     id: 3,
     title: 'Organic Chemistry — SN1 vs SN2',
-    tags: ['CHEM 2301', 'Organic Chem', 'Exam Prep'],
+    subject: 'CHEM 2301',
+    tags: ['Organic Chem', 'Exam Prep'],
     lastEdited: '2026-09-30',
-    dueDate: '2026-10-04',
     isPinned: false,
     notes:
       "SN1 reactions proceed through a carbocation intermediate and are favored by stable intermediates and polar protic solvents. SN2 reactions occur in one concerted step and require strong nucleophiles. The substrate structure determines which mechanism occurs."
@@ -39,9 +39,9 @@ const notes = ref([
   {
     id: 4,
     title: 'Computer Networks — TCP Congestion Control',
-    tags: ['CSCI 4211', 'Networks', 'Project'],
+    subject: 'CSCI 4211',
+    tags: ['Networks', 'Project'],
     lastEdited: '2026-10-01',
-    dueDate: '2026-10-10',
     isPinned: true,
     
     notes:
@@ -50,9 +50,9 @@ const notes = ref([
   {
     id: 5,
     title: 'Microeconomics — Elasticity of Demand',
-    tags: ['ECON 1101', 'Econ', 'Lecture'],
+    subject: 'ECON 1101',
+    tags: ['Econ', 'Lecture'],
     lastEdited: '2026-09-10',
-    dueDate: '2026-09-20',
     isPinned: false,
     
     notes:
@@ -60,10 +60,9 @@ const notes = ref([
   }
 ].map((n) => ({
   ...n,
-  _titleLc: n.title.toLowerCase(),
-  _classLc: `${n.tags.join(' ')}`.toLowerCase(),
+  _titleLc: `${n.title.toLowerCase()} ${n.subject.toLowerCase()}`,
+  _classLc: `${n.tags.join(' ')} ${n.subject.toLowerCase()}`.toLowerCase(),
   lastEditedTs: new Date(n.lastEdited).getTime(),
-  dueDateTs: n.dueDate ? new Date(n.dueDate).getTime() : null,
   isSelected: false
 })))
 
@@ -72,7 +71,7 @@ const filters = ref({
   titleQuery: '',
   classQuery: '',
   showPinnedOnly: false,
-  sortBy: 'updatedDesc' // updatedDesc | updatedAsc | dueAsc | dueDesc | titleAsc | titleDesc
+  sortBy: 'updatedDesc' // updatedDesc | updatedAsc | titleAsc | titleDesc
 })
 
 // ---------- CORE FILTER FUNCTION ----------
@@ -81,7 +80,7 @@ const filteredNotes = computed(() => {
     titleQuery,
     classQuery,
     showPinnedOnly,
-    sortBy // updatedDesc | updatedAsc | dueAsc | dueDesc | titleAsc | titleDesc
+    sortBy // updatedDesc | updatedAsc | titleAsc | titleDesc
   } = filters.value
 
   const titleLc = titleQuery.trim().toLowerCase()
@@ -102,16 +101,6 @@ const filteredNotes = computed(() => {
         return b.lastEditedTs - a.lastEditedTs
       case 'updatedAsc':
         return a.lastEditedTs - b.lastEditedTs
-      case 'dueAsc': {
-        const aDue = a.dueDateTs != null ? Number(a.dueDateTs) : (a.dueDate ? new Date(a.dueDate).getTime() : Infinity)
-        const bDue = b.dueDateTs != null ? Number(b.dueDateTs) : (b.dueDate ? new Date(b.dueDate).getTime() : Infinity)
-        return aDue - bDue
-      }
-      case 'dueDesc': {
-        const aDue = a.dueDateTs != null ? Number(a.dueDateTs) : (a.dueDate ? new Date(a.dueDate).getTime() : -Infinity)
-        const bDue = b.dueDateTs != null ? Number(b.dueDateTs) : (b.dueDate ? new Date(b.dueDate).getTime() : -Infinity)
-        return bDue - aDue
-      }
       case 'titleAsc':
         return a.title.localeCompare(b.title)
       case 'titleDesc':
@@ -120,7 +109,6 @@ const filteredNotes = computed(() => {
         return 0
     }
   })
-
   return result
 })
 
@@ -146,23 +134,6 @@ function createNewNote() {
   console.log('create new note')
 }
 
-// ---------- DUE DATE HELPERS ----------
-function isDueSoon(note, days = 3) {
-  console.log(note.dueDateTs, note.dueDate)
-  const dueTs = note.dueDateTs != null ? Number(note.dueDateTs) : (note.dueDate ? new Date(note.dueDate).getTime() : null)
-  if (dueTs == null) return false
-  const now = Date.now()
-  const diff = dueTs - now
-  if (diff < 0) return false // already past due -> handled by isOverdue
-  const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24))
-  return daysLeft <= days
-}
-
-function isOverdue(note) {
-  const dueTs = note.dueDateTs != null ? Number(note.dueDateTs) : (note.dueDate ? new Date(note.dueDate).getTime() : null)
-  if (dueTs == null) return false
-  return dueTs < Date.now()
-}
 </script>
 
 <template>
@@ -197,8 +168,8 @@ function isOverdue(note) {
       <select v-model="filters.sortBy">
         <option value="updatedDesc">Sort: Last edited ↓</option>
         <option value="updatedAsc">Sort: Last edited ↑</option>
-        <option value="dueAsc">Sort: Due date ↑</option>
-        <option value="dueDesc">Sort: Due date ↓</option>
+        <!-- <option value="dueAsc">Sort: Due date ↑</option>
+        <option value="dueDesc">Sort: Due date ↓</option> -->
         <option value="titleAsc">Sort: Title A-Z</option>
         <option value="titleDesc">Sort: Title Z-A</option>
       </select>
@@ -225,6 +196,11 @@ function isOverdue(note) {
           </div>
           <div class="note-subline">
             <span
+              class="course-pill"
+            >
+              {{ note.subject }}
+            </span>
+            <span
               v-for="(tag, idx) in note.tags"
               :key="`${tag}-${idx}`"
               :class="idx === 0 ? 'tag-pill' : 'tag-pill'"
@@ -238,9 +214,9 @@ function isOverdue(note) {
           <div class="meta-line">
             last edited: {{ note.lastEdited }}
           </div>
-          <div class="meta-line" :class="{ 'due-soon': isDueSoon(note), overdue: isOverdue(note) }">
+          <!-- <div class="meta-line" :class="{ 'due-soon': isDueSoon(note), overdue: isOverdue(note) }">
             due: {{ note.dueDate || '—' }}
-          </div>
+          </div> -->
         </div>
 
         <!-- notes actions -->
@@ -400,7 +376,7 @@ function isOverdue(note) {
 .note-title {
   background: rgb(252, 143, 0);
   /* background-image: linear-gradient(to right, rgb(252, 164, 0), rgb(183, 119, 0)); */
-  border: 2px solid #000;
+  border: 1.5px solid #000;
   padding: 0.25rem 0.4rem;
   font-weight: 600;
   white-space: nowrap;
@@ -415,13 +391,14 @@ function isOverdue(note) {
   gap: 0.25rem;
 }
 
-/* .course-pill {
+.course-pill {
   border-radius: 999px;
   border: 1px solid #000;
   padding: 0.1rem 0.4rem;
-  background: #f5821f;
+  background: #f8b377;
   font-size: 0.75rem;
-} */
+  color: rgb(50,50,50);
+} 
 
 .tag-pill {
   border-radius: 999px;
