@@ -1,6 +1,10 @@
 <script setup>
 
 import { watch, defineProps, ref, onMounted } from 'vue'
+import { pipeline, env } from '@xenova/transformers';
+
+
+
 
 const props = defineProps({
   isRecording: Boolean
@@ -33,11 +37,35 @@ let audioChunks = [];
 let allChunks = [];
 
 
+//for AI transcription
+let transcriber = null;
+
+
+//for loading the AI audio transcription
+async function loadModel() {
+  env.allowLocalModels = false;
+
+
+  env.useBrowserCache = false;
+
+  console.log("Loading model...");
+  try {
+    transcriber = await pipeline(
+      "automatic-speech-recognition",
+      "Xenova/whisper-tiny.en"
+    );
+    console.log("Model loaded.");
+  } catch (err) {
+    console.error("Error loading model:", err);
+  }
+}
+
 
 //wait until DOM is loaded
 onMounted(() => {
   canvas = canvasRef.value;
   ctx = canvas.getContext("2d");
+  loadModel();
 });
 
 async function initAudio(){
@@ -71,6 +99,9 @@ async function initAudio(){
   }
 
 }
+
+
+
 //https://stackoverflow.com/questions/51325136/record-5-seconds-segments-of-audio-using-mediarecorder-and-then-upload-to-the-se
 
 
@@ -93,18 +124,19 @@ async function recordAudio(stream) {
      recorder.start();
      //prevent a timeout from misfiring if recording is disabled and staying in a hanging state
       if (props.isRecording) {
-      setTimeout(() => {if (!props.isRecording) return; recorder.stop();}, 5000);
+      setTimeout(() => {if (!props.isRecording) return; recorder.stop();}, 4000);
        }
   }
+  //initial recording before entering on/off loop
 
   recorder.start();
    if (props.isRecording) {
-      setTimeout(() => {if (!props.isRecording) return; recorder.stop();}, 5000);
+      setTimeout(() => {if (!props.isRecording) return; recorder.stop();}, 4000);
      }
 }
 
 function drawAudio() {
-  requestAnimationFrame(drawAudio);
+ /**  requestAnimationFrame(drawAudio);
 
   if (!analyser) return;
 
@@ -136,16 +168,28 @@ function drawAudio() {
     ctx.fillRect(x, HEIGHT - barHeight/ 2, barWidth, barHeight);
     x += barWidth + 1;
   }
+    */
 }
 
-async function processAudio(audioChunk){
-  console.log("New 5-second chunk generated:", audioChunk);
 
-  allChunks.push(audioChunk);
-  console.log("Saved chunks:", allChunks);
-  window.allChunks = allChunks;
+async function processAudio(audioChunk) {
+  if (!transcriber) {
+    console.warn("Transcriber not ready yet");
+    return;
+  }
+  // The pipeline cannot read a Blob directly. It needs a URL.
+  const audioUrl = URL.createObjectURL(audioChunk);
+  try {
+    const result = await transcriber(audioUrl);
+    console.log("Transcription:", result.text);
 
-
+    allChunks.push(result.text);
+  } catch (error) {
+    console.error("Transcription error:", error);
+  } finally {
+    //clean up
+    setTimeout(() => URL.revokeObjectURL(audioUrl), 18000);
+  }
 }
 
 function stopAudio(){
