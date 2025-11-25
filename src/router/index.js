@@ -5,6 +5,7 @@ import SplashView from '@/views/SplashView.vue';
 import DashboardView from '@/views/DashboardView.vue';
 import ProfileView from '@/views/ProfileView.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
+import AllNotesView from '@/views/AllNotesView.vue';
 
 // Dev/Testing pages (for now)
 import NoteList from '@/views/NoteList.vue';
@@ -43,6 +44,16 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
       },
+    },
+    {
+      path: '/dashboard', 
+      name: 'dashboard', 
+      component: DashboardView
+    },
+    {
+      path: '/allNotes', 
+      name: 'allNotes', 
+      component: AllNotesView
     },
     {
       path: '/notes',
