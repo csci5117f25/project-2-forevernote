@@ -3,12 +3,11 @@ import { getCurrentUser } from 'vuefire';
 
 import SplashView from '@/views/SplashView.vue';
 import DashboardView from '@/views/DashboardView.vue';
+import AllNotesView from '@/views/AllNotesView.vue';
 import ProfileView from '@/views/ProfileView.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
-import AllNotesView from '@/views/AllNotesView.vue';
 
 // Dev/Testing pages (for now)
-import NoteList from '@/views/NoteList.vue';
 import NoteView from '@/views/NoteView.vue';
 import ExamList from '@/views/ExamList.vue';
 import ExamView from '@/views/ExamView.vue';
@@ -41,6 +40,14 @@ const router = createRouter({
       path: '/editor',
       name: 'editor',
       component: EditorView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
       meta: {
         requiresAuth: true,
       },

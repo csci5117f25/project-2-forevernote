@@ -1,7 +1,7 @@
 <script setup>
 import { ref, defineEmits } from 'vue';
 import { useCurrentUser, useFirestore } from 'vuefire';
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 
 const emit = defineEmits(['close-modal']);
 const user = useCurrentUser();
@@ -14,23 +14,23 @@ const newExamDatetime = ref('');
 const newExamTopics = ref('');
 
 const db = useFirestore();
-console.log(`Exams from ${user.value.uid} in new exam modal`)
+console.log(`Exams from ${user.value.uid} in new exam modal`);
 const examCollection = collection(db, 'users', user.value.uid, 'exams');
-console.log(`exam collection loaded: ${Object.entries(examCollection)} from new exam modal`)
+console.log(`exam collection loaded: ${Object.entries(examCollection)} from new exam modal`);
 
 async function addExam() {
-  console.log("raw:", newExamDatetime.value);
+  console.log('raw:', newExamDatetime.value);
 
   const dt = new Date(newExamDatetime.value);
 
-  console.log("converted:", dt);
+  console.log('converted:', dt);
   const newExamPromise = await addDoc(examCollection, {
     subject: newExamTitle.value,
     location: newExamLocation.value,
     examDate: dt,
     topics: newExamTopics.value.split(',').map((t) => t.trim()),
   });
-  console.log(`new exam promise: ${newExamPromise}`)
+  console.log(`new exam promise: ${newExamPromise}`);
 
   emit('close-modal');
 }
