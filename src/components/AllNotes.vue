@@ -191,9 +191,11 @@ function createNewNote() {
           class="select-circle"
           :class="{ selected: note.isSelected }"
           @click.stop="toggleSelected(note)"
-        /> <!-- TODO: add a global delete or pin button here -->
+        /> 
+        <!-- TODO: add a global delete or pin button here -->
 
-        <div class="note-main" @click="openNote(note)"> <!-- TODO: clicking on this note should redirect to the /editor route? -->
+        <!-- TODO: clicking on this note should redirect to the /editor route? -->
+        <div class="note-main" @click="openNote(note)"> 
           <div class="note-title">
             {{ note.title }}
           </div>
@@ -243,7 +245,8 @@ function createNewNote() {
           <button
             class="icon-btn expand"
             title="More"
-          > <!-- TODO: display the notes slightly? or redirect the the edit page -->
+          > 
+          <!-- TODO: display the notes slightly? or redirect the the edit page -->
             <NoteDropdownIcon :size="18" className="expand-icon" />
           </button>
         </div>
