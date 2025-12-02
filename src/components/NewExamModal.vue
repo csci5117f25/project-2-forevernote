@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineEmits } from 'vue';
+import { ref } from 'vue';
 import { useCurrentUser, useFirestore } from 'vuefire';
 import { collection, addDoc } from 'firebase/firestore';
 
