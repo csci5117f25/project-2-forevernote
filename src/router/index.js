@@ -100,21 +100,14 @@ router.beforeEach(async (to, _, next) => {
   const isLoggedIn = (await getCurrentUser()) ? true : false;
 
   if (to.meta.requiresAuth) {
-    // Navigating to a page that requires authentication
     if (!isLoggedIn) {
-      // If not logged in
-
       next({ name: 'splash' });
     } else {
       next();
     }
-  } else if ((to.path === '/' || to.path === '/splash') && isLoggedIn) {
-    // Navigating to root when logged in, redirect to notes page
-
+  } else if (isLoggedIn && (to.path === '/' || to.path === '/splash')) {
     next({ name: 'dashboard' });
   } else {
-    // Navigating to a page that does not require authentication; navigate as normal
-
     next();
   }
 });
