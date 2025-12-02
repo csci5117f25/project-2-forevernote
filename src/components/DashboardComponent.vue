@@ -25,11 +25,6 @@ const carouselConfig = {
   wrapAround: true,
 };
 
-const carouselConfigForOne = {
-  itemsToShow: 0.75, 
-  wrapAround: false
-}
-
 const showModal = ref(false);
 function showNewExamModal() {
   showModal.value = true;
@@ -76,7 +71,7 @@ function showNewExamModal() {
         </button>
       </div>
 
-      <Carousel id="exam-carousel" class="gallery" v-bind="carouselConfigForOne">
+      <Carousel id="exam-carousel" class="gallery" v-bind="carouselConfig">
         <Slide v-for="exam in exams" :key="exam.id" class="gallery-cell exam-cell">
           <div class="gallery-cell-header">
             <h2>{{ exam.subject }}</h2>
