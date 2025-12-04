@@ -20,15 +20,16 @@ const exams = useCollection(examsRef);
 console.log(`exams for user: ${user.value.uid}: ${exams.value}`);
 
 const carouselConfig = {
-  itemsToShow: 2.5,
+  itemsToShow: 1.20,
   mouseWheel: true,
   wrapAround: true,
+  gap: 50,
 };
 
-const carouselConfigForOne = {
-  itemsToShow: 0.75,
-  wrapAround: false,
-};
+// const carouselConfigForOne = {
+//   itemsToShow: 0.75,
+//   wrapAround: false,
+// };
 
 const showModal = ref(false);
 function showNewExamModal() {
@@ -76,7 +77,7 @@ function showNewExamModal() {
         </button>
       </div>
 
-      <Carousel id="exam-carousel" class="gallery" v-bind="carouselConfigForOne">
+      <Carousel id="exam-carousel" class="gallery" v-bind="carouselConfig">
         <Slide v-for="exam in exams" :key="exam.id" class="gallery-cell exam-cell">
           <div class="gallery-cell-header">
             <h2>{{ exam.subject }}</h2>
@@ -159,7 +160,6 @@ function showNewExamModal() {
 
   width: 60%;
 
-  margin: 0 1%;
   border-radius: 25px;
 
   background-color: rgb(237, 237, 232);
