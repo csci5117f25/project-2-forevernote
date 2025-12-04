@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 
-import NoteDropdownIcon from '@/components/icons/NoteDropdownIcon.vue';
+import DownIcon from '@/components/icons/IconDownCheveron.vue';
 
 // TODO: replace with real data from backend or local storage
 const notes = ref(
@@ -211,7 +211,7 @@ function createNewNote() {
 
           <button class="icon-btn expand" title="More">
             <!-- TODO: display the notes slightly? or redirect the the edit page -->
-            <NoteDropdownIcon :size="18" className="expand-icon" />
+            <DownIcon />
           </button>
         </div>
       </article>
