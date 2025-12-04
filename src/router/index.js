@@ -3,7 +3,7 @@ import { getCurrentUser } from 'vuefire';
 
 import SplashView from '@/views/SplashView.vue';
 import DashboardView from '@/views/DashboardView.vue';
-import AllNotesView from '@/views/AllNotesView.vue';
+import NoteList from '@/views/NoteList.vue';
 import ProfileView from '@/views/ProfileView.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 
@@ -55,7 +55,7 @@ const router = createRouter({
     {
       path: '/notes',
       name: 'note_list',
-      component: AllNotesView,
+      component: NoteList,
       meta: {
         requiresAuth: true,
       },
