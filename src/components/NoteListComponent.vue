@@ -1,7 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 
 import DownIcon from '@/components/icons/IconDownCheveron.vue';
+
+const router = useRouter();
 
 // TODO: replace with real data from backend or local storage
 const notes = ref(
@@ -133,10 +136,6 @@ function deleteNote(id) {
 function openNote(note) {
   console.log('open note', note.id);
 }
-
-function createNewNote() {
-  console.log('create new note');
-}
 </script>
 
 <template>
@@ -234,7 +233,7 @@ function createNewNote() {
       </article>
     </section>
 
-    <button class="add-note-btn" @click="createNewNote">+</button>
+    <button class="add-note-btn" @click="router.push({ name: 'new_note' })">+</button>
     <!-- TODO: add the functionality for this button. redirect to the /editor route??? -->
   </div>
 </template>
