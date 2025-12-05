@@ -63,7 +63,7 @@ const user = useCurrentUser();
 
 const isTranscribing = ref(false);
 
-const editTitle = ref(false);
+const isEditingTitle = ref(false);
 const title = ref('');
 const newTitle = ref('');
 
@@ -71,12 +71,12 @@ const contentTitle = computed(() => (title.value ? title.value : 'Untitled Note'
 function resetTitle() {
   newTitle.value = '';
 
-  editTitle.value = false;
+  isEditingTitle.value = false;
 }
 function updateTitle() {
   title.value = newTitle.value;
 
-  editTitle.value = false;
+  isEditingTitle.value = false;
 }
 
 async function submit() {
@@ -117,7 +117,7 @@ async function submit() {
       </div>
 
       <div class="button-set-center">
-        <div id="title-edit" v-if="editTitle">
+        <div id="title-edit" v-if="isEditingTitle">
           <input class="input has-background-light has-text-dark" type="text" v-model="newTitle" />
           <button class="button" @click="resetTitle">
             <CancelIcon />
@@ -126,7 +126,7 @@ async function submit() {
             <SaveIcon />
           </button>
         </div>
-        <span v-else id="title-edit" @click="editTitle = true">{{ contentTitle }}</span>
+        <span v-else id="title-edit" @click="isEditingTitle = true">{{ contentTitle }}</span>
       </div>
 
       <div class="">
@@ -134,10 +134,10 @@ async function submit() {
       </div>
     </div>
 
-    <editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" />
+    <editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" style="z-index: 29" />
   </main>
 
-  <div id="click-exit" @click="editTitle = false"></div>
+  <div v-if="isEditingTitle" id="click-exit" @click="isEditingTitle = false"></div>
 </template>
 
 <style scoped>
@@ -145,16 +145,13 @@ async function submit() {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 28;
+  z-index: 31;
 
   width: 100vw;
   height: 100vh;
 }
 
 #button-set {
-  position: relative;
-  z-index: 29;
-
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -169,6 +166,9 @@ async function submit() {
 }
 
 #title-edit {
+  position: relative;
+  z-index: 32;
+
   display: flex;
   flex-direction: row;
   justify-content: space-between;

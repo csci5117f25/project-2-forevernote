@@ -1,5 +1,5 @@
 <script setup>
-import Editor from '@/components/EditorComponent.vue';
+import Editor from '@/components/NewNotesComponent.vue';
 </script>
 
 <template>

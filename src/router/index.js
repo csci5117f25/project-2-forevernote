@@ -3,15 +3,17 @@ import { getCurrentUser } from 'vuefire';
 
 import SplashView from '@/views/SplashView.vue';
 import DashboardView from '@/views/DashboardView.vue';
-import NoteList from '@/views/NoteList.vue';
 import ProfileView from '@/views/ProfileView.vue';
+
+import NoteList from '@/views/NoteList.vue';
+import NewNoteView from '@/views/NewNotesView.vue';
+
 import NotFoundView from '@/views/NotFoundView.vue';
 
 // Dev/Testing pages (for now)
 import NoteView from '@/views/NoteView.vue';
 import ExamList from '@/views/ExamList.vue';
 import ExamView from '@/views/ExamView.vue';
-import EditorView from '@/views/EditorView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,14 +39,6 @@ const router = createRouter({
       },
     },
     {
-      path: '/editor',
-      name: 'editor',
-      component: EditorView,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
       path: '/dashboard',
       name: 'dashboard',
       component: DashboardView,
@@ -56,6 +50,14 @@ const router = createRouter({
       path: '/notes',
       name: 'note_list',
       component: NoteList,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/note/new',
+      name: 'new_note',
+      component: NewNoteView,
       meta: {
         requiresAuth: true,
       },
