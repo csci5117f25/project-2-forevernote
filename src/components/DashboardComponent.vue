@@ -11,13 +11,10 @@ import CreateExamModal from './NewExamModal.vue';
 const user = useCurrentUser();
 const db = useFirestore();
 
-// const emits = defineEmits("close-new-modal");
-
 const notesRef = computed(() => collection(db, 'users', user.value.uid, 'notes'));
 const notes = useCollection(notesRef);
 const examsRef = computed(() => collection(db, 'users', user.value.uid, 'exams'));
 const exams = useCollection(examsRef);
-console.log(`exams for user: ${user.value.uid}: ${exams.value}`);
 
 const carouselConfig = {
   itemsToShow: 1.2,
@@ -25,11 +22,6 @@ const carouselConfig = {
   wrapAround: true,
   gap: 50,
 };
-
-// const carouselConfigForOne = {
-//   itemsToShow: 0.75,
-//   wrapAround: false,
-// };
 
 const showModal = ref(false);
 function showNewExamModal() {
