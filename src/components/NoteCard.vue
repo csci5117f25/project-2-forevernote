@@ -1,5 +1,5 @@
 <script setup>
-import IconEnter from './icons/IconEnter.vue';
+import EnterIcon from './icons/IconEnter.vue';
 
 const props = defineProps({
   id: {
@@ -30,7 +30,7 @@ const props = defineProps({
     <textarea class="textarea preview has-text-black" :value="props.content"></textarea>
 
     <RouterLink :to="'/note/' + props.id">
-      <IconEnter />
+      <EnterIcon />
     </RouterLink>
   </main>
 </template>

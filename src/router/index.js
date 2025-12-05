@@ -6,7 +6,7 @@ import DashboardView from '@/views/DashboardView.vue';
 import ProfileView from '@/views/ProfileView.vue';
 
 import NoteList from '@/views/NoteList.vue';
-import NewNoteView from '@/views/NewNotesView.vue';
+import NewNoteView from '@/views/NewNoteView.vue';
 
 import NotFoundView from '@/views/NotFoundView.vue';
 
