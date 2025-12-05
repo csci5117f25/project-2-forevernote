@@ -1,9 +1,6 @@
 <script setup>
 
 import { watch, defineProps, ref, onMounted } from 'vue'
-import { pipeline, env } from '@xenova/transformers';
-
-
 
 
 const props = defineProps({
@@ -34,30 +31,35 @@ let ctx = null;
 //microphone variables
 let recorder = null;
 let audioChunks = [];
-let allChunks = [];
+//let allChunks = [];
+
+//for webworker thread
+let worker = null;
+
+//for preventing overlapping Timeouts
+//and for preventing microphone timeouts from going
+//on longer than they should
+  let recordingInterval = null;
 
 
-//for AI transcription
-let transcriber = null;
+// for making a webworker (depends on whether the browser supports it or not)
+if (window.Worker) {
+  worker = new Worker(new URL("../worker.js", import.meta.url), {
+    type: "module"
+  });
+}
+else{
+  console.error("your browser does not support web worker api!")
+}
 
-
-//for loading the AI audio transcription
-async function loadModel() {
-  env.allowLocalModels = false;
-
-
-  env.useBrowserCache = false;
-
-  console.log("Loading model...");
-  try {
-    transcriber = await pipeline(
-      "automatic-speech-recognition",
-      "Xenova/whisper-tiny.en"
-    );
-    console.log("Model loaded.");
-  } catch (err) {
-    console.error("Error loading model:", err);
+//only bother communicating with worker thread
+//if a worker thread was made
+if (worker){
+  worker.onmessage = (event) => {
+    const {text} = event.data;
+    console.log("Transcribed:", text);
   }
+
 }
 
 
@@ -65,7 +67,6 @@ async function loadModel() {
 onMounted(() => {
   canvas = canvasRef.value;
   ctx = canvas.getContext("2d");
-  loadModel();
 });
 
 async function initAudio(){
@@ -100,7 +101,28 @@ async function initAudio(){
 
 }
 
+async function blobToPCM(blob, audioContext) {
 
+  if (!blob || blob.size === 0) {
+    //just return an empty PCM array
+    return new Float32Array(0);
+  }
+  const arrayBuffer = await blob.arrayBuffer();
+  //audioBuffer can fail depending on browser
+  let audioBuffer;
+
+  try{
+    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+  }
+  catch (error) {
+    console.error("failed to decode audio", error);
+    return new Float32Array(0);
+  }
+
+  const pcm = audioBuffer.getChannelData(0);
+  return pcm;
+
+}
 
 //https://stackoverflow.com/questions/51325136/record-5-seconds-segments-of-audio-using-mediarecorder-and-then-upload-to-the-se
 
@@ -109,34 +131,50 @@ async function initAudio(){
 async function recordAudio(stream) {
   recorder = new MediaRecorder(stream);
 
+
   recorder.ondataavailable = (event) => {
     audioChunks.push(event.data);
   }
-
-  recorder.onstop = () => {
-     if (!props.isRecording) return;
-
+  // pause recording for one small instance in time
+  // to pass data to audio transcriber
+  // before re-recording
+  recorder.onstop = async () => {
      const blob = new Blob(audioChunks, { type: "audio/webm" });
-     processAudio(blob);
-     //clear buffer
+     /*send the processed audio chunk to the worker thread*/
+    // processAudio(blob);
+
+    const pcm = await blobToPCM(blob, audioContext);
+    //make thread safe duplicate
+    const pcmCopy = new Float32Array(pcm.length);
+    pcmCopy.set(pcm);
+    //send to worker
+    worker.postMessage( {
+      array: pcmCopy,
+    sampleRate: audioContext.sampleRate},
+      [pcmCopy.buffer]
+    );
 
      audioChunks.length = 0;
-     recorder.start();
-     //prevent a timeout from misfiring if recording is disabled and staying in a hanging state
-      if (props.isRecording) {
-      setTimeout(() => {if (!props.isRecording) return; recorder.stop();}, 4000);
-       }
-  }
-  //initial recording before entering on/off loop
 
-  recorder.start();
-   if (props.isRecording) {
-      setTimeout(() => {if (!props.isRecording) return; recorder.stop();}, 4000);
+     if (props.isRecording) {
+      //start recording again
+     recorder.start();
      }
+  };
+  //initial recording before entering on/off loop
+  recorder.start();
+
+  recordingInterval = setInterval(() => {
+    if (!props.isRecording) return;
+
+    if (recorder.state ==="recording") {
+      recorder.stop();
+    }
+  }, 4000);
 }
 
 function drawAudio() {
- /**  requestAnimationFrame(drawAudio);
+   requestAnimationFrame(drawAudio);
 
   if (!analyser) return;
 
@@ -168,10 +206,10 @@ function drawAudio() {
     ctx.fillRect(x, HEIGHT - barHeight/ 2, barWidth, barHeight);
     x += barWidth + 1;
   }
-    */
+
 }
 
-
+/*
 async function processAudio(audioChunk) {
   if (!transcriber) {
     console.warn("Transcriber not ready yet");
@@ -191,8 +229,14 @@ async function processAudio(audioChunk) {
     setTimeout(() => URL.revokeObjectURL(audioUrl), 18000);
   }
 }
-
+*/
 function stopAudio(){
+
+  //clear whatever was inside previously
+  if (recordingInterval) {
+    clearInterval(recordingInterval)
+    recordingInterval = null;
+  }
   if (recorder && recorder.state != "inactive") {
     //prevent restart
     recorder.onstop = null;
