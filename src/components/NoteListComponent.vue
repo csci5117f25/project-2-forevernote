@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 import DownIcon from '@/components/icons/IconDownCheveron.vue';
+import PlusIcon from './icons/IconPlus.vue';
 
 const router = useRouter();
 
@@ -169,11 +170,7 @@ function openNote(note) {
     <!-- NOTES LIST -->
     <section class="notes-list">
       <article v-for="note in filteredNotes" :key="note.id" class="note-row">
-        <button
-          class="select-circle"
-          :class="{ selected: note.isSelected }"
-          @click.stop="toggleSelected(note)"
-        />
+        <button class="select-circle" :class="{ selected: note.isSelected }" @click.stop="toggleSelected(note)" />
         <!-- TODO: add a global delete or pin button here -->
 
         <!-- TODO: clicking on this note should redirect to the /editor route? -->
@@ -185,11 +182,7 @@ function openNote(note) {
             <span class="course-pill">
               {{ note.subject }}
             </span>
-            <span
-              v-for="(tag, idx) in note.tags"
-              :key="`${tag}-${idx}`"
-              :class="idx === 0 ? 'tag-pill' : 'tag-pill'"
-            >
+            <span v-for="(tag, idx) in note.tags" :key="`${tag}-${idx}`" :class="idx === 0 ? 'tag-pill' : 'tag-pill'">
               {{ tag }}
             </span>
           </div>
@@ -204,22 +197,13 @@ function openNote(note) {
 
         <!-- notes actions -->
         <div class="note-actions">
-          <button
-            class="icon-btn"
-            :class="{ active: note.isPinned }"
-            title="Pin"
-            @click.stop="togglePinned(note)"
-          >
+          <button class="icon-btn" :class="{ active: note.isPinned }" title="Pin" @click.stop="togglePinned(note)">
             📌
           </button>
           <!-- TODO: might remove this and just have a global delete or pin button with the select multiple notes features -->
 
-          <button
-            class="icon-btn icon-delete"
-            title="Delete"
-            @click.stop="deleteNote(note.id)"
-            aria-label="Delete note"
-          >
+          <button class="icon-btn icon-delete" title="Delete" @click.stop="deleteNote(note.id)"
+            aria-label="Delete note">
             <span aria-hidden="true">🗑</span>
             <!-- TODO: make this trash a little transparent when it is not hovered on -->
           </button>
@@ -232,10 +216,11 @@ function openNote(note) {
         </div>
       </article>
     </section>
-
-    <button class="add-note-btn" @click="router.push({ name: 'new_note' })">+</button>
-    <!-- TODO: add the functionality for this button. redirect to the /editor route??? -->
   </div>
+
+  <button id="new-note" @click="router.push({ name: 'new_note' })">
+    <PlusIcon class="is-large" />
+  </button>
 </template>
 
 <style scoped>
@@ -440,18 +425,11 @@ function openNote(note) {
 }
 
 /* Floating add button */
-.add-note-btn {
+#new-note {
   position: fixed;
-  right: 2rem;
-  bottom: 2rem;
-  width: 54px;
-  height: 54px;
-  border-radius: 999px;
-  border: 3px solid #000;
-  background: #fff;
-  font-size: 2rem;
-  font-weight: 700;
-  line-height: 1;
+  bottom: 1.5rem;
+  right: 1.5rem;
+
   cursor: pointer;
 }
 
