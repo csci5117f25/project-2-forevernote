@@ -170,7 +170,11 @@ function createNewNote() {
     <!-- NOTES LIST -->
     <section class="notes-list">
       <article v-for="note in filteredNotes" :key="note.id" class="note-row">
-        <button class="select-circle" :class="{ selected: note.isSelected }" @click.stop="toggleSelected(note)" />
+        <button
+          class="select-circle"
+          :class="{ selected: note.isSelected }"
+          @click.stop="toggleSelected(note)"
+        />
         <!-- TODO: add a global delete or pin button here -->
 
         <!-- TODO: clicking on this note should redirect to the /editor route? -->
@@ -182,7 +186,11 @@ function createNewNote() {
             <span class="course-pill">
               {{ note.subject }}
             </span>
-            <span v-for="(tag, idx) in note.tags" :key="`${tag}-${idx}`" :class="idx === 0 ? 'tag-pill' : 'tag-pill'">
+            <span
+              v-for="(tag, idx) in note.tags"
+              :key="`${tag}-${idx}`"
+              :class="idx === 0 ? 'tag-pill' : 'tag-pill'"
+            >
               {{ tag }}
             </span>
           </div>
@@ -197,13 +205,22 @@ function createNewNote() {
 
         <!-- notes actions -->
         <div class="note-actions">
-          <button class="icon-btn" :class="{ active: note.isPinned }" title="Pin" @click.stop="togglePinned(note)">
+          <button
+            class="icon-btn"
+            :class="{ active: note.isPinned }"
+            title="Pin"
+            @click.stop="togglePinned(note)"
+          >
             📌
           </button>
           <!-- TODO: might remove this and just have a global delete or pin button with the select multiple notes features -->
 
-          <button class="icon-btn icon-delete" title="Delete" @click.stop="deleteNote(note.id)"
-            aria-label="Delete note">
+          <button
+            class="icon-btn icon-delete"
+            title="Delete"
+            @click.stop="deleteNote(note.id)"
+            aria-label="Delete note"
+          >
             <span aria-hidden="true">🗑</span>
             <!-- TODO: make this trash a little transparent when it is not hovered on -->
           </button>
