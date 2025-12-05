@@ -69,7 +69,6 @@ onMounted(() => {
           <RouterLink to="/dashboard" class="navbar-item">Home</RouterLink>
           <RouterLink to="/notes" class="navbar-item">Notes</RouterLink>
           <RouterLink to="/exams" class="navbar-item">Exams</RouterLink>
-          <RouterLink to="/editor" class="navbar-item">Editor</RouterLink>
         </div>
 
         <div class="navbar-end">
