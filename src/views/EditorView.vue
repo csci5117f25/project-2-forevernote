@@ -1,7 +1,7 @@
 <script setup>
-import EditorArea from '@/components/EditorArea.vue';
+import Editor from '@/components/EditorComponent.vue';
 </script>
 
 <template>
-  <EditorArea />
+  <Editor />
 </template>
