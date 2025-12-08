@@ -2,10 +2,16 @@
 
 import { watch, defineProps, ref, onMounted } from 'vue'
 
+//for removing worker threads when not in use
+import { onUnmounted } from 'vue';
+
+
 
 const props = defineProps({
   isRecording: Boolean
 })
+
+const emit = defineEmits(['newTranscript'])
 
 watch (() => props.isRecording, (newVal) => {
   if (newVal == true) {
@@ -58,6 +64,9 @@ if (worker){
   worker.onmessage = (event) => {
     const {text} = event.data;
     console.log("Transcribed:", text);
+
+    //emit transcript back to parent
+    emit('newTranscript', event.data);
   }
 
 }
@@ -139,9 +148,15 @@ async function recordAudio(stream) {
   // to pass data to audio transcriber
   // before re-recording
   recorder.onstop = async () => {
-     const blob = new Blob(audioChunks, { type: "audio/webm" });
-     /*send the processed audio chunk to the worker thread*/
-    // processAudio(blob);
+    const blob = new Blob(audioChunks, { type: "audio/webm" });
+
+    audioChunks.length = 0;
+
+    //start recording immediately
+     if (props.isRecording) {
+      //start recording again
+     recorder.start();
+     }
 
     const pcm = await blobToPCM(blob, audioContext);
     //make thread safe duplicate
@@ -154,12 +169,8 @@ async function recordAudio(stream) {
       [pcmCopy.buffer]
     );
 
-     audioChunks.length = 0;
 
-     if (props.isRecording) {
-      //start recording again
-     recorder.start();
-     }
+
   };
   //initial recording before entering on/off loop
   recorder.start();
@@ -170,7 +181,7 @@ async function recordAudio(stream) {
     if (recorder.state ==="recording") {
       recorder.stop();
     }
-  }, 4000);
+  }, 3000);
 }
 
 function drawAudio() {
@@ -188,7 +199,8 @@ function drawAudio() {
   //gradient.addColorStop(1, "#512da8");
 
   //ctx.fillStyle = gradient;
-  ctx.fillStyle = "rgb(0,0,0)"
+  //make it white
+  ctx.fillStyle = "rgb(255,255,255)"
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
   const barWidth = (WIDTH / bufferLength) * 3;
@@ -209,27 +221,6 @@ function drawAudio() {
 
 }
 
-/*
-async function processAudio(audioChunk) {
-  if (!transcriber) {
-    console.warn("Transcriber not ready yet");
-    return;
-  }
-  // The pipeline cannot read a Blob directly. It needs a URL.
-  const audioUrl = URL.createObjectURL(audioChunk);
-  try {
-    const result = await transcriber(audioUrl);
-    console.log("Transcription:", result.text);
-
-    allChunks.push(result.text);
-  } catch (error) {
-    console.error("Transcription error:", error);
-  } finally {
-    //clean up
-    setTimeout(() => URL.revokeObjectURL(audioUrl), 18000);
-  }
-}
-*/
 function stopAudio(){
 
   //clear whatever was inside previously
@@ -256,6 +247,14 @@ function stopAudio(){
 
 }
 
+onUnmounted(() => {
+  stopAudio();
+  if (worker) {
+    worker.terminate();
+  }
+
+})
+
 
 
 </script>
@@ -266,3 +265,12 @@ function stopAudio(){
     <canvas ref="canvasRef" width="600" height="400"></canvas>
   </div>
 </template>
+
+
+<style scoped>
+
+.visualizer-wrapper {
+  display: flex;
+  justify-content: center;
+}
+</style>

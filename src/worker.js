@@ -4,6 +4,8 @@ import { pipeline, env } from '@xenova/transformers';
 
 
 
+
+
 //for AI transcription
 let transcriber = null;
 
@@ -19,7 +21,8 @@ async function loadModel() {
       "automatic-speech-recognition",
       "Xenova/whisper-tiny.en", {
         device: 'webgpu',
-        chunk_length_s: 6,
+        chunk_length_s: 4,
+        stride_length_s: 3
       }
     );
     console.log("Model loaded.");
@@ -53,6 +56,24 @@ function downsample16k(originalData, originalSampleRate) {
   return downsampled;
 }
 
+//computes the db of a pcm array
+//skip silent arrays
+
+function measureDb(pcm) {
+  let sum = 0;
+  for (let i = 0; i< pcm.length; i++) {
+    sum += pcm[i] * pcm[i];
+  }
+
+  const rms = Math.sqrt(sum/pcm.length);
+  const db = 20 * Math.log10(rms + 1e-10);
+
+  return db;
+
+
+}
+
+
 
 
 
@@ -69,6 +90,10 @@ async function processAudio(pcmArray, sampleRate) {
 
   try {
     const downsampled = downsample16k(pcmArray, sampleRate);
+    //skip if too quiet
+    if (measureDb(downsampled) < -50) {
+      return "";
+    }
     const result = await transcriber(downsampled);
     return result.text;
 
@@ -85,9 +110,14 @@ async function processAudio(pcmArray, sampleRate) {
 //main thread in audioEngine sends an audio recording to the worker
 onmessage = async function (event) {
 
+
+
+
+
   const {array, sampleRate} = event.data;
 
   if (!(array instanceof Float32Array)) {
+    //nothing to process
     return;
   }
 
@@ -95,6 +125,6 @@ onmessage = async function (event) {
 
   postMessage({text});
 
-}
 
+}
 
