@@ -79,6 +79,16 @@ function updateTitle() {
   isEditingTitle.value = false;
 }
 
+function appendToEditor() {
+  if (!tinymce.activeEditor) {
+    console.error('Failed to get editor content: editor has not been initialized');
+
+    return;
+  }
+
+  
+}
+
 async function submit() {
   if (!tinymce.activeEditor) {
     console.error('Failed to get editor content: editor has not been initialized');
