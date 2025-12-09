@@ -14,6 +14,7 @@ import NotFoundView from '@/views/NotFoundView.vue';
 import NoteView from '@/views/NoteView.vue';
 import ExamList from '@/views/ExamList.vue';
 import ExamView from '@/views/ExamView.vue';
+import TranscriptionView from '@/views/LiveTranscriptionView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,14 +30,6 @@ const router = createRouter({
       name: 'splash',
       component: SplashView,
       meta: {},
-    },
-    {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: DashboardView,
-      meta: {
-        requiresAuth: true,
-      },
     },
     {
       path: '/dashboard',
@@ -93,6 +86,11 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
       },
+    },
+    {
+      path: '/live-transcription',
+      name: 'live-transcription',
+      component: TranscriptionView,
     },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
   ],
