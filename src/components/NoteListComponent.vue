@@ -1,124 +1,82 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useCollection, useCurrentUser, useFirestore } from 'vuefire';
+import { collection, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 
-import DownIcon from '@/components/icons/IconDownCheveron.vue';
 import PlusIcon from './icons/IconPlus.vue';
+import PinIcon from './icons/IconPin.vue';
+import PinFillIcon from './icons/IconPinFill.vue';
+import TrashIcon from './icons/IconTrashFill.vue';
+import DownIcon from './icons/IconDownCheveron.vue';
 
 const router = useRouter();
 
-// TODO: replace with real data from backend or local storage
-const notes = ref(
-  [
-    {
-      id: 1,
-      title: 'Linear Algebra — Eigenvalues & Eigenvectors',
-      subject: 'CSCI 4511',
-      tags: ['Linear Algebra', 'Lecture'],
-      lastEdited: '2026-10-22',
-      isPinned: true,
+const user = useCurrentUser();
+const db = useFirestore();
 
-      notes:
-        'Eigenvalues and eigenvectors describe how linear transformations stretch or rotate vectors. They are essential in PCA, differential equations, and analyzing systems that evolve over time. Understanding them helps simplify complex matrix operations.',
-    },
-    {
-      id: 2,
-      title: 'Cognitive Psychology — Memory Encoding',
-      subject: 'PSY 3041',
-      tags: ['Psych', 'Reading'],
-      lastEdited: '2026-10-12',
-      isPinned: false,
-
-      notes:
-        'Memory encoding is the process of converting sensory input into a form the brain can store. Encoding quality is influenced by attention, depth of processing, and emotional context. It forms the foundation for later retrieval and long-term learning.',
-    },
-    {
-      id: 3,
-      title: 'Organic Chemistry — SN1 vs SN2',
-      subject: 'CHEM 2301',
-      tags: ['Organic Chem', 'Exam Prep'],
-      lastEdited: '2026-09-30',
-      isPinned: false,
-      notes:
-        'SN1 reactions proceed through a carbocation intermediate and are favored by stable intermediates and polar protic solvents. SN2 reactions occur in one concerted step and require strong nucleophiles. The substrate structure determines which mechanism occurs.',
-    },
-    {
-      id: 4,
-      title: 'Computer Networks — TCP Congestion Control',
-      subject: 'CSCI 4211',
-      tags: ['Networks', 'Project'],
-      lastEdited: '2026-10-01',
-      isPinned: true,
-
-      notes:
-        'TCP uses algorithms like slow start, congestion avoidance, and fast recovery to regulate packet flow. These mechanisms adjust transmission speed based on perceived network congestion, improving reliability and preventing network overload during communication.',
-    },
-    {
-      id: 5,
-      title: 'Microeconomics — Elasticity of Demand',
-      subject: 'ECON 1101',
-      tags: ['Econ', 'Lecture'],
-      lastEdited: '2026-09-10',
-      isPinned: false,
-
-      notes:
-        'Elasticity measures how sensitive consumer demand is to price changes. Goods with close substitutes tend to have higher elasticity. Understanding elasticity helps predict revenue changes and guides pricing strategies in competitive markets.',
-    },
-  ].map((n) => ({
-    ...n,
-    _titleLc: `${n.title.toLowerCase()} ${n.subject.toLowerCase()}`,
-    _classLc: `${n.tags.join(' ')} ${n.subject.toLowerCase()}`.toLowerCase(),
-    lastEditedTs: new Date(n.lastEdited).getTime(),
-    isSelected: false,
-  })),
-);
+const notesRef = collection(db, 'users', user.value.uid, 'notes');
+const notes = useCollection(notesRef);
 
 // ---------- FILTER STATE ----------
-const filters = ref({
-  titleQuery: '',
-  classQuery: '',
-  showPinnedOnly: false,
-  sortBy: 'updatedDesc', // updatedDesc | updatedAsc | titleAsc | titleDesc
-});
+const titleFilter = ref('');
+const subjectFilter = ref('');
+const pinnedOnly = ref(false);
+const sortBy = ref('updatedDesc'); // updatedDesc | updatedAsc | titleAsc | titleDesc
 
 // ---------- CORE FILTER FUNCTION ----------
+function sortByFn(a, b) {
+  switch (sortBy.value) {
+    case 'updatedDesc':
+      return b.lastEdited - a.lastEdited;
+    case 'updatedAsc':
+      return a.lastEdited - b.lastEdited;
+    case 'titleAsc':
+      return a.title.localeCompare(b.title);
+    case 'titleDesc':
+      return b.title.localeCompare(a.title);
+  }
+}
 const filteredNotes = computed(() => {
-  const {
-    titleQuery,
-    classQuery,
-    showPinnedOnly,
-    sortBy, // updatedDesc | updatedAsc | titleAsc | titleDesc
-  } = filters.value;
+  const titleLc = titleFilter.value.trim().toLowerCase();
+  const classLc = subjectFilter.value.trim().toLowerCase();
 
-  const titleLc = titleQuery.trim().toLowerCase();
-  const classLc = classQuery.trim().toLowerCase();
+  let filtered = notes.value.filter((note) => {
+    // If only showing pinned
+    if (pinnedOnly.value) {
+      if (!note.pinned) return false;
+    }
 
-  let result = notes.value.filter((note) => {
-    if (showPinnedOnly && !note.isPinned) return false;
-    if (titleLc && !note._titleLc.includes(titleLc)) return false;
-    if (classLc && !note._classLc.includes(classLc)) return false;
+    // If query by title
+    if (titleLc.length !== 0) {
+      if (!note.title) return false;
+
+      if (!note.title.trim().toLowerCase().includes(titleLc)) return false;
+    }
+
+    // If query by subject
+    if (classLc.length !== 0) {
+      if (!note.subject) return false;
+
+      if (!note.subject.trim().toLowerCase().includes(classLc)) return false;
+    }
 
     return true;
   });
-  // console.log("result", result)
 
-  result = [...result].sort((a, b) => {
-    if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
-    switch (sortBy) {
-      case 'updatedDesc':
-        return b.lastEditedTs - a.lastEditedTs;
-      case 'updatedAsc':
-        return a.lastEditedTs - b.lastEditedTs;
-      case 'titleAsc':
-        return a.title.localeCompare(b.title);
-      case 'titleDesc':
-        return b.title.localeCompare(a.title);
-      default:
-        return 0;
-    }
-  });
+  let [pinned, unpinned] = filtered.reduce(
+    (acc, note) => {
+      acc[note.pinned ? 0 : 1].push(note);
 
-  return result;
+      return acc;
+    },
+    [[], []],
+  );
+
+  pinned.sort(sortByFn);
+  unpinned.sort(sortByFn);
+
+  return [...pinned, ...unpinned];
 });
 
 // ---------- UI ACTIONS ----------
@@ -126,16 +84,31 @@ function toggleSelected(note) {
   note.isSelected = !note.isSelected;
 }
 
-function togglePinned(note) {
-  note.isPinned = !note.isPinned;
+async function pinNote(id) {
+  try {
+    await updateDoc(doc(db, 'users', user.value.uid, 'notes', id), {
+      pinned: true,
+    });
+  } catch (e) {
+    console.error('unable to pin note:', e);
+  }
+}
+async function unpinNote(id) {
+  try {
+    await updateDoc(doc(db, 'users', user.value.uid, 'notes', id), {
+      pinned: false,
+    });
+  } catch (e) {
+    console.error('unable to unpin note:', e);
+  }
 }
 
-function deleteNote(id) {
-  notes.value = notes.value.filter((n) => n.id !== id);
-}
-
-function openNote(note) {
-  console.log('open note', note.id);
+async function deleteNote(id) {
+  try {
+    await deleteDoc(doc(db, 'users', user.value.uid, 'notes', id));
+  } catch (e) {
+    console.error('unable to delete note:', e);
+  }
 }
 </script>
 
@@ -144,24 +117,22 @@ function openNote(note) {
     <!-- searching features -->
     <section class="search-row">
       <div class="search-box">
-        <input v-model="filters.titleQuery" type="text" placeholder="<search by title>" />
+        <input v-model="titleFilter" type="text" placeholder="<search by title>" />
       </div>
       <div class="search-box">
-        <input v-model="filters.classQuery" type="text" placeholder="<search by class or tags>" />
+        <input v-model="subjectFilter" type="text" placeholder="<search by class or tags>" />
       </div>
     </section>
 
     <section class="controls-row">
       <label class="control-chip">
-        <input type="checkbox" v-model="filters.showPinnedOnly" />
+        <input type="checkbox" v-model="pinnedOnly" />
         <span>Pinned only</span>
       </label>
 
-      <select v-model="filters.sortBy">
+      <select v-model="sortBy" autocomplete="off">
         <option value="updatedDesc">Sort: Last edited ↓</option>
         <option value="updatedAsc">Sort: Last edited ↑</option>
-        <!-- <option value="dueAsc">Sort: Due date ↑</option>
-        <option value="dueDesc">Sort: Due date ↓</option> -->
         <option value="titleAsc">Sort: Title A-Z</option>
         <option value="titleDesc">Sort: Title Z-A</option>
       </select>
@@ -170,44 +141,47 @@ function openNote(note) {
     <!-- NOTES LIST -->
     <section class="notes-list">
       <article v-for="note in filteredNotes" :key="note.id" class="note-row">
-        <button class="select-circle" :class="{ selected: note.isSelected }" @click.stop="toggleSelected(note)" />
-        <!-- TODO: add a global delete or pin button here -->
+        <button
+          class="select-circle"
+          :class="{ selected: note.isSelected }"
+          @click.stop="toggleSelected(note)"
+        />
 
-        <!-- TODO: clicking on this note should redirect to the /editor route? -->
-        <div class="note-main" @click="openNote(note)">
+        <div class="note-main" @click="router.push({ name: 'note', params: { id: note.id } })">
           <div class="note-title">
             {{ note.title }}
           </div>
           <div class="note-subline">
-            <span class="course-pill">
+            <span v-if="note.subject" class="course-pill">
               {{ note.subject }}
             </span>
-            <span v-for="(tag, idx) in note.tags" :key="`${tag}-${idx}`" :class="idx === 0 ? 'tag-pill' : 'tag-pill'">
+
+            <span
+              v-for="(tag, idx) in note.tags"
+              :key="`${tag}-${idx}`"
+              :class="idx === 0 ? 'tag-pill' : 'tag-pill'"
+            >
               {{ tag }}
             </span>
           </div>
         </div>
 
         <div class="note-meta">
-          <div class="meta-line">last edited: {{ note.lastEdited }}</div>
-          <!-- <div class="meta-line" :class="{ 'due-soon': isDueSoon(note), overdue: isOverdue(note) }">
-            due: {{ note.dueDate || '—' }}
-          </div> -->
+          <div class="meta-line">Last Edited: {{ note.lastEdited.toDate().toLocaleString() }}</div>
         </div>
 
         <!-- notes actions -->
         <div class="note-actions">
-          <button class="icon-btn" :class="{ active: note.isPinned }" title="Pin" @click.stop="togglePinned(note)">
-            📌
+          <button v-if="note.pinned" class="icon-btn active" @click="unpinNote(note.id)">
+            <PinFillIcon color="red" />
           </button>
-          <!-- TODO: might remove this and just have a global delete or pin button with the select multiple notes features -->
+          <button v-else @click="pinNote(note.id)">
+            <PinIcon />
+          </button>
 
-          <button class="icon-btn icon-delete" title="Delete" @click.stop="deleteNote(note.id)"
-            aria-label="Delete note">
-            <span aria-hidden="true">🗑</span>
-            <!-- TODO: make this trash a little transparent when it is not hovered on -->
+          <button class="icon-btn icon-delete" title="Delete" @click="deleteNote(note.id)">
+            <TrashIcon />
           </button>
-          <!-- TODO: might remove this and just have a global delete or pin button with the select multiple notes features -->
 
           <button class="icon-btn expand" title="More">
             <!-- TODO: display the notes slightly? or redirect the the edit page -->

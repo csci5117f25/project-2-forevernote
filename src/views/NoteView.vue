@@ -1,3 +1,7 @@
+<script setup>
+import NewNote from '@/components/NoteComponent.vue';
+</script>
+
 <template>
-  <p>Here is a note page</p>
+  <NewNote />
 </template>

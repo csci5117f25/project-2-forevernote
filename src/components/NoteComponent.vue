@@ -1,12 +1,12 @@
 <script setup>
-import { computed, ref } from 'vue';
-import { useCurrentUser, useFirestore } from 'vuefire';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useCurrentUser, useDocument, useFirestore } from 'vuefire';
+import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
 import PlayIcon from './icons/IconPlay.vue';
 import StopIcon from './icons/IconStop.vue';
-import CancelIcon from '@/components/icons/IconCross.vue';
-import SaveIcon from '@/components/icons/IconSave.vue';
+import CancelIcon from './icons/IconCross.vue';
 
 import tinymce from 'tinymce';
 
@@ -58,28 +58,49 @@ const tinyMCEConfig = {
   promotion: false,
 };
 
+const router = useRouter();
+const route = useRoute();
 const db = useFirestore();
 const user = useCurrentUser();
 
+const noteId = computed(() => route.params.id);
+const isLoaded = ref(noteId.value ? false : true);
+
+const noteRef = noteId.value ? doc(db, 'users', user.value.uid, 'notes', noteId.value) : undefined;
+const note = useDocument(noteRef);
+const noteTitle = computed(() => {
+  if (!note.value) return '';
+
+  return note.value.title;
+});
+const noteContent = computed(() => {
+  if (!note.value) return '';
+
+  return note.value.htmlContent ? note.value.htmlContent : note.value.notes;
+});
+
 const isTranscribing = ref(false);
-
 const isEditingTitle = ref(false);
-const title = ref('');
-const newTitle = ref('');
 
-const contentTitle = computed(() => (title.value ? title.value : 'Untitled Note'));
+const currTitle = ref(noteId.value ? '' : 'Untitled Note');
 function resetTitle() {
-  newTitle.value = '';
-
-  isEditingTitle.value = false;
-}
-function updateTitle() {
-  title.value = newTitle.value;
+  if (noteId.value) currTitle.value = noteTitle.value;
+  else currTitle.value = 'Untitled Note';
 
   isEditingTitle.value = false;
 }
 
-async function submit() {
+function appendToEditor(text) {
+  if (!tinymce.activeEditor) {
+    console.error('Failed to get editor content: editor has not been initialized');
+
+    return;
+  }
+
+  tinymce.activeEditor.execCommand('mceInsertContent', false, text);
+}
+
+async function submitNote() {
   if (!tinymce.activeEditor) {
     console.error('Failed to get editor content: editor has not been initialized');
 
@@ -87,23 +108,53 @@ async function submit() {
   }
 
   const data = {
-    title: title.value,
+    title: currTitle.value,
     notes: tinymce.activeEditor.getContent({ format: 'text' }),
-    html: tinymce.activeEditor.getContent(),
+    htmlContent: tinymce.activeEditor.getContent(),
     createdAt: serverTimestamp(),
     lastEdited: serverTimestamp(),
   };
 
   try {
-    await addDoc(collection(db, 'users', user.value.uid, 'notes'), data);
+    const res = await addDoc(collection(db, 'users', user.value.uid, 'notes'), data);
+
+    router.push({ name: 'note', params: { id: res.id } });
   } catch (e) {
     console.error('error:', e);
   }
 }
+async function updateNote() {
+  if (!tinymce.activeEditor) {
+    console.error('Failed to get editor content: editor has not been initialized');
+
+    return;
+  }
+
+  const data = {
+    title: currTitle.value,
+    notes: tinymce.activeEditor.getContent({ format: 'text' }),
+    htmlContent: tinymce.activeEditor.getContent(),
+    lastEdited: serverTimestamp(),
+  };
+
+  try {
+    await setDoc(noteRef, data);
+  } catch (e) {
+    console.error('error:', e);
+  }
+}
+
+watch(note, () => {
+  if (noteId.value && note.value) {
+    currTitle.value = note.value.title;
+
+    isLoaded.value = true;
+  }
+});
 </script>
 
 <template>
-  <main>
+  <main v-if="isLoaded">
     <div id="button-set">
       <div class="">
         <button v-if="!isTranscribing" class="button is-success" @click="isTranscribing = true">
@@ -118,23 +169,37 @@ async function submit() {
 
       <div class="button-set-center">
         <div id="title-edit" v-if="isEditingTitle">
-          <input class="input has-background-light has-text-dark" type="text" v-model="newTitle" />
-          <button class="button" @click="resetTitle">
+          <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
+
+          <button
+            v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'"
+            class="button"
+            @click="resetTitle"
+          >
             <CancelIcon />
           </button>
-          <button class="button" @click="updateTitle">
-            <SaveIcon />
-          </button>
         </div>
-        <span v-else id="title-edit" @click="isEditingTitle = true">{{ contentTitle }}</span>
+        <span v-else id="title-edit" @click="isEditingTitle = true">
+          {{ currTitle }}
+        </span>
       </div>
 
       <div class="">
-        <button class="button is-primary" @click="submit">Submit</button>
+        <button v-if="noteId" class="button is-warning" @click="updateNote">Update</button>
+        <button v-else class="button is-primary" @click="submitNote">Submit</button>
       </div>
     </div>
 
-    <editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" style="z-index: 29" />
+    <Editor
+      id="uuid"
+      licenseKey="gpl"
+      :init="tinyMCEConfig"
+      style="z-index: 29"
+      :initialValue="noteContent"
+    />
+  </main>
+  <main v-else>
+    <div>Note is loading...</div>
   </main>
 
   <div v-if="isEditingTitle" id="click-exit" @click="isEditingTitle = false"></div>
