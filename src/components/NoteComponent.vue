@@ -7,7 +7,6 @@ import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/fires
 import PlayIcon from './icons/IconPlay.vue';
 import StopIcon from './icons/IconStop.vue';
 import CancelIcon from './icons/IconCross.vue';
-import SaveIcon from './icons/IconSave.vue';
 
 import tinymce from 'tinymce';
 
@@ -84,9 +83,6 @@ const isTranscribing = ref(false);
 const isEditingTitle = ref(false);
 
 const currTitle = ref(noteId.value ? '' : 'Untitled Note');
-function updateTitle() {
-  isEditingTitle.value = false;
-}
 function resetTitle() {
   if (noteId.value) currTitle.value = noteTitle.value;
   else currTitle.value = 'Untitled Note';
@@ -175,11 +171,11 @@ watch(note, () => {
         <div id="title-edit" v-if="isEditingTitle">
           <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
 
-          <button class="button" @click="updateTitle">
-            <SaveIcon />
-          </button>
-          <button v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'" class="button"
-            @click="resetTitle">
+          <button
+            v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'"
+            class="button"
+            @click="resetTitle"
+          >
             <CancelIcon />
           </button>
         </div>
@@ -194,7 +190,13 @@ watch(note, () => {
       </div>
     </div>
 
-    <Editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" style="z-index: 29" :initialValue="noteContent" />
+    <Editor
+      id="uuid"
+      licenseKey="gpl"
+      :init="tinyMCEConfig"
+      style="z-index: 29"
+      :initialValue="noteContent"
+    />
   </main>
   <main v-else>
     <div>Note is loading...</div>

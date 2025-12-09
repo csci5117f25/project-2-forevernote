@@ -15,7 +15,7 @@ const router = useRouter();
 const user = useCurrentUser();
 const db = useFirestore();
 
-const notesRef = collection(db, "users", user.value.uid, "notes");
+const notesRef = collection(db, 'users', user.value.uid, 'notes');
 const notes = useCollection(notesRef);
 
 // ---------- FILTER STATE ----------
@@ -45,7 +45,7 @@ const filteredNotes = computed(() => {
     // If only showing pinned
     if (pinnedOnly.value) {
       if (!note.pinned) return false;
-    };
+    }
 
     // If query by title
     if (titleLc.length !== 0) {
@@ -64,11 +64,14 @@ const filteredNotes = computed(() => {
     return true;
   });
 
-  let [pinned, unpinned] = filtered.reduce((acc, note) => {
-    acc[note.pinned ? 0 : 1].push(note)
+  let [pinned, unpinned] = filtered.reduce(
+    (acc, note) => {
+      acc[note.pinned ? 0 : 1].push(note);
 
-    return acc;
-  }, [[], []]);
+      return acc;
+    },
+    [[], []],
+  );
 
   pinned.sort(sortByFn);
   unpinned.sort(sortByFn);
@@ -83,28 +86,28 @@ function toggleSelected(note) {
 
 async function pinNote(id) {
   try {
-    await updateDoc(doc(db, "users", user.value.uid, "notes", id), {
+    await updateDoc(doc(db, 'users', user.value.uid, 'notes', id), {
       pinned: true,
     });
   } catch (e) {
-    console.error("unable to pin note:", e);
+    console.error('unable to pin note:', e);
   }
 }
 async function unpinNote(id) {
   try {
-    await updateDoc(doc(db, "users", user.value.uid, "notes", id), {
+    await updateDoc(doc(db, 'users', user.value.uid, 'notes', id), {
       pinned: false,
     });
   } catch (e) {
-    console.error("unable to unpin note:", e);
+    console.error('unable to unpin note:', e);
   }
 }
 
 async function deleteNote(id) {
   try {
-    await deleteDoc(doc(db, "users", user.value.uid, "notes", id));
+    await deleteDoc(doc(db, 'users', user.value.uid, 'notes', id));
   } catch (e) {
-    console.error("unable to delete note:", e);
+    console.error('unable to delete note:', e);
   }
 }
 </script>
@@ -138,10 +141,12 @@ async function deleteNote(id) {
     <!-- NOTES LIST -->
     <section class="notes-list">
       <article v-for="note in filteredNotes" :key="note.id" class="note-row">
-        <button class="select-circle" :class="{ selected: note.isSelected }" @click.stop="toggleSelected(note)" />
-        <!-- TODO: add a global delete or pin button here -->
+        <button
+          class="select-circle"
+          :class="{ selected: note.isSelected }"
+          @click.stop="toggleSelected(note)"
+        />
 
-        <!-- TODO: clicking on this note should redirect to the /editor route? -->
         <div class="note-main" @click="router.push({ name: 'note', params: { id: note.id } })">
           <div class="note-title">
             {{ note.title }}
@@ -151,7 +156,11 @@ async function deleteNote(id) {
               {{ note.subject }}
             </span>
 
-            <span v-for="(tag, idx) in note.tags" :key="`${tag}-${idx}`" :class="idx === 0 ? 'tag-pill' : 'tag-pill'">
+            <span
+              v-for="(tag, idx) in note.tags"
+              :key="`${tag}-${idx}`"
+              :class="idx === 0 ? 'tag-pill' : 'tag-pill'"
+            >
               {{ tag }}
             </span>
           </div>
