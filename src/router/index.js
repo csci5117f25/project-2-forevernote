@@ -6,12 +6,11 @@ import DashboardView from '@/views/DashboardView.vue';
 import ProfileView from '@/views/ProfileView.vue';
 
 import NoteList from '@/views/NoteList.vue';
-import NewNoteView from '@/views/NewNoteView.vue';
+import NoteView from '@/views/NoteView.vue';
 
 import NotFoundView from '@/views/NotFoundView.vue';
 
 // Dev/Testing pages (for now)
-import NoteView from '@/views/NoteView.vue';
 import ExamList from '@/views/ExamList.vue';
 import ExamView from '@/views/ExamView.vue';
 import TranscriptionView from '@/views/LiveTranscriptionView.vue';
@@ -50,7 +49,7 @@ const router = createRouter({
     {
       path: '/note/new',
       name: 'new_note',
-      component: NewNoteView,
+      component: NoteView,
       meta: {
         requiresAuth: true,
       },

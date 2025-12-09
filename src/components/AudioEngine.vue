@@ -1,30 +1,28 @@
 <script setup>
-
-import { watch, ref, onMounted } from 'vue'
+import { watch, ref, onMounted } from 'vue';
 
 //for removing worker threads when not in use
 import { onUnmounted } from 'vue';
 
-
-
 const props = defineProps({
-  isRecording: Boolean
-})
-
-const emit = defineEmits(['newTranscript'])
-
-watch (() => props.isRecording, (newVal) => {
-  if (newVal == true) {
-    initAudio();
-
-  }
-  else{
-    //close buffer and resources
-    stopAudio();
-  }
+  isRecording: Boolean,
 });
 
-  //add web audio variables here need to be strict
+const emit = defineEmits(['newTranscript']);
+
+watch(
+  () => props.isRecording,
+  (newVal) => {
+    if (newVal == true) {
+      initAudio();
+    } else {
+      //close buffer and resources
+      stopAudio();
+    }
+  },
+);
+
+//add web audio variables here need to be strict
 let audioContext = null;
 let analyser = null;
 let dataArray = null;
@@ -32,7 +30,7 @@ let bufferLength = null;
 let stream = null;
 //make the canvas reactive
 let canvasRef = ref(null);
-let canvas =null;
+let canvas = null;
 let ctx = null;
 //microphone variables
 let recorder = null;
@@ -45,55 +43,48 @@ let worker = null;
 //for preventing overlapping Timeouts
 //and for preventing microphone timeouts from going
 //on longer than they should
-  let recordingInterval = null;
-
+let recordingInterval = null;
 
 // for making a webworker (depends on whether the browser supports it or not)
 if (window.Worker) {
-  worker = new Worker(new URL("../worker.js", import.meta.url), {
-    type: "module"
+  worker = new Worker(new URL('../worker.js', import.meta.url), {
+    type: 'module',
   });
-}
-else{
-  console.error("your browser does not support web worker api!")
+} else {
+  console.error('your browser does not support web worker api!');
 }
 
 //only bother communicating with worker thread
 //if a worker thread was made
-if (worker){
+if (worker) {
   worker.onmessage = (event) => {
-    const {text} = event.data;
-    console.log("Transcribed:", text);
+    const { text } = event.data;
+    console.log('Transcribed:', text);
 
     //emit transcript back to parent
     emit('newTranscript', event.data);
-  }
-
+  };
 }
-
 
 //wait until DOM is loaded
 onMounted(() => {
   canvas = canvasRef.value;
-  ctx = canvas.getContext("2d");
+  ctx = canvas.getContext('2d');
 });
 
-async function initAudio(){
+async function initAudio() {
   //this needs to be here to test if the browser supports web audio
   try {
-    audioContext = new  (window.AudioContext || window.webkitAudioContext)();
-
-  }
-  catch (error) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (error) {
     //send an alert to html
-    console.log("Web audio api does not work on your browser, sorry", error);
-    return
+    console.log('Web audio api does not work on your browser, sorry', error);
+    return;
   }
-
 
   if (audioContext !== undefined) {
-  //get the audio device
-     stream = await navigator.mediaDevices.getUserMedia({audio : true});
+    //get the audio device
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const source = audioContext.createMediaStreamSource(stream);
 
     analyser = audioContext.createAnalyser();
@@ -107,11 +98,9 @@ async function initAudio(){
 
     drawAudio();
   }
-
 }
 
 async function blobToPCM(blob, audioContext) {
-
   if (!blob || blob.size === 0) {
     //just return an empty PCM array
     return new Float32Array(0);
@@ -120,57 +109,51 @@ async function blobToPCM(blob, audioContext) {
   //audioBuffer can fail depending on browser
   let audioBuffer;
 
-  try{
+  try {
     audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-  }
-  catch (error) {
-    console.error("failed to decode audio", error);
+  } catch (error) {
+    console.error('failed to decode audio', error);
     return new Float32Array(0);
   }
 
   const pcm = audioBuffer.getChannelData(0);
   return pcm;
-
 }
 
 //https://stackoverflow.com/questions/51325136/record-5-seconds-segments-of-audio-using-mediarecorder-and-then-upload-to-the-se
 
-
-
 async function recordAudio(stream) {
   recorder = new MediaRecorder(stream);
 
-
   recorder.ondataavailable = (event) => {
     audioChunks.push(event.data);
-  }
+  };
   // pause recording for one small instance in time
   // to pass data to audio transcriber
   // before re-recording
   recorder.onstop = async () => {
-    const blob = new Blob(audioChunks, { type: "audio/webm" });
+    const blob = new Blob(audioChunks, { type: 'audio/webm' });
 
     audioChunks.length = 0;
 
     //start recording immediately
-     if (props.isRecording) {
+    if (props.isRecording) {
       //start recording again
-     recorder.start();
-     }
+      recorder.start();
+    }
 
     const pcm = await blobToPCM(blob, audioContext);
     //make thread safe duplicate
     const pcmCopy = new Float32Array(pcm.length);
     pcmCopy.set(pcm);
     //send to worker
-    worker.postMessage( {
-      array: pcmCopy,
-    sampleRate: audioContext.sampleRate},
-      [pcmCopy.buffer]
+    worker.postMessage(
+      {
+        array: pcmCopy,
+        sampleRate: audioContext.sampleRate,
+      },
+      [pcmCopy.buffer],
     );
-
-
-
   };
   //initial recording before entering on/off loop
   recorder.start();
@@ -178,14 +161,14 @@ async function recordAudio(stream) {
   recordingInterval = setInterval(() => {
     if (!props.isRecording) return;
 
-    if (recorder.state ==="recording") {
+    if (recorder.state === 'recording') {
       recorder.stop();
     }
   }, 3000);
 }
 
 function drawAudio() {
-   requestAnimationFrame(drawAudio);
+  requestAnimationFrame(drawAudio);
 
   if (!analyser) return;
 
@@ -200,7 +183,7 @@ function drawAudio() {
 
   //ctx.fillStyle = gradient;
   //make it white
-  ctx.fillStyle = "rgb(255,255,255)"
+  ctx.fillStyle = 'rgb(255,255,255)';
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
   const barWidth = (WIDTH / bufferLength) * 3;
@@ -208,27 +191,25 @@ function drawAudio() {
   let x = 0;
 
   for (let i = 0; i < bufferLength; i++) {
-   // barHeight = Math.pow(dataArray[i] / 16, 2);
+    // barHeight = Math.pow(dataArray[i] / 16, 2);
 
-   // ctx.fillStyle = "rgb(215,255,255)";
-   // ctx.fillRect(x, HEIGHT / 2 - barHeight, barWidth, barHeight * 2);
-    barHeight = Math.pow(dataArray[i]/8, 1.5);
+    // ctx.fillStyle = "rgb(215,255,255)";
+    // ctx.fillRect(x, HEIGHT / 2 - barHeight, barWidth, barHeight * 2);
+    barHeight = Math.pow(dataArray[i] / 8, 1.5);
 
     ctx.fillStyle = `rgb(${barHeight + 100} 50 50)`;
-    ctx.fillRect(x, HEIGHT - barHeight/ 2, barWidth, barHeight);
+    ctx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight);
     x += barWidth + 1;
   }
-
 }
 
-function stopAudio(){
-
+function stopAudio() {
   //clear whatever was inside previously
   if (recordingInterval) {
-    clearInterval(recordingInterval)
+    clearInterval(recordingInterval);
     recordingInterval = null;
   }
-  if (recorder && recorder.state != "inactive") {
+  if (recorder && recorder.state != 'inactive') {
     //prevent restart
     recorder.onstop = null;
     recorder.stop();
@@ -244,7 +225,6 @@ function stopAudio(){
   tracks.forEach((track) => {
     track.stop();
   });
-
 }
 
 onUnmounted(() => {
@@ -252,23 +232,16 @@ onUnmounted(() => {
   if (worker) {
     worker.terminate();
   }
-
-})
-
-
-
+});
 </script>
 
 <template>
-
-<div class="visualizer-wrapper">
+  <div class="visualizer-wrapper">
     <canvas ref="canvasRef" width="600" height="400"></canvas>
   </div>
 </template>
 
-
 <style scoped>
-
 .visualizer-wrapper {
   display: flex;
   justify-content: center;
