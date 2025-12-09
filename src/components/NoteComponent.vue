@@ -6,8 +6,8 @@ import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/fires
 
 import PlayIcon from './icons/IconPlay.vue';
 import StopIcon from './icons/IconStop.vue';
-import CancelIcon from '@/components/icons/IconCross.vue';
-import SaveIcon from '@/components/icons/IconSave.vue';
+import CancelIcon from './icons/IconCross.vue';
+import SaveIcon from './icons/IconSave.vue';
 
 import tinymce from 'tinymce';
 
