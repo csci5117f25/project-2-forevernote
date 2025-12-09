@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCollection, useCurrentUser, useFirestore } from 'vuefire';
-import { collection } from 'firebase/firestore';
+import { collection, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 
 import PlusIcon from './icons/IconPlus.vue';
 import PinIcon from './icons/IconPin.vue';
@@ -81,12 +81,31 @@ function toggleSelected(note) {
   note.isSelected = !note.isSelected;
 }
 
-function togglePinned(note) {
-  note.isPinned = !note.isPinned;
+async function pinNote(id) {
+  try {
+    await updateDoc(doc(db, "users", user.value.uid, "notes", id), {
+      pinned: true,
+    });
+  } catch (e) {
+    console.error("unable to pin note:", e);
+  }
+}
+async function unpinNote(id) {
+  try {
+    await updateDoc(doc(db, "users", user.value.uid, "notes", id), {
+      pinned: false,
+    });
+  } catch (e) {
+    console.error("unable to unpin note:", e);
+  }
 }
 
-function deleteNote(id) {
-
+async function deleteNote(id) {
+  try {
+    await deleteDoc(doc(db, "users", user.value.uid, "notes", id));
+  } catch (e) {
+    console.error("unable to delete note:", e);
+  }
 }
 </script>
 
@@ -139,17 +158,16 @@ function deleteNote(id) {
         </div>
 
         <div class="note-meta">
-          <div class="meta-line">last edited: {{ note.lastEdited.toDate() }}</div>
-          <!-- <div class="meta-line" :class="{ 'due-soon': isDueSoon(note), overdue: isOverdue(note) }">
-            due: {{ note.dueDate || '—' }}
-          </div> -->
+          <div class="meta-line">Last Edited: {{ note.lastEdited.toDate().toLocaleString() }}</div>
         </div>
 
         <!-- notes actions -->
         <div class="note-actions">
-          <button class="icon-btn" :class="{ active: note.pinned }" title="Pin" @click="togglePinned(note)">
-            <PinFillIcon v-if="note.pinned" color="red" />
-            <PinIcon v-else />
+          <button v-if="note.pinned" class="icon-btn active" @click="unpinNote(note.id)">
+            <PinFillIcon color="red" />
+          </button>
+          <button v-else @click="pinNote(note.id)">
+            <PinIcon />
           </button>
 
           <button class="icon-btn icon-delete" title="Delete" @click="deleteNote(note.id)">

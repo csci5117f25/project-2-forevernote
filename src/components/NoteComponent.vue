@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useCurrentUser, useDocument, useFirestore } from 'vuefire';
 import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
@@ -59,13 +59,15 @@ const tinyMCEConfig = {
   promotion: false,
 };
 
+const router = useRouter();
+const route = useRoute();
 const db = useFirestore();
 const user = useCurrentUser();
 
-const noteId = useRoute().params.id;
-const isLoaded = ref(noteId ? false : true);
+const noteId = computed(() => route.params.id);
+const isLoaded = ref(noteId.value ? false : true);
 
-const noteRef = noteId ? doc(db, 'users', user.value.uid, 'notes', noteId) : undefined;
+const noteRef = noteId.value ? doc(db, 'users', user.value.uid, 'notes', noteId.value) : undefined;
 const note = useDocument(noteRef);
 const noteTitle = computed(() => {
   if (!note.value) return '';
@@ -81,12 +83,13 @@ const noteContent = computed(() => {
 const isTranscribing = ref(false);
 const isEditingTitle = ref(false);
 
-const currTitle = ref('');
+const currTitle = ref(noteId.value ? '' : 'Untitled Note');
 function updateTitle() {
   isEditingTitle.value = false;
 }
 function resetTitle() {
-  currTitle.value = noteTitle.value;
+  if (noteId.value) currTitle.value = noteTitle.value;
+  else currTitle.value = 'Untitled Note';
 
   isEditingTitle.value = false;
 }
@@ -117,7 +120,9 @@ async function submitNote() {
   };
 
   try {
-    await addDoc(collection(db, 'users', user.value.uid, 'notes'), data);
+    const res = await addDoc(collection(db, 'users', user.value.uid, 'notes'), data);
+
+    router.push({ name: 'note', params: { id: res.id } });
   } catch (e) {
     console.error('error:', e);
   }
@@ -144,7 +149,7 @@ async function updateNote() {
 }
 
 watch(note, () => {
-  if (noteId && note.value) {
+  if (noteId.value && note.value) {
     currTitle.value = note.value.title;
 
     isLoaded.value = true;
@@ -173,7 +178,8 @@ watch(note, () => {
           <button class="button" @click="updateTitle">
             <SaveIcon />
           </button>
-          <button v-if="currTitle !== noteTitle" class="button" @click="resetTitle">
+          <button v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'" class="button"
+            @click="resetTitle">
             <CancelIcon />
           </button>
         </div>
@@ -183,18 +189,12 @@ watch(note, () => {
       </div>
 
       <div class="">
-        <button v-if="!noteId" class="button is-primary" @click="submitNote">Submit</button>
-        <button v-else class="button is-primary" @click="updateNote">Update</button>
+        <button v-if="noteId" class="button is-warning" @click="updateNote">Update</button>
+        <button v-else class="button is-primary" @click="submitNote">Submit</button>
       </div>
     </div>
 
-    <Editor
-      id="uuid"
-      licenseKey="gpl"
-      :init="tinyMCEConfig"
-      style="z-index: 29"
-      :initialValue="noteContent"
-    />
+    <Editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" style="z-index: 29" :initialValue="noteContent" />
   </main>
   <main v-else>
     <div>Note is loading...</div>
