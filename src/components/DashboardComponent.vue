@@ -11,18 +11,16 @@ import CreateExamModal from './NewExamModal.vue';
 const user = useCurrentUser();
 const db = useFirestore();
 
-// const emits = defineEmits("close-new-modal");
-
 const notesRef = computed(() => collection(db, 'users', user.value.uid, 'notes'));
 const notes = useCollection(notesRef);
 const examsRef = computed(() => collection(db, 'users', user.value.uid, 'exams'));
 const exams = useCollection(examsRef);
-console.log(`exams for user: ${user.value.uid}: ${exams.value}`);
 
 const carouselConfig = {
-  itemsToShow: 2.5,
+  itemsToShow: 1.2,
   mouseWheel: true,
   wrapAround: true,
+  gap: 50,
 };
 
 const showModal = ref(false);
@@ -46,7 +44,7 @@ function showNewExamModal() {
             <h2>{{ note.title }}</h2>
           </div>
 
-          <div class="note-preview">
+          <div class="gallery-cell-body note-preview">
             <p>{{ note.notes }}</p>
           </div>
         </Slide>
@@ -77,7 +75,7 @@ function showNewExamModal() {
             <h2>{{ exam.subject }}</h2>
           </div>
 
-          <div class="exam-details">
+          <div class="gallery-cell-body exam-details">
             <h2 v-if="exam.examDate">🗓️ {{ exam.examDate.toDate().toLocaleDateString() }}</h2>
             <h2 v-if="exam.examDate">🕐 {{ exam.examDate.toDate().toLocaleTimeString() }}</h2>
             <h2 v-if="exam.location">📍 {{ exam.location }}</h2>
@@ -154,7 +152,6 @@ function showNewExamModal() {
 
   width: 60%;
 
-  margin: 0 1%;
   border-radius: 25px;
 
   background-color: rgb(237, 237, 232);
@@ -198,7 +195,8 @@ function showNewExamModal() {
   background-image: linear-gradient(to right, rgb(29, 99, 33), rgb(5, 166, 58));
 }
 
-.note-preview {
+.gallery-cell-body {
+  width: 100%;
   height: 100%;
 
   border-radius: 0 0 22px 22px;
@@ -210,10 +208,6 @@ function showNewExamModal() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
-}
-
-.exam-details {
-  width: 100%;
 }
 
 .exam-details li {

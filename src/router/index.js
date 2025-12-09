@@ -3,8 +3,11 @@ import { getCurrentUser } from 'vuefire';
 
 import SplashView from '@/views/SplashView.vue';
 import DashboardView from '@/views/DashboardView.vue';
-import AllNotesView from '@/views/AllNotesView.vue';
 import ProfileView from '@/views/ProfileView.vue';
+
+import NoteList from '@/views/NoteList.vue';
+import NewNoteView from '@/views/NewNoteView.vue';
+
 import NotFoundView from '@/views/NotFoundView.vue';
 
 // Dev/Testing pages (for now)
@@ -39,14 +42,6 @@ const router = createRouter({
       },
     },
     {
-      path: '/editor',
-      name: 'editor',
-      component: EditorView,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
       path: '/dashboard',
       name: 'dashboard',
       component: DashboardView,
@@ -57,7 +52,15 @@ const router = createRouter({
     {
       path: '/notes',
       name: 'note_list',
-      component: AllNotesView,
+      component: NoteList,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/note/new',
+      name: 'new_note',
+      component: NewNoteView,
       meta: {
         requiresAuth: true,
       },
@@ -110,21 +113,14 @@ router.beforeEach(async (to, _, next) => {
   const isLoggedIn = (await getCurrentUser()) ? true : false;
 
   if (to.meta.requiresAuth) {
-    // Navigating to a page that requires authentication
     if (!isLoggedIn) {
-      // If not logged in
-
       next({ name: 'splash' });
     } else {
       next();
     }
-  } else if ((to.path === '/' || to.path === '/splash') && isLoggedIn) {
-    // Navigating to root when logged in, redirect to notes page
-
+  } else if (isLoggedIn && (to.path === '/' || to.path === '/splash')) {
     next({ name: 'dashboard' });
   } else {
-    // Navigating to a page that does not require authentication; navigate as normal
-
     next();
   }
 });
