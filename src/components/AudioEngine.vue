@@ -1,6 +1,6 @@
 <script setup>
 
-import { watch, defineProps, ref, onMounted } from 'vue'
+import { watch, ref, onMounted } from 'vue'
 
 //for removing worker threads when not in use
 import { onUnmounted } from 'vue';
