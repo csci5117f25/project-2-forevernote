@@ -1,79 +1,81 @@
 <script setup>
-import { ref, computed } from 'vue'
-import NoteDropdownIcon from '@/components/icons/NoteDropdownIcon.vue'
+import { ref, computed } from 'vue';
+
+import NoteDropdownIcon from '@/components/icons/NoteDropdownIcon.vue';
 
 // TODO: replace with real data from backend or local storage
-const notes = ref([
-  {
-    id: 1,
-    title: 'Linear Algebra — Eigenvalues & Eigenvectors',
-    tags: ['CSCI 4511', 'Linear Algebra', 'Lecture'],
-    lastEdited: '2026-10-22',
-    dueDate: '2026-10-26',
-    isPinned: true,
-    
-    notes:
-      "Eigenvalues and eigenvectors describe how linear transformations stretch or rotate vectors. They are essential in PCA, differential equations, and analyzing systems that evolve over time. Understanding them helps simplify complex matrix operations."
-  },
-  {
-    id: 2,
-    title: 'Cognitive Psychology — Memory Encoding',
-    tags: ['PSY 3041', 'Psych', 'Reading'],
-    lastEdited: '2026-10-12',
-    dueDate: '2026-11-24',
-    isPinned: false,
-    
-    notes:
-      "Memory encoding is the process of converting sensory input into a form the brain can store. Encoding quality is influenced by attention, depth of processing, and emotional context. It forms the foundation for later retrieval and long-term learning."
-  },
-  {
-    id: 3,
-    title: 'Organic Chemistry — SN1 vs SN2',
-    tags: ['CHEM 2301', 'Organic Chem', 'Exam Prep'],
-    lastEdited: '2026-09-30',
-    dueDate: '2026-10-04',
-    isPinned: false,
-    notes:
-      "SN1 reactions proceed through a carbocation intermediate and are favored by stable intermediates and polar protic solvents. SN2 reactions occur in one concerted step and require strong nucleophiles. The substrate structure determines which mechanism occurs."
-  },
-  {
-    id: 4,
-    title: 'Computer Networks — TCP Congestion Control',
-    tags: ['CSCI 4211', 'Networks', 'Project'],
-    lastEdited: '2026-10-01',
-    dueDate: '2026-10-10',
-    isPinned: true,
-    
-    notes:
-      "TCP uses algorithms like slow start, congestion avoidance, and fast recovery to regulate packet flow. These mechanisms adjust transmission speed based on perceived network congestion, improving reliability and preventing network overload during communication."
-  },
-  {
-    id: 5,
-    title: 'Microeconomics — Elasticity of Demand',
-    tags: ['ECON 1101', 'Econ', 'Lecture'],
-    lastEdited: '2026-09-10',
-    dueDate: '2026-09-20',
-    isPinned: false,
-    
-    notes:
-      "Elasticity measures how sensitive consumer demand is to price changes. Goods with close substitutes tend to have higher elasticity. Understanding elasticity helps predict revenue changes and guides pricing strategies in competitive markets."
-  }
-].map((n) => ({
-  ...n,
-  _titleLc: n.title.toLowerCase(),
-  _classLc: `${n.tags.join(' ')}`.toLowerCase(),
-  lastEditedTs: new Date(n.lastEdited).getTime(),
-  dueDateTs: n.dueDate ? new Date(n.dueDate).getTime() : null,
-  isSelected: false
-})))
+const notes = ref(
+  [
+    {
+      id: 1,
+      title: 'Linear Algebra — Eigenvalues & Eigenvectors',
+      subject: 'CSCI 4511',
+      tags: ['Linear Algebra', 'Lecture'],
+      lastEdited: '2026-10-22',
+      isPinned: true,
+
+      notes:
+        'Eigenvalues and eigenvectors describe how linear transformations stretch or rotate vectors. They are essential in PCA, differential equations, and analyzing systems that evolve over time. Understanding them helps simplify complex matrix operations.',
+    },
+    {
+      id: 2,
+      title: 'Cognitive Psychology — Memory Encoding',
+      subject: 'PSY 3041',
+      tags: ['Psych', 'Reading'],
+      lastEdited: '2026-10-12',
+      isPinned: false,
+
+      notes:
+        'Memory encoding is the process of converting sensory input into a form the brain can store. Encoding quality is influenced by attention, depth of processing, and emotional context. It forms the foundation for later retrieval and long-term learning.',
+    },
+    {
+      id: 3,
+      title: 'Organic Chemistry — SN1 vs SN2',
+      subject: 'CHEM 2301',
+      tags: ['Organic Chem', 'Exam Prep'],
+      lastEdited: '2026-09-30',
+      isPinned: false,
+      notes:
+        'SN1 reactions proceed through a carbocation intermediate and are favored by stable intermediates and polar protic solvents. SN2 reactions occur in one concerted step and require strong nucleophiles. The substrate structure determines which mechanism occurs.',
+    },
+    {
+      id: 4,
+      title: 'Computer Networks — TCP Congestion Control',
+      subject: 'CSCI 4211',
+      tags: ['Networks', 'Project'],
+      lastEdited: '2026-10-01',
+      isPinned: true,
+
+      notes:
+        'TCP uses algorithms like slow start, congestion avoidance, and fast recovery to regulate packet flow. These mechanisms adjust transmission speed based on perceived network congestion, improving reliability and preventing network overload during communication.',
+    },
+    {
+      id: 5,
+      title: 'Microeconomics — Elasticity of Demand',
+      subject: 'ECON 1101',
+      tags: ['Econ', 'Lecture'],
+      lastEdited: '2026-09-10',
+      isPinned: false,
+
+      notes:
+        'Elasticity measures how sensitive consumer demand is to price changes. Goods with close substitutes tend to have higher elasticity. Understanding elasticity helps predict revenue changes and guides pricing strategies in competitive markets.',
+    },
+  ].map((n) => ({
+    ...n,
+    _titleLc: `${n.title.toLowerCase()} ${n.subject.toLowerCase()}`,
+    _classLc: `${n.tags.join(' ')} ${n.subject.toLowerCase()}`.toLowerCase(),
+    lastEditedTs: new Date(n.lastEdited).getTime(),
+    isSelected: false,
+  })),
+);
 
 // ---------- FILTER STATE ----------
 const filters = ref({
   titleQuery: '',
   classQuery: '',
   showPinnedOnly: false,
-  sortBy: 'updatedDesc' // updatedDesc | updatedAsc | dueAsc | dueDesc | titleAsc | titleDesc
-})
+  sortBy: 'updatedDesc', // updatedDesc | updatedAsc | titleAsc | titleDesc
+});
 
 // ---------- CORE FILTER FUNCTION ----------
 const filteredNotes = computed(() => {
@@ -81,87 +83,59 @@ const filteredNotes = computed(() => {
     titleQuery,
     classQuery,
     showPinnedOnly,
-    sortBy // updatedDesc | updatedAsc | dueAsc | dueDesc | titleAsc | titleDesc
-  } = filters.value
+    sortBy, // updatedDesc | updatedAsc | titleAsc | titleDesc
+  } = filters.value;
 
-  const titleLc = titleQuery.trim().toLowerCase()
-  const classLc = classQuery.trim().toLowerCase()
+  const titleLc = titleQuery.trim().toLowerCase();
+  const classLc = classQuery.trim().toLowerCase();
 
   let result = notes.value.filter((note) => {
-    if (showPinnedOnly && !note.isPinned) return false
-    if (titleLc && !note._titleLc.includes(titleLc)) return false
-    if (classLc && !note._classLc.includes(classLc)) return false
-    return true
-  })
+    if (showPinnedOnly && !note.isPinned) return false;
+    if (titleLc && !note._titleLc.includes(titleLc)) return false;
+    if (classLc && !note._classLc.includes(classLc)) return false;
+
+    return true;
+  });
   // console.log("result", result)
 
   result = [...result].sort((a, b) => {
-    if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1
+    if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
     switch (sortBy) {
       case 'updatedDesc':
-        return b.lastEditedTs - a.lastEditedTs
+        return b.lastEditedTs - a.lastEditedTs;
       case 'updatedAsc':
-        return a.lastEditedTs - b.lastEditedTs
-      case 'dueAsc': {
-        const aDue = a.dueDateTs != null ? Number(a.dueDateTs) : (a.dueDate ? new Date(a.dueDate).getTime() : Infinity)
-        const bDue = b.dueDateTs != null ? Number(b.dueDateTs) : (b.dueDate ? new Date(b.dueDate).getTime() : Infinity)
-        return aDue - bDue
-      }
-      case 'dueDesc': {
-        const aDue = a.dueDateTs != null ? Number(a.dueDateTs) : (a.dueDate ? new Date(a.dueDate).getTime() : -Infinity)
-        const bDue = b.dueDateTs != null ? Number(b.dueDateTs) : (b.dueDate ? new Date(b.dueDate).getTime() : -Infinity)
-        return bDue - aDue
-      }
+        return a.lastEditedTs - b.lastEditedTs;
       case 'titleAsc':
-        return a.title.localeCompare(b.title)
+        return a.title.localeCompare(b.title);
       case 'titleDesc':
-        return b.title.localeCompare(a.title)
+        return b.title.localeCompare(a.title);
       default:
-        return 0
+        return 0;
     }
-  })
+  });
 
-  return result
-})
+  return result;
+});
 
 // ---------- UI ACTIONS ----------
 function toggleSelected(note) {
-  note.isSelected = !note.isSelected
+  note.isSelected = !note.isSelected;
 }
 
 function togglePinned(note) {
-  note.isPinned = !note.isPinned
+  note.isPinned = !note.isPinned;
 }
 
-
 function deleteNote(id) {
-  notes.value = notes.value.filter((n) => n.id !== id)
+  notes.value = notes.value.filter((n) => n.id !== id);
 }
 
 function openNote(note) {
-  console.log('open note', note.id)
+  console.log('open note', note.id);
 }
 
 function createNewNote() {
-  console.log('create new note')
-}
-
-// ---------- DUE DATE HELPERS ----------
-function isDueSoon(note, days = 3) {
-  console.log(note.dueDateTs, note.dueDate)
-  const dueTs = note.dueDateTs != null ? Number(note.dueDateTs) : (note.dueDate ? new Date(note.dueDate).getTime() : null)
-  if (dueTs == null) return false
-  const now = Date.now()
-  const diff = dueTs - now
-  if (diff < 0) return false // already past due -> handled by isOverdue
-  const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24))
-  return daysLeft <= days
-}
-
-function isOverdue(note) {
-  const dueTs = note.dueDateTs != null ? Number(note.dueDateTs) : (note.dueDate ? new Date(note.dueDate).getTime() : null)
-  if (dueTs == null) return false
-  return dueTs < Date.now()
+  console.log('create new note');
 }
 </script>
 
@@ -170,35 +144,24 @@ function isOverdue(note) {
     <!-- searching features -->
     <section class="search-row">
       <div class="search-box">
-        <input
-          v-model="filters.titleQuery"
-          type="text"
-          placeholder="<search by title>"
-        />
+        <input v-model="filters.titleQuery" type="text" placeholder="<search by title>" />
       </div>
       <div class="search-box">
-        <input
-          v-model="filters.classQuery"
-          type="text"
-          placeholder="<search by class or tags>"
-        />
+        <input v-model="filters.classQuery" type="text" placeholder="<search by class or tags>" />
       </div>
     </section>
 
     <section class="controls-row">
       <label class="control-chip">
-        <input
-          type="checkbox"
-          v-model="filters.showPinnedOnly"
-        />
+        <input type="checkbox" v-model="filters.showPinnedOnly" />
         <span>Pinned only</span>
       </label>
 
       <select v-model="filters.sortBy">
         <option value="updatedDesc">Sort: Last edited ↓</option>
         <option value="updatedAsc">Sort: Last edited ↑</option>
-        <option value="dueAsc">Sort: Due date ↑</option>
-        <option value="dueDesc">Sort: Due date ↓</option>
+        <!-- <option value="dueAsc">Sort: Due date ↑</option>
+        <option value="dueDesc">Sort: Due date ↓</option> -->
         <option value="titleAsc">Sort: Title A-Z</option>
         <option value="titleDesc">Sort: Title Z-A</option>
       </select>
@@ -206,24 +169,23 @@ function isOverdue(note) {
 
     <!-- NOTES LIST -->
     <section class="notes-list">
-      <article
-        v-for="note in filteredNotes"
-        :key="note.id"
-        class="note-row"
-      >
+      <article v-for="note in filteredNotes" :key="note.id" class="note-row">
         <button
           class="select-circle"
           :class="{ selected: note.isSelected }"
           @click.stop="toggleSelected(note)"
-        /> 
+        />
         <!-- TODO: add a global delete or pin button here -->
 
         <!-- TODO: clicking on this note should redirect to the /editor route? -->
-        <div class="note-main" @click="openNote(note)"> 
+        <div class="note-main" @click="openNote(note)">
           <div class="note-title">
             {{ note.title }}
           </div>
           <div class="note-subline">
+            <span class="course-pill">
+              {{ note.subject }}
+            </span>
             <span
               v-for="(tag, idx) in note.tags"
               :key="`${tag}-${idx}`"
@@ -235,12 +197,10 @@ function isOverdue(note) {
         </div>
 
         <div class="note-meta">
-          <div class="meta-line">
-            last edited: {{ note.lastEdited }}
-          </div>
-          <div class="meta-line" :class="{ 'due-soon': isDueSoon(note), overdue: isOverdue(note) }">
+          <div class="meta-line">last edited: {{ note.lastEdited }}</div>
+          <!-- <div class="meta-line" :class="{ 'due-soon': isDueSoon(note), overdue: isOverdue(note) }">
             due: {{ note.dueDate || '—' }}
-          </div>
+          </div> -->
         </div>
 
         <!-- notes actions -->
@@ -261,25 +221,20 @@ function isOverdue(note) {
             @click.stop="deleteNote(note.id)"
             aria-label="Delete note"
           >
-            <span aria-hidden="true">🗑</span> 
+            <span aria-hidden="true">🗑</span>
             <!-- TODO: make this trash a little transparent when it is not hovered on -->
           </button>
           <!-- TODO: might remove this and just have a global delete or pin button with the select multiple notes features -->
-          
-          <button
-            class="icon-btn expand"
-            title="More"
-          > 
-          <!-- TODO: display the notes slightly? or redirect the the edit page -->
+
+          <button class="icon-btn expand" title="More">
+            <!-- TODO: display the notes slightly? or redirect the the edit page -->
             <NoteDropdownIcon :size="18" className="expand-icon" />
           </button>
         </div>
       </article>
     </section>
 
-    <button class="add-note-btn" @click="createNewNote">
-      +
-    </button>
+    <button class="add-note-btn" @click="createNewNote">+</button>
     <!-- TODO: add the functionality for this button. redirect to the /editor route??? -->
   </div>
 </template>
@@ -303,9 +258,9 @@ function isOverdue(note) {
 }
 
 .search-box {
-  background: #FFFFFF;
+  background: #ffffff;
   /* border-color: #00D1B2; */
-  border: 3px solid #00D1B2;
+  border: 3px solid #00d1b2;
   border-radius: 1rem;
   padding: 0.35rem 0.6rem;
 }
@@ -338,7 +293,7 @@ function isOverdue(note) {
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
   /* border: 1px solid #ccc; */
-  border: 1px solid #00D1B2;
+  border: 1px solid #00d1b2;
   background: #fff;
   font-size: 0.8rem;
   cursor: pointer;
@@ -350,7 +305,7 @@ function isOverdue(note) {
 
 .controls-row select {
   border-radius: 999px;
-  border: 1px solid #00D1B2;
+  border: 1px solid #00d1b2;
   /* border: 1px solid #ccc; */
   padding: 0.25rem 0.6rem;
   font-size: 0.8rem;
@@ -400,7 +355,7 @@ function isOverdue(note) {
 .note-title {
   background: rgb(252, 143, 0);
   /* background-image: linear-gradient(to right, rgb(252, 164, 0), rgb(183, 119, 0)); */
-  border: 2px solid #000;
+  border: 1.5px solid #000;
   padding: 0.25rem 0.4rem;
   font-weight: 600;
   white-space: nowrap;
@@ -415,13 +370,14 @@ function isOverdue(note) {
   gap: 0.25rem;
 }
 
-/* .course-pill {
+.course-pill {
   border-radius: 999px;
   border: 1px solid #000;
   padding: 0.1rem 0.4rem;
-  background: #f5821f;
+  background: #f8b377;
   font-size: 0.75rem;
-} */
+  color: rgb(50, 50, 50);
+}
 
 .tag-pill {
   border-radius: 999px;
@@ -429,7 +385,7 @@ function isOverdue(note) {
   padding: 0.05rem 0.4rem;
   background: #ffd9b5;
   font-size: 0.7rem;
-  color: rgb(100,100,50)
+  color: rgb(100, 100, 50);
 }
 
 /* Meta info */
@@ -447,15 +403,14 @@ function isOverdue(note) {
 }
 
 .meta-line.due-soon {
-  color: #c62828; 
+  color: #c62828;
   font-weight: 700;
 }
 
 .meta-line.overdue {
-  color: #b71c1c; 
+  color: #b71c1c;
   font-weight: 800;
 }
-
 
 /* Actions */
 .note-actions {
@@ -476,9 +431,9 @@ function isOverdue(note) {
   filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
 }
 
- .icon-btn.icon-delete {
+.icon-btn.icon-delete {
   font-size: 1.2rem;
-  font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", system-ui, sans-serif;
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', system-ui, sans-serif;
 }
 
 .icon-btn.expand {

@@ -7,17 +7,32 @@ const googleAuthProvider = new GoogleAuthProvider();
 <script setup>
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useCurrentUser, useFirebaseAuth } from 'vuefire';
+import { useCurrentUser, useFirebaseAuth, useFirestore, useDocument } from 'vuefire';
 import { signInWithPopup } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 import logoImg from '@/assets/img/logo.png';
 
 const router = useRouter();
 const auth = useFirebaseAuth();
 const user = useCurrentUser();
+const db = useFirestore();
 
 async function login() {
   await signInWithPopup(auth, googleAuthProvider);
+
+  const userRef = doc(db, 'users', user.value.uid);
+  const userDoc = useDocument(userRef);
+
+  if (!userDoc.value) {
+    try {
+      await setDoc(doc(db, 'users', user.value.uid), {
+        themePref: 'auto',
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   router.push({ name: 'root' });
 }
@@ -55,6 +70,7 @@ onMounted(() => {
           <RouterLink to="/notes" class="navbar-item">Notes</RouterLink>
           <RouterLink to="/exams" class="navbar-item">Exams</RouterLink>
           <RouterLink to="/editor" class="navbar-item">Editor</RouterLink>
+          <RouterLink to="/practiceexams" class="navbar-item">✨Practice</RouterLink>
         </div>
 
         <div class="navbar-end">

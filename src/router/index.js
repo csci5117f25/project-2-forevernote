@@ -3,16 +3,17 @@ import { getCurrentUser } from 'vuefire';
 
 import SplashView from '@/views/SplashView.vue';
 import DashboardView from '@/views/DashboardView.vue';
+import AllNotesView from '@/views/AllNotesView.vue';
 import ProfileView from '@/views/ProfileView.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
-import AllNotesView from '@/views/AllNotesView.vue';
 
 // Dev/Testing pages (for now)
-import NoteList from '@/views/NoteList.vue';
 import NoteView from '@/views/NoteView.vue';
 import ExamList from '@/views/ExamList.vue';
 import ExamView from '@/views/ExamView.vue';
 import EditorView from '@/views/EditorView.vue';
+import StudyGuideModal from '@/components/ExamGenerator.vue';
+import ExamGenerator from '@/components/ExamGenerator.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,19 +47,17 @@ const router = createRouter({
       },
     },
     {
-      path: '/dashboard', 
-      name: 'dashboard', 
-      component: DashboardView
-    },
-    {
-      path: '/allNotes', 
-      name: 'allNotes', 
-      component: AllNotesView
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: '/notes',
       name: 'note_list',
-      component: NoteList,
+      component: AllNotesView,
       meta: {
         requiresAuth: true,
       },
@@ -94,6 +93,14 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
       },
+    },
+    {
+      path:'/practiceexams', 
+      name: 'practiceexams', 
+      component: ExamGenerator, 
+      meta: {
+        requiresAuth: true,
+      }
     },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
   ],

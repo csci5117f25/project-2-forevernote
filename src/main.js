@@ -16,3 +16,5 @@ app.use(VueFire, {
 app.use(router);
 
 app.mount('#app');
+
+const ai = new GoogleGenAI({apiKey: "AIzaSyCYCdk39X3t1z3bJWaRvzI64KyTb-kGQpg"});
