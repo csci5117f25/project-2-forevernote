@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { useCurrentUser, useDocument, useFirestore } from 'vuefire';
 import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
+import AudioEngine from './AudioEngine.vue';
+
 import PlayIcon from './icons/IconPlay.vue';
 import StopIcon from './icons/IconStop.vue';
 import CancelIcon from './icons/IconCross.vue';
@@ -48,7 +50,7 @@ import 'tinymce/skins/content/default/content.js';
 
 // TinyMCE Vue Setup
 import Editor from '@tinymce/tinymce-vue';
-import AudioEngine from './AudioEngine.vue';
+
 const tinyMCEConfig = {
   plugins:
     'advlist anchor autolink charmap code fullscreen image insertdatetime link lists media preview searchreplace table visualblocks wordcount',
@@ -59,12 +61,12 @@ const tinyMCEConfig = {
   promotion: false,
 };
 
+const transcriptionSupport = typeof Worker !== 'undefined' && typeof AudioContext !== 'undefined';
+
 const router = useRouter();
 const route = useRoute();
 const db = useFirestore();
 const user = useCurrentUser();
-
-const transcriptionSupport = typeof Worker !== 'undefined' && typeof AudioContext !== 'undefined';
 
 const noteId = computed(() => route.params.id);
 const isLoaded = ref(noteId.value ? false : true);
@@ -82,8 +84,15 @@ const noteContent = computed(() => {
   return note.value.htmlContent ? note.value.htmlContent : note.value.notes;
 });
 
-const isTranscribing = ref(false);
 const isEditingTitle = ref(false);
+const isTranscribing = ref(false);
+
+function startRecording() {
+  isTranscribing.value = true;
+}
+function stopRecording() {
+  isTranscribing.value = false;
+}
 
 const currTitle = ref(noteId.value ? '' : 'Untitled Note');
 function resetTitle() {
@@ -102,9 +111,7 @@ function appendToEditor(text) {
 
   tinymce.activeEditor.execCommand('mceInsertContent', false, text);
 }
-function transcriptionHandler(event) {
-  const text = event.text;
-
+function transcriptionHandler(text) {
   console.log(`In handler: ${text} (${typeof text})`);
   if (text.includes('[')) return;
   if (text.includes('(')) return;
@@ -170,21 +177,12 @@ watch(note, () => {
   <main v-if="isLoaded">
     <div id="button-set">
       <div class="">
-        <button
-          v-if="!isTranscribing"
-          class="button is-success"
-          @click="isTranscribing = true"
-          :disabled="!transcriptionSupport"
-        >
+        <button v-if="!isTranscribing" class="button is-success" @click="startRecording"
+          :disabled="!transcriptionSupport">
           <PlayIcon />
           <span>Start Transcription</span>
         </button>
-        <button
-          v-else
-          class="button is-danger"
-          @click="isTranscribing = false"
-          :disabled="!transcriptionSupport"
-        >
+        <button v-else class="button is-danger" @click="stopRecording" :disabled="!transcriptionSupport">
           <StopIcon />
           <span>Stop Transcription</span>
         </button>
@@ -194,11 +192,8 @@ watch(note, () => {
         <div id="title-edit" v-if="isEditingTitle">
           <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
 
-          <button
-            v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'"
-            class="button"
-            @click="resetTitle"
-          >
+          <button v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'" class="button"
+            @click="resetTitle">
             <CancelIcon />
           </button>
         </div>
@@ -213,13 +208,7 @@ watch(note, () => {
       </div>
     </div>
 
-    <Editor
-      id="uuid"
-      licenseKey="gpl"
-      :init="tinyMCEConfig"
-      style="z-index: 29"
-      :initialValue="noteContent"
-    />
+    <Editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" style="z-index: 29" :initialValue="noteContent" />
   </main>
   <main v-else>
     <div>Note is loading...</div>

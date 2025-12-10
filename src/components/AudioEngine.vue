@@ -21,6 +21,24 @@ watch(
 
 //add web audio variables here need to be strict
 let audioContext = null;
+
+async function processAudioBlob(blob) {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const arrayBuffer = await blob.arrayBuffer();
+  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+  const offlineAudioContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
+  const source = offlineAudioContext.createBufferSource();
+  source.buffer = audioBuffer;
+  source.connect(offlineAudioContext.destination);
+  source.start();
+  const resampledBuffer = await offlineAudioContext.startRendering();
+
+  const audioData = resampledBuffer.getChannelData(0);
+
+  return audioData;
+}
+
 let analyser = null;
 let dataArray = null;
 let bufferLength = null;
@@ -55,7 +73,7 @@ if (window.Worker) {
 //if a worker thread was made
 if (worker) {
   worker.onmessage = (event) => {
-    const { text } = event.data;
+    const text = event.data;
     console.log('Transcribed:', text);
 
     //emit transcript back to parent
@@ -97,28 +115,27 @@ async function initAudio() {
   }
 }
 
-async function blobToPCM(blob, audioContext) {
-  if (!blob || blob.size === 0) {
-    //just return an empty PCM array
-    return new Float32Array(0);
-  }
-  const arrayBuffer = await blob.arrayBuffer();
-  //audioBuffer can fail depending on browser
-  let audioBuffer;
+// async function blobToPCM(blob, audioContext) {
+//   if (!blob || blob.size === 0) {
+//     //just return an empty PCM array
+//     return new Float32Array(0);
+//   }
+//   const arrayBuffer = await blob.arrayBuffer();
+//   //audioBuffer can fail depending on browser
+//   let audioBuffer;
 
-  try {
-    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-  } catch (error) {
-    console.error('failed to decode audio', error);
-    return new Float32Array(0);
-  }
+//   try {
+//     audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+//   } catch (error) {
+//     console.error('failed to decode audio', error);
+//     return new Float32Array(0);
+//   }
 
-  const pcm = audioBuffer.getChannelData(0);
-  return pcm;
-}
+//   const pcm = audioBuffer.getChannelData(0);
+//   return pcm;
+// }
 
 //https://stackoverflow.com/questions/51325136/record-5-seconds-segments-of-audio-using-mediarecorder-and-then-upload-to-the-se
-
 async function recordAudio(stream) {
   recorder = new MediaRecorder(stream);
 
@@ -130,9 +147,7 @@ async function recordAudio(stream) {
   // to pass data to audio transcriber
   // before re-recording
   recorder.onstop = async () => {
-    const blob = new Blob(audioChunks, { type: 'audio/webm' });
-
-    audioChunks.length = 0;
+    const blob = new Blob(audioChunks.splice(0, audioChunks.length), { type: 'audio/webm' });
 
     //start recording immediately
     if (props.isRecording) {
@@ -140,22 +155,24 @@ async function recordAudio(stream) {
       recorder.start();
     }
 
-    const pcm = await blobToPCM(blob, audioContext);
-    //make thread safe duplicate
-    const pcmCopy = new Float32Array(pcm.length);
-    pcmCopy.set(pcm);
-    //send to worker
-    worker.postMessage(
-      {
-        array: pcmCopy,
-        sampleRate: audioContext.sampleRate,
-      },
-      [pcmCopy.buffer],
-    );
+    // const pcm = await blobToPCM(blob, audioContext);
+    // //make thread safe duplicate
+    // const pcmCopy = new Float32Array(pcm.length);
+    // pcmCopy.set(pcm);
+    // //send to worker
+    // // worker.postMessage(
+    // //   {
+    // //     array: pcmCopy,
+    // //     sampleRate: audioContext.sampleRate,
+    // //   },
+    // //   [pcmCopy.buffer],
+    // // );
+
+    worker.postMessage(await processAudioBlob(blob));
   };
+
   //initial recording before entering on/off loop
   recorder.start();
-
   recordingInterval = setInterval(() => {
     if (!props.isRecording) return;
 
@@ -218,11 +235,13 @@ function stopAudio() {
     audioContext = null;
   }
 
-  const tracks = stream.getTracks();
+  if (stream) {
+    const tracks = stream.getTracks();
 
-  tracks.forEach((track) => {
-    track.stop();
-  });
+    tracks.forEach((track) => {
+      track.stop();
+    });
+  }
 }
 
 onUnmounted(() => {

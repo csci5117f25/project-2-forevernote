@@ -2,29 +2,23 @@
 //complex objects from main thread to here
 import { pipeline, env } from '@xenova/transformers';
 
-//for AI transcription
+env.allowLocalModels = false;
+env.useBrowserCache = false;
+
+// Init AI transcriber as early as we can
 let transcriber = null;
-
-//for loading the AI audio transcription
-async function loadModel() {
-  env.allowLocalModels = false;
-
-  env.useBrowserCache = false;
-
+try {
   console.log('Loading model...');
-  try {
-    transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en', {
-      device: 'webgpu',
-      chunk_length_s: 4,
-      stride_length_s: 3,
-    });
-
-    console.log('Model loaded.');
-  } catch (err) {
-    console.error('Error loading model:', err);
-  }
+  transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en', {
+    device: 'webgpu',
+    chunk_length_s: 4,
+    stride_length_s: 3,
+  });
+  console.log('Model loaded.');
+} catch (e) {
+  console.error('Failed to load model:', e);
+  throw new Error('unable to init model:', e);
 }
-await loadModel();
 
 //for downsampling to 16KHZ
 function downsample16k(originalData, originalSampleRate) {
@@ -92,14 +86,16 @@ async function processAudio(pcmArray, sampleRate) {
 //receives request every 4 seconds
 //main thread in audioEngine sends an audio recording to the worker
 onmessage = async function (event) {
-  const { array, sampleRate } = event.data;
+  const audioData = event.data;
 
-  if (!(array instanceof Float32Array)) {
-    //nothing to process
-    return;
-  }
+  // if (!(array instanceof Float32Array)) {
+  //   //nothing to process
+  //   return;
+  // }
 
-  const text = await processAudio(array, sampleRate);
+  // const text = await processAudio(array, sampleRate);
 
-  postMessage({ text });
+  const res = await transcriber(audioData);
+
+  postMessage(res.text);
 };
