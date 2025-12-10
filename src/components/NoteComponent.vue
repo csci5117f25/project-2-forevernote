@@ -48,6 +48,7 @@ import 'tinymce/skins/content/default/content.js';
 
 // TinyMCE Vue Setup
 import Editor from '@tinymce/tinymce-vue';
+import AudioEngine from './AudioEngine.vue';
 const tinyMCEConfig = {
   plugins:
     'advlist anchor autolink charmap code fullscreen image insertdatetime link lists media preview searchreplace table visualblocks wordcount',
@@ -62,6 +63,8 @@ const router = useRouter();
 const route = useRoute();
 const db = useFirestore();
 const user = useCurrentUser();
+
+const transcriptionSupport = typeof Worker !== 'undefined' && typeof AudioContext !== 'undefined';
 
 const noteId = computed(() => route.params.id);
 const isLoaded = ref(noteId.value ? false : true);
@@ -98,6 +101,15 @@ function appendToEditor(text) {
   }
 
   tinymce.activeEditor.execCommand('mceInsertContent', false, text);
+}
+function transcriptionHandler(event) {
+  const text = event.text;
+
+  console.log(`In handler: ${text} (${typeof text})`);
+  if (text.includes('[')) return;
+  if (text.includes('(')) return;
+
+  appendToEditor(text);
 }
 
 async function submitNote() {
@@ -154,14 +166,25 @@ watch(note, () => {
 </script>
 
 <template>
+  <AudioEngine :isRecording="isTranscribing" @newTranscript="transcriptionHandler" />
   <main v-if="isLoaded">
     <div id="button-set">
       <div class="">
-        <button v-if="!isTranscribing" class="button is-success" @click="isTranscribing = true">
+        <button
+          v-if="!isTranscribing"
+          class="button is-success"
+          @click="isTranscribing = true"
+          :disabled="!transcriptionSupport"
+        >
           <PlayIcon />
           <span>Start Transcription</span>
         </button>
-        <button v-else class="button is-danger" @click="isTranscribing = false">
+        <button
+          v-else
+          class="button is-danger"
+          @click="isTranscribing = false"
+          :disabled="!transcriptionSupport"
+        >
           <StopIcon />
           <span>Stop Transcription</span>
         </button>

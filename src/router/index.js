@@ -89,12 +89,12 @@ const router = createRouter({
       },
     },
     {
-      path:'/practiceexams',
+      path: '/practiceexams',
       name: 'practiceexams',
       component: ExamGenerator,
       meta: {
         requiresAuth: true,
-      }
+      },
     },
     {
       path: '/live-transcription',
