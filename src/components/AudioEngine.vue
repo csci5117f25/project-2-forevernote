@@ -1,8 +1,5 @@
 <script setup>
-import { watch, ref, onMounted } from 'vue';
-
-//for removing worker threads when not in use
-import { onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   isRecording: Boolean,
@@ -128,6 +125,7 @@ async function recordAudio(stream) {
   recorder.ondataavailable = (event) => {
     audioChunks.push(event.data);
   };
+
   // pause recording for one small instance in time
   // to pass data to audio transcriber
   // before re-recording
