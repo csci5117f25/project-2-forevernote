@@ -22,23 +22,6 @@ watch(
 //add web audio variables here need to be strict
 let audioContext = null;
 
-async function processAudioBlob(blob) {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  const arrayBuffer = await blob.arrayBuffer();
-  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-  const offlineAudioContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
-  const source = offlineAudioContext.createBufferSource();
-  source.buffer = audioBuffer;
-  source.connect(offlineAudioContext.destination);
-  source.start();
-  const resampledBuffer = await offlineAudioContext.startRendering();
-
-  const audioData = resampledBuffer.getChannelData(0);
-
-  return audioData;
-}
-
 let analyser = null;
 let dataArray = null;
 let bufferLength = null;
@@ -115,6 +98,7 @@ async function initAudio() {
   }
 }
 
+// Original Code
 // async function blobToPCM(blob, audioContext) {
 //   if (!blob || blob.size === 0) {
 //     //just return an empty PCM array
@@ -135,7 +119,25 @@ async function initAudio() {
 //   return pcm;
 // }
 
-//https://stackoverflow.com/questions/51325136/record-5-seconds-segments-of-audio-using-mediarecorder-and-then-upload-to-the-se
+// Will's attempt at debugging local issues --- FEEL FREE TO DELETE IF DEEMED UNNECESSARY
+async function processAudioBlob(blob) {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const arrayBuffer = await blob.arrayBuffer();
+  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+  const offlineAudioContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
+  const source = offlineAudioContext.createBufferSource();
+  source.buffer = audioBuffer;
+  source.connect(offlineAudioContext.destination);
+  source.start();
+  const resampledBuffer = await offlineAudioContext.startRendering();
+
+  const audioData = resampledBuffer.getChannelData(0);
+
+  return audioData;
+}
+
+// https://stackoverflow.com/questions/51325136/record-5-seconds-segments-of-audio-using-mediarecorder-and-then-upload-to-the-se
 async function recordAudio(stream) {
   recorder = new MediaRecorder(stream);
 
@@ -147,6 +149,7 @@ async function recordAudio(stream) {
   // to pass data to audio transcriber
   // before re-recording
   recorder.onstop = async () => {
+    // Get audio chunks and clear audio chunks array for next audio
     const blob = new Blob(audioChunks.splice(0, audioChunks.length), { type: 'audio/webm' });
 
     //start recording immediately
@@ -155,6 +158,7 @@ async function recordAudio(stream) {
       recorder.start();
     }
 
+    // Previous Code
     // const pcm = await blobToPCM(blob, audioContext);
     // //make thread safe duplicate
     // const pcmCopy = new Float32Array(pcm.length);
@@ -168,6 +172,7 @@ async function recordAudio(stream) {
     // //   [pcmCopy.buffer],
     // // );
 
+    // New code
     worker.postMessage(await processAudioBlob(blob));
   };
 

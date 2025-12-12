@@ -9,7 +9,7 @@ defineProps({
   isRecording: Boolean,
 });
 
-const isSending = ref(true);
+// const isSending = ref(true);
 
 const scrollComponent = ref(null);
 
