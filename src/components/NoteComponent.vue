@@ -1,7 +1,9 @@
 <script setup>
+import 'vue-select/dist/vue-select.css';
+
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useCurrentUser, useDocument, useFirestore } from 'vuefire';
+import { useCollection, useCurrentUser, useDocument, useFirestore } from 'vuefire';
 import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
 import AudioEngine from './AudioEngine.vue';
@@ -71,6 +73,13 @@ const user = useCurrentUser();
 const noteId = computed(() => route.params.id);
 const isLoaded = ref(noteId.value ? false : true);
 
+const notesRef = collection(db, 'users', user.value.uid, 'notes');
+const notes = useCollection(notesRef);
+const subjects = computed(() =>
+  notes.value.filter((note) => note.subject).map((note) => note.subject),
+);
+const tags = computed(() => notes.value.filter((note) => note.tags).flatMap((note) => note.tags));
+
 const noteRef = noteId.value ? doc(db, 'users', user.value.uid, 'notes', noteId.value) : undefined;
 const note = useDocument(noteRef);
 const noteTitle = computed(() => {
@@ -101,6 +110,10 @@ function resetTitle() {
 
   isEditingTitle.value = false;
 }
+
+const currSubject = ref('');
+
+const currTags = ref([]);
 
 function appendToEditor(text) {
   if (!tinymce.activeEditor) {
@@ -152,6 +165,8 @@ async function updateNote() {
   const data = {
     title: currTitle.value,
     notes: tinymce.activeEditor.getContent({ format: 'text' }),
+    subject: currSubject.value,
+    tags: currTags.value,
     htmlContent: tinymce.activeEditor.getContent(),
     lastEdited: serverTimestamp(),
   };
@@ -167,6 +182,9 @@ watch(note, () => {
   if (noteId.value && note.value) {
     currTitle.value = note.value.title;
 
+    currSubject.value = note.value.subject ?? '';
+    currTags.value = note.value.tags ?? [];
+
     isLoaded.value = true;
   }
 });
@@ -177,12 +195,21 @@ watch(note, () => {
   <main v-if="isLoaded">
     <div id="button-set">
       <div class="">
-        <button v-if="!isTranscribing" class="button is-success" @click="startRecording"
-          :disabled="!transcriptionSupport">
+        <button
+          v-if="!isTranscribing"
+          class="button is-success"
+          @click="startRecording"
+          :disabled="!transcriptionSupport"
+        >
           <PlayIcon />
           <span>Start Transcription</span>
         </button>
-        <button v-else class="button is-danger" @click="stopRecording" :disabled="!transcriptionSupport">
+        <button
+          v-else
+          class="button is-danger"
+          @click="stopRecording"
+          :disabled="!transcriptionSupport"
+        >
           <StopIcon />
           <span>Stop Transcription</span>
         </button>
@@ -192,14 +219,48 @@ watch(note, () => {
         <div id="title-edit" v-if="isEditingTitle">
           <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
 
-          <button v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'" class="button"
-            @click="resetTitle">
+          <button
+            v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'"
+            class="button"
+            @click="resetTitle"
+          >
             <CancelIcon />
           </button>
         </div>
         <span v-else id="title-edit" @click="isEditingTitle = true">
           {{ currTitle }}
         </span>
+
+        <v-select
+          id="subject-edit"
+          class="subject-edit has-background-light has-text-dark"
+          placeholder="Subject"
+          :options="subjects"
+          taggable
+          v-model="currSubject"
+        >
+          <template #search="{ attributes, events }">
+            <input class="vs__search" v-bind="attributes" v-on="events" />
+          </template>
+
+          <template #no-options="{ search }">Add: {{ search }}</template>
+        </v-select>
+
+        <v-select
+          id="tag-edit"
+          class="has-background-light has-text-dark"
+          placeholder="Tags"
+          :options="tags"
+          multiple
+          taggable
+          v-model="currTags"
+        >
+          <template #search="{ attributes, events }">
+            <input class="vs__search" v-bind="attributes" v-on="events" />
+          </template>
+
+          <template #no-options="{ search }">Add: {{ search }}</template>
+        </v-select>
       </div>
 
       <div class="">
@@ -208,7 +269,13 @@ watch(note, () => {
       </div>
     </div>
 
-    <Editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" style="z-index: 29" :initialValue="noteContent" />
+    <Editor
+      id="uuid"
+      licenseKey="gpl"
+      :init="tinyMCEConfig"
+      style="z-index: 29"
+      :initialValue="noteContent"
+    />
   </main>
   <main v-else>
     <div>Note is loading...</div>
@@ -240,9 +307,15 @@ watch(note, () => {
 
 .button-set-center {
   flex-grow: 1;
+
+  display: grid;
+  grid-template-columns: 3fr 1fr 1.5fr;
+  gap: 0.5rem;
 }
 
 #title-edit {
+  flex-grow: 2;
+
   position: relative;
   z-index: 32;
 
@@ -251,5 +324,16 @@ watch(note, () => {
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
+}
+
+span#title-edit {
+  padding: 7px 11px;
+}
+
+.vs__search {
+  line-height: 1.75;
+}
+.vs__search {
+  color: var(--bulma-input-placeholder-color);
 }
 </style>
