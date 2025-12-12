@@ -2,6 +2,7 @@
 import 'vue3-carousel/carousel.css';
 
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useCollection, useCurrentUser, useFirestore } from 'vuefire';
 import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel';
 import { collection, orderBy, query, Timestamp, where } from 'firebase/firestore';
@@ -10,6 +11,7 @@ import CreateExamModal from './NewExamModal.vue';
 
 const user = useCurrentUser();
 const db = useFirestore();
+const router = useRouter();
 
 const notesRef = computed(() => collection(db, 'users', user.value.uid, 'notes'));
 const notes = useCollection(notesRef);
@@ -44,13 +46,9 @@ function showNewExamModal() {
     <div id="recent-notes">
       <h2>Recently Viewed Notes</h2>
 
-      <Carousel
-        v-if="notes.length !== 0"
-        id="note-carousel"
-        class="gallery"
-        v-bind="carouselConfig"
-      >
-        <Slide v-for="note in notes" :key="note.id" class="gallery-cell note-cell">
+      <Carousel v-if="notes.length !== 0" id="note-carousel" class="gallery" v-bind="carouselConfig">
+        <Slide v-for="note in notes" :key="note.id" class="gallery-cell note-cell"
+        @click="router.push({ name: 'note', params: { id: note.id } })">
           <div class="gallery-cell-header">
             <h2>{{ note.title }}</h2>
           </div>
@@ -73,22 +71,14 @@ function showNewExamModal() {
       <div id="upcoming-exams-h">
         <h2>Upcoming Exams⏳</h2>
 
-        <button
-          id="add-exam-button"
-          class="button is-primary is-dark is-small is-rounded"
-          @click="showNewExamModal"
-        >
+        <button id="add-exam-button" class="button is-primary is-dark is-small is-rounded" @click="showNewExamModal">
           Create New Exam
         </button>
       </div>
 
-      <Carousel
-        v-if="exams.length !== 0"
-        id="exam-carousel"
-        class="gallery"
-        v-bind="carouselConfig"
-      >
-        <Slide v-for="exam in exams" :key="exam.id" class="gallery-cell exam-cell">
+      <Carousel v-if="exams.length !== 0" id="exam-carousel" class="gallery" v-bind="carouselConfig">
+        <Slide v-for="exam in exams" :key="exam.id" class="gallery-cell exam-cell"
+          >
           <div class="gallery-cell-header">
             <h2>{{ exam.subject }}</h2>
           </div>
@@ -137,7 +127,7 @@ function showNewExamModal() {
   text-align: left;
 }
 
-#greeting > h1 {
+#greeting>h1 {
   color: rgb(0, 0, 0);
   width: 100%;
   font-size: 4rem;
@@ -193,7 +183,7 @@ function showNewExamModal() {
   padding: 0.8rem;
 }
 
-.gallery-cell-header > h2 {
+.gallery-cell-header>h2 {
   display: -webkit-box;
   -webkit-box-orient: vertical;
 

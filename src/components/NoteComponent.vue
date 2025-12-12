@@ -28,6 +28,7 @@ import 'tinymce/skins/ui/oxide/skin.js';
 import 'tinymce/plugins/advlist';
 import 'tinymce/plugins/anchor';
 import 'tinymce/plugins/autolink';
+import 'tinymce/plugins/autoresize';
 import 'tinymce/plugins/charmap';
 import 'tinymce/plugins/code';
 import 'tinymce/plugins/fullscreen';
@@ -55,10 +56,10 @@ import Editor from '@tinymce/tinymce-vue';
 
 const tinyMCEConfig = {
   plugins:
-    'advlist anchor autolink charmap code fullscreen image insertdatetime link lists media preview searchreplace table visualblocks wordcount',
+    'advlist anchor autolink autoresize charmap code fullscreen image insertdatetime link lists media preview searchreplace table visualblocks wordcount',
   toolbar:
     'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
-  height: 500,
+  // height: 500,
   resize: false,
   promotion: false,
 };
@@ -124,6 +125,7 @@ function appendToEditor(text) {
 
   tinymce.activeEditor.execCommand('mceInsertContent', false, text);
 }
+
 function transcriptionHandler(text) {
   console.log(`In handler: ${text} (${typeof text})`);
   if (text.includes('[')) return;
@@ -192,6 +194,7 @@ watch(note, () => {
 
 <template>
   <AudioEngine :isRecording="isTranscribing" @newTranscript="transcriptionHandler" />
+
   <main v-if="isLoaded">
     <div id="button-set">
       <div class="">
@@ -227,7 +230,7 @@ watch(note, () => {
             <CancelIcon />
           </button>
         </div>
-        <span v-else id="title-edit" @click="isEditingTitle = true">
+        <span v-else id="title-edit" class="has-text-dark" @click="isEditingTitle = true">
           {{ currTitle }}
         </span>
 

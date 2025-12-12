@@ -258,9 +258,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="visualizer-wrapper">
+  <main></main>
+  <!-- <div class="visualizer-wrapper">
     <canvas ref="canvasRef" width="600" height="400"></canvas>
-  </div>
+  </div> -->
 </template>
 
 <style scoped>
