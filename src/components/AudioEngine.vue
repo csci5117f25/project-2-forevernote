@@ -1,5 +1,6 @@
 <script setup>
-import { watch, ref, onMounted, onUnmounted } from 'vue';
+// import { watch, ref, onMounted, onUnmounted } from 'vue';
+import { watch, onUnmounted } from 'vue';
 
 const props = defineProps({
   isRecording: Boolean,
@@ -19,26 +20,27 @@ watch(
   },
 );
 
-//add web audio variables here need to be strict
+// add web audio variables here need to be strict
 let audioContext = null;
 
+// let dataArray = null;
 let analyser = null;
-let dataArray = null;
-let bufferLength = null;
+// let bufferLength = null;
 let stream = null;
-//make the canvas reactive
-let canvasRef = ref(null);
-let canvas = null;
-let ctx = null;
-//microphone variables
+
+// make the canvas reactive
+// let canvasRef = ref(null);
+// let canvas = null;
+// let ctx = null;
+
+// microphone variables
 let recorder = null;
 let audioChunks = [];
-//let allChunks = [];
 
-//for webworker thread
+// for webworker thread
 let worker = null;
 
-//for preventing overlapping Timeouts
+// for preventing overlapping Timeouts
 //and for preventing microphone timeouts from going
 //on longer than they should
 let recordingInterval = null;
@@ -52,8 +54,8 @@ if (window.Worker) {
   console.error('your browser does not support web worker api!');
 }
 
-//only bother communicating with worker thread
-//if a worker thread was made
+// only bother communicating with worker thread
+// if a worker thread was made
 if (worker) {
   worker.onmessage = (event) => {
     const text = event.data;
@@ -64,11 +66,11 @@ if (worker) {
   };
 }
 
-//wait until DOM is loaded
-onMounted(() => {
-  canvas = canvasRef.value;
-  ctx = canvas.getContext('2d');
-});
+// wait until DOM is loaded
+// onMounted(() => {
+//   canvas = canvasRef.value;
+//   ctx = canvas.getContext('2d');
+// });
 
 async function initAudio() {
   //this needs to be here to test if the browser supports web audio
@@ -89,12 +91,12 @@ async function initAudio() {
     source.connect(analyser);
 
     analyser.fftSize = 256;
-    bufferLength = analyser.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
+    // bufferLength = analyser.frequencyBinCount;
+    // dataArray = new Uint8Array(bufferLength);
 
     recordAudio(stream);
 
-    drawAudio();
+    // drawAudio();
   }
 }
 
@@ -187,41 +189,41 @@ async function recordAudio(stream) {
   }, 3000);
 }
 
-function drawAudio() {
-  requestAnimationFrame(drawAudio);
+// function drawAudio() {
+//   requestAnimationFrame(drawAudio);
 
-  if (!analyser) return;
+//   if (!analyser) return;
 
-  analyser.getByteFrequencyData(dataArray);
+//   analyser.getByteFrequencyData(dataArray);
 
-  const WIDTH = canvas.width;
-  const HEIGHT = canvas.height;
+//   const WIDTH = canvas.width;
+//   const HEIGHT = canvas.height;
 
-  //const gradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
-  //gradient.addColorStop(0, "#673ab7");
-  //gradient.addColorStop(1, "#512da8");
+//   //const gradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+//   //gradient.addColorStop(0, "#673ab7");
+//   //gradient.addColorStop(1, "#512da8");
 
-  //ctx.fillStyle = gradient;
-  //make it white
-  ctx.fillStyle = 'rgb(255,255,255)';
-  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+//   //ctx.fillStyle = gradient;
+//   //make it white
+//   ctx.fillStyle = 'rgb(255,255,255)';
+//   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-  const barWidth = (WIDTH / bufferLength) * 3;
-  let barHeight;
-  let x = 0;
+//   const barWidth = (WIDTH / bufferLength) * 3;
+//   let barHeight;
+//   let x = 0;
 
-  for (let i = 0; i < bufferLength; i++) {
-    // barHeight = Math.pow(dataArray[i] / 16, 2);
+//   for (let i = 0; i < bufferLength; i++) {
+//     // barHeight = Math.pow(dataArray[i] / 16, 2);
 
-    // ctx.fillStyle = "rgb(215,255,255)";
-    // ctx.fillRect(x, HEIGHT / 2 - barHeight, barWidth, barHeight * 2);
-    barHeight = Math.pow(dataArray[i] / 8, 1.5);
+//     // ctx.fillStyle = "rgb(215,255,255)";
+//     // ctx.fillRect(x, HEIGHT / 2 - barHeight, barWidth, barHeight * 2);
+//     barHeight = Math.pow(dataArray[i] / 8, 1.5);
 
-    ctx.fillStyle = `rgb(${barHeight + 100} 50 50)`;
-    ctx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight);
-    x += barWidth + 1;
-  }
-}
+//     ctx.fillStyle = `rgb(${barHeight + 100} 50 50)`;
+//     ctx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight);
+//     x += barWidth + 1;
+//   }
+// }
 
 function stopAudio() {
   //clear whatever was inside previously
