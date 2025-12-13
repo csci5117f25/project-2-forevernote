@@ -96,11 +96,11 @@ const router = createRouter({
         requiresAuth: true,
       },
     },
-    {
-      path: '/live-transcription',
-      name: 'live-transcription',
-      component: TranscriptionView,
-    },
+    // {
+    //   path: '/live-transcription',
+    //   name: 'live-transcription',
+    //   component: TranscriptionView,
+    // },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
   ],
 });

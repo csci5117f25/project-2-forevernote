@@ -1,7 +1,8 @@
 <script setup>
 import { ref } from 'vue';
+
 import AudioVisualizer from '@/components/AudioVisualizer.vue';
-//import TypeWriter from '@/components/TypeWriter.vue'
+// import TypeWriter from '@/components/TypeWriter.vue'
 
 const isRecording = ref(false);
 const transcript = ref('');
