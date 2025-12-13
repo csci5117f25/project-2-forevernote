@@ -1,6 +1,6 @@
 <script setup>
 import { GoogleGenAI } from '@google/genai';
-import { number } from 'motion';
+// import { number } from 'motion';
 import { ref } from 'vue';
 
 const examTopic = ref('');
