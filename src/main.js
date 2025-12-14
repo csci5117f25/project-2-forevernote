@@ -2,6 +2,7 @@ import './assets/main.css';
 
 import { createApp } from 'vue';
 import { VueFire, VueFireAuth } from 'vuefire';
+import VueSelect from 'vue-select';
 
 import App from '@/App.vue';
 import router from '@/router';
@@ -15,5 +16,6 @@ app.use(VueFire, {
 });
 app.use(router);
 
-app.mount('#app');
+app.component('v-select', VueSelect);
 
+app.mount('#app');

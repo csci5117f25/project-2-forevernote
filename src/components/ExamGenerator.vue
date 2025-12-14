@@ -29,7 +29,7 @@ const numberOfQuestions = ref(null);
 const genExamDetails = ref([]);
 const loadingIndicator = ref(false);
 const displayGrade = ref(false);
-const correctAnswers = ref([])
+const correctAnswers = ref([]);
 // const ai = new GoogleGenAI({apiKey: "AIzaSyCYCdk39X3t1z3bJWaRvzI64KyTb-kGQpg"});
 
 // const ai = new GoogleGenAI({apiKey: "AIzaSyBv6Y7Vkwr3_P8f6-ekwoaY9qiOxzBwg34"});
@@ -80,7 +80,7 @@ async function generateExam() {
   // console.log(correctAnswers);
 }
 
-function gradeAnswers(){
+function gradeAnswers() {
   displayGrade.value = true;
 }
 </script>
@@ -98,17 +98,16 @@ function gradeAnswers(){
           <option>5</option>
           <option>10</option>
         </select>
-        <span v-if="loadingIndicator">We're working hard on writing your exam questions. 🐻 with us...</span>
+        <span v-if="loadingIndicator"
+          >We're working hard on writing your exam questions. 🐻 with us...</span
+        >
 
         <button class="button is-primary">Generate Exam</button>
       </form>
     </div>
 
     <div v-if="genExamDetails.length != 0" class="exam-card">
-      <div class="question-block"
-           v-for="examDetail in genExamDetails"
-           :key="examDetail.question">
-
+      <div class="question-block" v-for="examDetail in genExamDetails" :key="examDetail.question">
         <div class="question-text">{{ examDetail.question }}</div>
 
         <select v-model="examDetail.selected">
@@ -116,8 +115,17 @@ function gradeAnswers(){
             {{ choice }}
           </option>
         </select>
-        <div class="solution-block" v-if="displayGrade" :class="{ correct: examDetail.selected === examDetail.correct_answer, incorrect: examDetail.selected !== examDetail.correct_answer }">
-          <h2 class="right-answer" v-if="examDetail.selected === examDetail.correct_answer">✅You're Right</h2>
+        <div
+          class="solution-block"
+          v-if="displayGrade"
+          :class="{
+            correct: examDetail.selected === examDetail.correct_answer,
+            incorrect: examDetail.selected !== examDetail.correct_answer,
+          }"
+        >
+          <h2 class="right-answer" v-if="examDetail.selected === examDetail.correct_answer">
+            ✅You're Right
+          </h2>
           <h2 class="wrong-answer" v-else>❌Oops...Nice Try</h2>
           <h2>You selected: {{ examDetail.selected }}</h2>
           <h2>Correct Answer: {{ examDetail.correct_answer }}</h2>
@@ -135,7 +143,7 @@ function gradeAnswers(){
   padding: 1.5rem;
   background: #f5f6fa;
   border-radius: 20px;
-  border: 2pt solid rgba(247, 168, 22, 0.682)
+  border: 2pt solid rgba(247, 168, 22, 0.682);
 }
 
 h1 {
@@ -149,24 +157,23 @@ h1 {
   margin-top: 2rem;
   color: black;
   font-weight: 200;
-
 }
 
-.form-card{
-  display: flex; 
+.form-card {
+  display: flex;
   flex-direction: column;
 }
 
-.gen-exam-form{
-  display: flex; 
-  flex-direction: column; 
-  color: black; 
+.gen-exam-form {
+  display: flex;
+  flex-direction: column;
+  color: black;
   padding: 0.3rem;
   justify-content: center;
   gap: 0.5rem;
 }
 
-.gen-exam-form input{ 
+.gen-exam-form input {
   height: 2rem;
   border-radius: 10px;
   border: 2pt solid rgba(0, 0, 0, 0.198);
@@ -174,10 +181,10 @@ h1 {
   padding: 0.2rem;
 }
 
-.gen-exam-form select{
+.gen-exam-form select {
   height: 2rem;
   border-radius: 10px;
-  border: 2pt solid rgba(0, 0, 0, 0.198)
+  border: 2pt solid rgba(0, 0, 0, 0.198);
 }
 
 .question-block {
@@ -185,7 +192,7 @@ h1 {
   padding: 1.25rem;
   border-radius: 12px;
   background: white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .question-text {
@@ -193,33 +200,32 @@ h1 {
   margin-bottom: 0.75rem;
 }
 
-.solution-block{
+.solution-block {
   border-radius: 10px;
   padding: 0.5rem;
   margin-top: 0.8rem;
   background-color: #d8d9df5b;
   font-weight: 100;
-
 }
 
-.wrong-answer{
+.wrong-answer {
   color: rgba(240, 32, 32, 0.57);
   font-weight: 100;
   font-size: 1rem;
 }
 
-.right-answer{
+.right-answer {
   color: rgba(59, 216, 74, 0.57);
   font-weight: 100;
   font-size: 1rem;
 }
 
-.correct{
-  border: 2pt solid rgba(4, 241, 4, 0.532)
+.correct {
+  border: 2pt solid rgba(4, 241, 4, 0.532);
 }
 
-.incorrect{
-  border: 2pt solid rgba(241, 60, 60, 0.532)
+.incorrect {
+  border: 2pt solid rgba(241, 60, 60, 0.532);
 }
 
 @media (max-width: 480px) {

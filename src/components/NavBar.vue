@@ -34,7 +34,7 @@ async function login() {
     }
   }
 
-  router.push({ name: 'root' });
+  router.push('/');
 }
 
 onMounted(() => {
@@ -69,8 +69,8 @@ onMounted(() => {
           <RouterLink to="/dashboard" class="navbar-item">Home</RouterLink>
           <RouterLink to="/notes" class="navbar-item">Notes</RouterLink>
           <RouterLink to="/exams" class="navbar-item">Exams</RouterLink>
-          <RouterLink to="/editor" class="navbar-item">Editor</RouterLink>
           <RouterLink to="/practiceexams" class="navbar-item">✨Practice</RouterLink>
+          <RouterLink to="/live-transcription" class="navbar-item">Audio Transcription</RouterLink>
         </div>
 
         <div class="navbar-end">
