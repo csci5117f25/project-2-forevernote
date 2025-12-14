@@ -1,8 +1,29 @@
 <script setup>
-import { GoogleGenAI } from "@google/genai";
-import { number } from "motion";
+// import { GoogleGenAI } from "@google/genai";
 import { ref } from "vue";
 
+const FUNCTION_URL = "https://on-request-api-key-zixtq6tzqq-uc.a.run.app"
+
+const fetchKey = async () => {
+  try {
+    const response = await fetch(FUNCTION_URL)
+    
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`)
+    }
+
+    // Since your python function returns a raw string, we use .text()
+    // If you change python to return JSON, use .json()
+    const data = await response.text()
+    apiKey.value = data
+    
+  } catch (err) {
+    console.error(err)
+    error.value = "Failed to load API key"
+  }
+}
+
+// Dependencies for the addMessage function.
 const examTopic = ref("")
 const numberOfQuestions = ref(null);
 const genExamDetails = ref([]);
@@ -10,13 +31,16 @@ const loadingIndicator = ref(false);
 const displayGrade = ref(false);
 const correctAnswers = ref([])
 // const ai = new GoogleGenAI({apiKey: "AIzaSyCYCdk39X3t1z3bJWaRvzI64KyTb-kGQpg"});
-const ai = new GoogleGenAI({apiKey: "AIzaSyBv6Y7Vkwr3_P8f6-ekwoaY9qiOxzBwg34"});
+
+// const ai = new GoogleGenAI({apiKey: "AIzaSyBv6Y7Vkwr3_P8f6-ekwoaY9qiOxzBwg34"});
 
 
 async function generateExam() {
   /*
   YS: Refactor: Account for Catching Exceptions, Firebase functions
   */
+  const apiKeyResponse = await fetch(FUNCTION_URL);
+  console.log(apiKeyResponse.text())
   const prompt = `Generate ${numberOfQuestions.value} multiple choice questions about "${examTopic.value}".
     Return the result strictly as a JSON array of objects.
     Each object must use the following structure:
@@ -31,29 +55,29 @@ async function generateExam() {
       Return ONLY valid JSON.`
   loadingIndicator.value = true
   displayGrade.value = false
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [{
-                        parts: [{ text: prompt }]
-                    }],
-  });
-  loadingIndicator.value = false
-  let textResponse = response.text;
-  textResponse = textResponse
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .replace(/`/g, "")
-    .trim();
-  const examDetails = JSON.parse(textResponse);
-  console.log(examDetails)
-  genExamDetails.value = examDetails
-  genExamDetails.value = examDetails.map((detail) => ({
-    ...detail, 
-    selected: null
+  // const response = await ai.models.generateContent({
+  //   model: "gemini-2.5-flash",
+  //   contents: [{
+  //                       parts: [{ text: prompt }]
+  //                   }],
+  // });
+  // loadingIndicator.value = false
+  // let textResponse = response.text;
+  // textResponse = textResponse
+  //   .replace(/```json/g, "")
+  //   .replace(/```/g, "")
+  //   .replace(/`/g, "")
+  //   .trim();
+  // const examDetails = JSON.parse(textResponse);
+  // console.log(examDetails)
+  // genExamDetails.value = examDetails
+  // genExamDetails.value = examDetails.map((detail) => ({
+  //   ...detail, 
+  //   selected: null
 
-  }));
-  correctAnswers.value = examDetails.map((examDetail) => {return examDetail.correct_answer});
-  console.log(correctAnswers);
+  // }));
+  // correctAnswers.value = examDetails.map((examDetail) => {return examDetail.correct_answer});
+  // console.log(correctAnswers);
 }
 
 function gradeAnswers(){
