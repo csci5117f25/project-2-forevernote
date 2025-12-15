@@ -7,7 +7,7 @@ import NavBar from '@/components/NavBar.vue';
     <NavBar @open-login="openLoginModal" />
   </header>
 
-  <body class="container">
+  <body>
     <RouterView />
   </body>
 </template>
