@@ -127,12 +127,12 @@ const isLoaded = ref(noteId.value ? false : true);
 
 const notesRef = collection(db, 'users', user.value.uid, 'notes');
 const notes = useCollection(notesRef);
-const subjects = computed(
-  () => [... new Set(notes.value.filter((note) => note.subject).map((note) => note.subject))],
-);
-const tags = computed(
-  () => [... new Set(notes.value.filter((note) => note.tags).flatMap((note) => note.tags))],
-);
+const subjects = computed(() => [
+  ...new Set(notes.value.filter((note) => note.subject).map((note) => note.subject)),
+]);
+const tags = computed(() => [
+  ...new Set(notes.value.filter((note) => note.tags).flatMap((note) => note.tags)),
+]);
 
 const noteRef = noteId.value ? doc(db, 'users', user.value.uid, 'notes', noteId.value) : undefined;
 const note = useDocument(noteRef);
@@ -274,12 +274,21 @@ onUnmounted(() => {
     <div id="header">
       <div id="button-set">
         <div class="">
-          <button v-if="!isTranscribing" class="button is-success" @click="startRecording"
-            :disabled="!transcriptionSupport">
+          <button
+            v-if="!isTranscribing"
+            class="button is-success"
+            @click="startRecording"
+            :disabled="!transcriptionSupport"
+          >
             <PlayIcon />
             <span>Start Transcription</span>
           </button>
-          <button v-else class="button is-danger" @click="stopRecording" :disabled="!transcriptionSupport">
+          <button
+            v-else
+            class="button is-danger"
+            @click="stopRecording"
+            :disabled="!transcriptionSupport"
+          >
             <StopIcon />
             <!-- TOOD: Put Frequencey Plot Here -->
             <span>Stop Transcription</span>
@@ -288,10 +297,17 @@ onUnmounted(() => {
 
         <div class="button-set-center">
           <div id="title-edit" v-if="isEditing === 1">
-            <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
+            <input
+              class="input has-background-light has-text-dark"
+              type="text"
+              v-model="currTitle"
+            />
 
-            <button v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'" class="button"
-              @click="resetTitle">
+            <button
+              v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'"
+              class="button"
+              @click="resetTitle"
+            >
               <CancelIcon />
             </button>
           </div>
@@ -301,31 +317,40 @@ onUnmounted(() => {
         </div>
 
         <div>
-          <button v-if="noteId" class="button is-warning" @click="updateNote" :disabled="isChanged">Update</button>
+          <button v-if="noteId" class="button is-warning" @click="updateNote" :disabled="isChanged">
+            Update
+          </button>
           <button v-else class="button is-primary" @click="submitNote">Submit</button>
         </div>
       </div>
 
       <div id="label-set">
-        <span v-if="note.subject" class="course-pill" @click="
-          (e) => {
-            tooltipX = e.clientX;
-            tooltipY = e.clientY;
+        <span
+          v-if="note.subject"
+          class="course-pill"
+          @click="
+            (e) => {
+              tooltipX = e.clientX;
+              tooltipY = e.clientY;
 
-            isEditing = 2;
-          }
-        ">
+              isEditing = 2;
+            }
+          "
+        >
           {{ note.subject }}
         </span>
 
-        <div id="tag-set" @click="
-          (e) => {
-            tooltipX = e.clientX;
-            tooltipY = e.clientY;
+        <div
+          id="tag-set"
+          @click="
+            (e) => {
+              tooltipX = e.clientX;
+              tooltipY = e.clientY;
 
-            isEditing = 3;
-          }
-        ">
+              isEditing = 3;
+            }
+          "
+        >
           <span v-for="(tag, idx) in currTags.sort()" :key="`${tag}-${idx}`" class="tag-pill">
             {{ tag }}
           </span>
@@ -333,17 +358,33 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <Editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" style="z-index: 29" :initial-value="noteContent" />
+    <Editor
+      id="uuid"
+      licenseKey="gpl"
+      :init="tinyMCEConfig"
+      style="z-index: 29"
+      :initial-value="noteContent"
+    />
   </main>
   <main v-else>
     <div>Note is loading...</div>
   </main>
 
   <div v-if="isEditing !== 0" id="click-exit" @click="isEditing = 0"></div>
-  <div v-if="isEditing === 2" id="subject-tooltip" class="tooltip"
-    :style="'left: ' + (tooltipX + 10) + 'px; top: ' + (tooltipY + 10) + 'px;'">
-    <v-select id="subject-edit" class="subject-edit has-background-light has-text-dark" placeholder="Subject"
-      :options="subjects" taggable v-model="currSubject">
+  <div
+    v-if="isEditing === 2"
+    id="subject-tooltip"
+    class="tooltip"
+    :style="'left: ' + (tooltipX + 10) + 'px; top: ' + (tooltipY + 10) + 'px;'"
+  >
+    <v-select
+      id="subject-edit"
+      class="subject-edit has-background-light has-text-dark"
+      placeholder="Subject"
+      :options="subjects"
+      taggable
+      v-model="currSubject"
+    >
       <template #search="{ attributes, events }">
         <input class="vs__search" v-bind="attributes" v-on="events" />
       </template>
@@ -351,10 +392,21 @@ onUnmounted(() => {
       <template #no-options="{ search }">{{ search }}</template>
     </v-select>
   </div>
-  <div v-if="isEditing === 3" id="tag-tooltip" class="tooltip"
-    :style="'left: ' + (tooltipX + 10) + 'px; top: ' + (tooltipY + 10) + 'px;'">
-    <v-select id="tag-edit" class="has-background-light has-text-dark" placeholder="Tags" :options="tags" multiple
-      taggable v-model="currTags">
+  <div
+    v-if="isEditing === 3"
+    id="tag-tooltip"
+    class="tooltip"
+    :style="'left: ' + (tooltipX + 10) + 'px; top: ' + (tooltipY + 10) + 'px;'"
+  >
+    <v-select
+      id="tag-edit"
+      class="has-background-light has-text-dark"
+      placeholder="Tags"
+      :options="tags"
+      multiple
+      taggable
+      v-model="currTags"
+    >
       <template #search="{ attributes, events }">
         <input class="vs__search" v-bind="attributes" v-on="events" />
       </template>
