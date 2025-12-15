@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCollection, useCurrentUser, useFirestore } from 'vuefire';
 import { collection, deleteDoc, doc, updateDoc } from 'firebase/firestore';
@@ -17,6 +17,21 @@ const db = useFirestore();
 
 const notesRef = collection(db, 'users', user.value.uid, 'notes');
 const notes = useCollection(notesRef);
+
+const selectionSet = ref(new Set());
+const anySelected = computed(() => selectionSet.value && selectionSet.value.size > 0);
+
+watch(
+  notes,
+  (newNotes) => {
+    if (!newNotes) return;
+    newNotes.forEach((n) => {
+      if (n && n.isSelected === undefined) { n.isSelected = false; };
+    });
+  },
+  { immediate: true, deep: true }
+);
+
 
 // ---------- FILTER STATE ----------
 const titleFilter = ref('');
@@ -76,12 +91,20 @@ const filteredNotes = computed(() => {
   pinned.sort(sortByFn);
   unpinned.sort(sortByFn);
 
-  return [...pinned, ...unpinned];
+  const out = [...pinned, ...unpinned]
+
+  return out;
 });
 
 // ---------- UI ACTIONS ----------
 function toggleSelected(note) {
   note.isSelected = !note.isSelected;
+
+  if (note.isSelected) {
+    selectionSet.value.add(note);
+  } else {
+    selectionSet.value.delete(note);
+  }
 }
 
 async function pinNote(id) {
@@ -93,6 +116,38 @@ async function pinNote(id) {
     console.error('unable to pin note:', e);
   }
 }
+
+async function pinSelectedNotes() {
+  const promises = [];
+
+  const is_all_pinned = Array.from(selectionSet.value).every((note) => note.pinned);
+
+  selectionSet.value.forEach((note) => {
+    if (is_all_pinned){
+
+      promises.push(
+        updateDoc(doc(db, 'users', user.value.uid, 'notes', note.id), {
+          pinned: false,
+        })
+      );
+    } else {
+      promises.push(
+        updateDoc(doc(db, 'users', user.value.uid, 'notes', note.id), {
+          pinned: true,
+        })
+      );
+    }
+
+  });
+
+  try {
+    await Promise.all(promises);
+    selectionSet.value.clear();
+  } catch (e) {
+    console.error('unable to pin notes:', e);
+  }
+}
+
 async function unpinNote(id) {
   try {
     await updateDoc(doc(db, 'users', user.value.uid, 'notes', id), {
@@ -110,6 +165,24 @@ async function deleteNote(id) {
     console.error('unable to delete note:', e);
   }
 }
+
+async function deleteSelectedNotes() {
+  const promises = [];
+
+  selectionSet.value.forEach((note) => {
+    promises.push(
+      deleteDoc(doc(db, 'users', user.value.uid, 'notes', note.id))
+    );
+  });
+
+  try {
+    await Promise.all(promises);
+    selectionSet.value.clear();
+  } catch (e) {
+    console.error('unable to delete notes:', e);
+  }
+}
+
 </script>
 
 <template>
@@ -136,6 +209,11 @@ async function deleteNote(id) {
         <option value="titleAsc">Sort: Title A-Z</option>
         <option value="titleDesc">Sort: Title Z-A</option>
       </select>
+
+      <div v-if="anySelected">
+        <button @click="pinSelectedNotes"><PinFillIcon color="red" />Pin notes</button>
+        <button @click="deleteSelectedNotes"><TrashIcon />Delete notes</button>
+      </div>
     </section>
 
     <!-- NOTES LIST -->
@@ -242,6 +320,8 @@ async function deleteNote(id) {
   gap: 0.5rem;
   margin-bottom: 0.8rem;
   align-items: center;
+  font-family: var(--bulma-body-family);
+  color: #000;
 }
 
 .control-chip {
@@ -391,7 +471,7 @@ async function deleteNote(id) {
 
 .icon-btn.icon-delete {
   font-size: 1.2rem;
-  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', system-ui, sans-serif;
+  /* font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', system-ui, sans-serif; */
 }
 
 .icon-btn.expand {
