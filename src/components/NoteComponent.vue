@@ -13,6 +13,7 @@ import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/fires
 import PlayIcon from './icons/IconPlay.vue';
 import StopIcon from './icons/IconStop.vue';
 import CancelIcon from './icons/IconCross.vue';
+import DotsIcon from './icons/IconDots.vue';
 
 import tinymce from 'tinymce';
 
@@ -113,7 +114,7 @@ const noteContent = computed(() => {
   return note.value.htmlContent ? note.value.htmlContent : note.value.notes;
 });
 
-const isEditingTitle = ref(false);
+const isEditing = ref(0);
 const isTranscribing = ref(false);
 
 function startRecording() {
@@ -144,7 +145,7 @@ function resetTitle() {
   if (noteId.value) currTitle.value = noteTitle.value;
   else currTitle.value = 'Untitled Note';
 
-  isEditingTitle.value = false;
+  isEditing.value = 0;
 }
 
 const currSubject = ref('');
@@ -255,7 +256,7 @@ onUnmounted(() => {
       </div>
 
       <div class="button-set-center">
-        <div id="title-edit" v-if="isEditingTitle">
+        <div id="title-edit" v-if="isEditing === 1">
           <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
 
           <button
@@ -266,40 +267,48 @@ onUnmounted(() => {
             <CancelIcon />
           </button>
         </div>
-        <span v-else id="title-edit" class="has-text-dark" @click="isEditingTitle = true">
+        <span v-else id="title-edit" class="has-text-dark" @click="isEditing = 1">
           {{ currTitle }}
         </span>
 
-        <v-select
-          id="subject-edit"
-          class="subject-edit has-background-light has-text-dark"
-          placeholder="Subject"
-          :options="subjects"
-          taggable
-          v-model="currSubject"
-        >
-          <template #search="{ attributes, events }">
-            <input class="vs__search" v-bind="attributes" v-on="events" />
-          </template>
+        <div id="tooltip-container">
+          <button class="button is-light" @click="isEditing = 2">
+            <DotsIcon />
+          </button>
 
-          <template #no-options="{ search }">Add: {{ search }}</template>
-        </v-select>
+          <div v-if="isEditing === 2" id="tooltip">
+            <v-select
+              id="subject-edit"
+              class="subject-edit has-background-light has-text-dark"
+              placeholder="Subject"
+              :options="subjects"
+              taggable
+              v-model="currSubject"
+            >
+              <template #search="{ attributes, events }">
+                <input class="vs__search" v-bind="attributes" v-on="events" />
+              </template>
 
-        <v-select
-          id="tag-edit"
-          class="has-background-light has-text-dark"
-          placeholder="Tags"
-          :options="tags"
-          multiple
-          taggable
-          v-model="currTags"
-        >
-          <template #search="{ attributes, events }">
-            <input class="vs__search" v-bind="attributes" v-on="events" />
-          </template>
+              <template #no-options="{ search }">Add: {{ search }}</template>
+            </v-select>
 
-          <template #no-options="{ search }">Add: {{ search }}</template>
-        </v-select>
+            <v-select
+              id="tag-edit"
+              class="has-background-light has-text-dark"
+              placeholder="Tags"
+              :options="tags"
+              multiple
+              taggable
+              v-model="currTags"
+            >
+              <template #search="{ attributes, events }">
+                <input class="vs__search" v-bind="attributes" v-on="events" />
+              </template>
+
+              <template #no-options="{ search }">Add: {{ search }}</template>
+            </v-select>
+          </div>
+        </div>
       </div>
 
       <div class="">
@@ -320,8 +329,28 @@ onUnmounted(() => {
     <div>Note is loading...</div>
   </main>
 
-  <div v-if="isEditingTitle" id="click-exit" @click="isEditingTitle = false"></div>
+  <div v-if="isEditing !== 0" id="click-exit" @click="isEditing = 0"></div>
 </template>
+
+<style>
+.vs__dropdown-toggle {
+  border: 0;
+}
+
+.vs__search {
+  line-height: 1.75;
+  color: var(--bulma-input-placeholder-color);
+}
+
+.vs__selected-options {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.vs__selected {
+  text-wrap: nowrap;
+}
+</style>
 
 <style scoped>
 #click-exit {
@@ -347,9 +376,10 @@ onUnmounted(() => {
 .button-set-center {
   flex-grow: 1;
 
-  display: grid;
-  grid-template-columns: 3fr 1fr 1.5fr;
-  gap: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
 }
 
 #title-edit {
@@ -369,11 +399,31 @@ span#title-edit {
   padding: 7px 11px;
 }
 
-.vs__search {
-  line-height: 1.75;
+#subject-edit {
+  border-top-left-radius: var(--vs-border-radius);
+  border-top-right-radius: var(--vs-border-radius);
 }
 
-.vs__search {
-  color: var(--bulma-input-placeholder-color);
+#tag-edit {
+  border-bottom-left-radius: var(--vs-border-radius);
+  border-bottom-right-radius: var(--vs-border-radius);
+}
+
+#tooltip-container {
+  position: relative;
+}
+
+#tooltip {
+  display: hidden;
+
+  position: absolute;
+  z-index: 32;
+  right: 2.5rem;
+
+  border: 3px solid black;
+  border-radius: 15px;
+  padding: 1rem;
+
+  background-color: gray;
 }
 </style>
