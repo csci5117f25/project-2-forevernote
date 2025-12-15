@@ -1,5 +1,5 @@
 <script>
-let speechObj = null;
+// let speechObj = null;
 </script>
 
 <script setup>
@@ -70,7 +70,8 @@ const tinyMCEConfig = {
 };
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const transcriptionSupport = typeof SpeechRecognition !== 'undefined';
+const transcriptionSupport =
+  !navigator.userAgent.includes('Mozilla') && typeof SpeechRecognition !== 'undefined';
 
 const router = useRouter();
 const route = useRoute();
@@ -118,22 +119,22 @@ const isTranscribing = ref(false);
 function startRecording() {
   isTranscribing.value = true;
 
-  speechObj = new SpeechRecognition();
-  speechObj.start();
-  speechObj.onresult = (e) => {
-    const transcript = e.results[0][0].transcript;
+  // speechObj = new SpeechRecognition();
+  // speechObj.start();
+  // speechObj.onresult = (e) => {
+  //   const transcript = e.results[0][0].transcript;
 
-    appendToEditor(transcript);
-  };
-  speechObj.onend = () => {
-    if (speechObj !== null && isTranscribing.value) {
-      speechObj.start();
-    }
-  };
+  //   appendToEditor(transcript);
+  // };
+  // speechObj.onend = () => {
+  //   if (speechObj !== null && isTranscribing.value) {
+  //     speechObj.start();
+  //   }
+  // };
 }
 function stopRecording() {
-  speechObj.stop();
-  speechObj = null;
+  // speechObj.stop();
+  // speechObj = null;
 
   isTranscribing.value = false;
 }
@@ -156,8 +157,6 @@ function appendToEditor(text) {
 
     return;
   }
-
-  console.log(text);
 
   editorRef.value.selection.select(editorRef.value.getBody(), true);
   editorRef.value.selection.collapse(false);
@@ -224,10 +223,10 @@ watch(note, () => {
 });
 
 onUnmounted(() => {
-  if (speechObj !== null) {
-    speechObj.stop();
-    speechObj = null;
-  }
+  // if (speechObj !== null) {
+  //   speechObj.stop();
+  //   speechObj = null;
+  // }
 });
 </script>
 
