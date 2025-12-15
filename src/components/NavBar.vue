@@ -1,7 +1,6 @@
 <script>
 import { GoogleAuthProvider } from 'firebase/auth';
 
-
 const googleAuthProvider = new GoogleAuthProvider();
 </script>
 
@@ -20,7 +19,7 @@ const auth = useFirebaseAuth();
 const user = useCurrentUser();
 const db = useFirestore();
 
-const {isDark, toggle} = useTheme();
+const { isDark, toggle } = useTheme();
 
 async function login() {
   await signInWithPopup(auth, googleAuthProvider);
@@ -78,10 +77,16 @@ onMounted(() => {
         <div class="navbar-end">
           <div v-if="user" class="buttons">
             <button class="button is-primary is-rounded" @click="toggle">
-              {{ isDark ? "☀️": "🌙" }}
+              {{ isDark ? '☀️' : '🌙' }}
             </button>
-            <button v-if="!user" class="button is-primary is-rounded" @click="login">Get Started</button>
-            <button v-if="user" class="button is-primary is-rounded" @click="router.push({ name: 'profile' })">
+            <button v-if="!user" class="button is-primary is-rounded" @click="login">
+              Get Started
+            </button>
+            <button
+              v-if="user"
+              class="button is-primary is-rounded"
+              @click="router.push({ name: 'profile' })"
+            >
               View Profile
             </button>
           </div>
@@ -113,18 +118,17 @@ nav {
   color: var(--text);
 }
 
-.navbar-item{
+.navbar-item {
   font-weight: 600;
   color: var(--text);
 }
 
-.navbar-end{
+.navbar-end {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 0.25rem;
 }
-
 
 @media (max-width: 768px) {
   #logo {

@@ -258,12 +258,21 @@ onUnmounted(() => {
   <main v-if="isLoaded">
     <div id="button-set">
       <div class="">
-        <button v-if="!isTranscribing" class="button is-success" @click="startRecording"
-          :disabled="!transcriptionSupport">
+        <button
+          v-if="!isTranscribing"
+          class="button is-success"
+          @click="startRecording"
+          :disabled="!transcriptionSupport"
+        >
           <PlayIcon />
           <span>Start Transcription</span>
         </button>
-        <button v-else class="button is-danger" @click="stopRecording" :disabled="!transcriptionSupport">
+        <button
+          v-else
+          class="button is-danger"
+          @click="stopRecording"
+          :disabled="!transcriptionSupport"
+        >
           <StopIcon />
           <!-- TOOD: Put Frequencey Plot Here -->
           <span>Stop Transcription</span>
@@ -274,8 +283,11 @@ onUnmounted(() => {
         <div id="title-edit" v-if="isEditing === 1">
           <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
 
-          <button v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'" class="button"
-            @click="resetTitle">
+          <button
+            v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'"
+            class="button"
+            @click="resetTitle"
+          >
             <CancelIcon />
           </button>
         </div>
@@ -289,8 +301,14 @@ onUnmounted(() => {
           </button>
 
           <div v-if="isEditing === 2" id="tooltip">
-            <v-select id="subject-edit" class="subject-edit has-background-light has-text-dark" placeholder="Subject"
-              :options="subjects" taggable v-model="currSubject">
+            <v-select
+              id="subject-edit"
+              class="subject-edit has-background-light has-text-dark"
+              placeholder="Subject"
+              :options="subjects"
+              taggable
+              v-model="currSubject"
+            >
               <template #search="{ attributes, events }">
                 <input class="vs__search" v-bind="attributes" v-on="events" />
               </template>
@@ -298,8 +316,15 @@ onUnmounted(() => {
               <template #no-options="{ search }">Add: {{ search }}</template>
             </v-select>
 
-            <v-select id="tag-edit" class="has-background-light has-text-dark" placeholder="Tags" :options="tags"
-              multiple taggable v-model="currTags">
+            <v-select
+              id="tag-edit"
+              class="has-background-light has-text-dark"
+              placeholder="Tags"
+              :options="tags"
+              multiple
+              taggable
+              v-model="currTags"
+            >
               <template #search="{ attributes, events }">
                 <input class="vs__search" v-bind="attributes" v-on="events" />
               </template>
@@ -316,7 +341,13 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <Editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" style="z-index: 29" :initial-value="noteContent" />
+    <Editor
+      id="uuid"
+      licenseKey="gpl"
+      :init="tinyMCEConfig"
+      style="z-index: 29"
+      :initial-value="noteContent"
+    />
   </main>
   <main v-else>
     <div>Note is loading...</div>

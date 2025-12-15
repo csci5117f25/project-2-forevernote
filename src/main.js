@@ -9,10 +9,10 @@ import router from '@/router';
 import { firebaseApp } from '@/firebase';
 
 const theme = localStorage.getItem('theme') || 'light';
-if (theme === 'dark'){
+if (theme === 'dark') {
   document.documentElement.classList.add('dark');
 }
-if (theme === 'light'){
+if (theme === 'light') {
   document.documentElement.classList.remove('dark');
 }
 
