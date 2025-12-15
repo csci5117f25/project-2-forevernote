@@ -21,6 +21,8 @@ const notes = useCollection(notesRef);
 const selectionSet = ref(new Set());
 const anySelected = computed(() => selectionSet.value && selectionSet.value.size > 0);
 
+const expandedSet = ref(new Set());
+
 watch(
   notes,
   (newNotes) => {
@@ -183,6 +185,15 @@ async function deleteSelectedNotes() {
   }
 }
 
+function togglePreview(note) {
+  const s = expandedSet.value || new Set();
+  if (s.has(note.id)) s.delete(note.id);
+  else s.add(note.id);
+  expandedSet.value = new Set(s);
+
+  console.log("expandedSet.value: ", expandedSet.value);
+}
+
 </script>
 
 <template>
@@ -211,8 +222,8 @@ async function deleteSelectedNotes() {
       </select>
 
       <div v-if="anySelected">
-        <button @click="pinSelectedNotes"><PinFillIcon color="red" />Pin notes</button>
-        <button @click="deleteSelectedNotes"><TrashIcon />Delete notes</button>
+        <button class="selected-text-functionality" @click="pinSelectedNotes"><PinFillIcon color="red" />Pin notes</button>
+        <button class="selected-text-functionality" @click="deleteSelectedNotes"><TrashIcon />Delete notes</button>
       </div>
     </section>
 
@@ -261,10 +272,14 @@ async function deleteSelectedNotes() {
             <TrashIcon />
           </button>
 
-          <button class="icon-btn expand" title="More">
-            <!-- TODO: display the notes slightly? or redirect the the edit page -->
+          <button class="icon-btn expand" title="More" @click.stop="togglePreview(note)">
             <DownIcon />
           </button>
+        </div>
+
+        <div v-if="expandedSet.has(note.id)" class="note-preview-row">
+          <div v-if="note.htmlContent" class="note-preview" v-html="note.htmlContent"></div>
+          <div v-else class="note-preview">{{ note.notes }}</div>
         </div>
       </article>
     </section>
@@ -317,11 +332,12 @@ async function deleteSelectedNotes() {
 .controls-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.2rem;
   margin-bottom: 0.8rem;
   align-items: center;
-  font-family: var(--bulma-body-family);
+  font-family: sans-serif;
   color: #000;
+  font-size: 0.8rem;
 }
 
 .control-chip {
@@ -350,6 +366,16 @@ async function deleteSelectedNotes() {
   background: #fff;
 }
 
+.selected-text-functionality{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
 /* NOTES LIST */
 .notes-list {
   display: flex;
@@ -366,6 +392,13 @@ async function deleteSelectedNotes() {
   background-image: linear-gradient(to right, rgb(252, 164, 0), rgb(183, 119, 0));
   padding: 0.4rem 0.6rem;
   border-radius: 0.5rem;
+}
+
+.note-preview-row {
+  margin: 0.25rem 0 0 0;
+  grid-column: 2 / -1;
+  color: #000;
+  background: #FFF;
 }
 
 /* Notion-style checkbox */
