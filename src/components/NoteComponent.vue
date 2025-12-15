@@ -13,7 +13,6 @@ import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/fires
 import PlayIcon from './icons/IconPlay.vue';
 import StopIcon from './icons/IconStop.vue';
 import CancelIcon from './icons/IconCross.vue';
-import DotsIcon from './icons/IconDots.vue';
 
 import tinymce from 'tinymce';
 
@@ -62,7 +61,6 @@ const tinyMCEConfig = {
     'advlist anchor autolink autoresize charmap code fullscreen image insertdatetime link lists media preview searchreplace table visualblocks wordcount',
   toolbar:
     'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
-  // height: 500,
   resize: false,
   promotion: false,
   setup: (e) => {
@@ -73,7 +71,7 @@ const tinyMCEConfig = {
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const transcriptionSupport =
   typeof SpeechRecognition !== 'undefined' && typeof window.Worker !== 'undefined';
-const isFirefox = computed(() => navigator.userAgent.includes('Firefox'));
+const isFirefox = navigator.userAgent.includes('Firefox');
 
 const router = useRouter();
 const route = useRoute();
@@ -102,12 +100,22 @@ function onExit() {
 function isChanged() {
   // Check for title changes
   if (currTitle.value !== noteTitle.value) return true;
+
   // Check for editor changes
   if (editorRef.value && editorRef.value.isDirty()) return true;
+
   // Check for subject changes
   if (note.value && note.value.subject && currSubject.value !== note.value.subject) return true;
+
   // Check for tag changes
-  // TODO
+  const noteSet = new Set(note.value.tags);
+  const currSet = new Set(currTags.value);
+  if (
+    note.value &&
+    note.value.tags &&
+    (noteSet.size !== currSet.size || !(noteSet.isSubsetOf(currSet) && currSet.isSubsetOf(noteSet)))
+  )
+    return true;
 
   return false;
 }
@@ -119,10 +127,12 @@ const isLoaded = ref(noteId.value ? false : true);
 
 const notesRef = collection(db, 'users', user.value.uid, 'notes');
 const notes = useCollection(notesRef);
-const subjects = computed(() =>
-  notes.value.filter((note) => note.subject).map((note) => note.subject),
+const subjects = computed(
+  () => [... new Set(notes.value.filter((note) => note.subject).map((note) => note.subject))],
 );
-const tags = computed(() => notes.value.filter((note) => note.tags).flatMap((note) => note.tags));
+const tags = computed(
+  () => [... new Set(notes.value.filter((note) => note.tags).flatMap((note) => note.tags))],
+);
 
 const noteRef = noteId.value ? doc(db, 'users', user.value.uid, 'notes', noteId.value) : undefined;
 const note = useDocument(noteRef);
@@ -139,6 +149,9 @@ const noteContent = computed(() => {
 
 const isEditing = ref(0);
 const isTranscribing = ref(false);
+
+const tooltipX = ref(0);
+const tooltipY = ref(0);
 
 function startRecording() {
   isTranscribing.value = true;
@@ -199,6 +212,8 @@ async function submitNote() {
     title: currTitle.value,
     notes: tinymce.activeEditor.getContent({ format: 'text' }),
     htmlContent: tinymce.activeEditor.getContent(),
+    subject: currSubject.value,
+    tags: currTags.value,
     createdAt: serverTimestamp(),
     lastEdited: serverTimestamp(),
   };
@@ -222,9 +237,9 @@ async function updateNote() {
   const data = {
     title: currTitle.value,
     notes: tinymce.activeEditor.getContent({ format: 'text' }),
+    htmlContent: tinymce.activeEditor.getContent(),
     subject: currSubject.value,
     tags: currTags.value,
-    htmlContent: tinymce.activeEditor.getContent(),
     lastEdited: serverTimestamp(),
   };
 
@@ -256,63 +271,65 @@ onUnmounted(() => {
 
 <template>
   <main v-if="isLoaded">
-    <div id="button-set">
-      <div class="">
-        <button v-if="!isTranscribing" class="button is-success" @click="startRecording"
-          :disabled="!transcriptionSupport">
-          <PlayIcon />
-          <span>Start Transcription</span>
-        </button>
-        <button v-else class="button is-danger" @click="stopRecording" :disabled="!transcriptionSupport">
-          <StopIcon />
-          <!-- TOOD: Put Frequencey Plot Here -->
-          <span>Stop Transcription</span>
-        </button>
-      </div>
-
-      <div class="button-set-center">
-        <div id="title-edit" v-if="isEditing === 1">
-          <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
-
-          <button v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'" class="button"
-            @click="resetTitle">
-            <CancelIcon />
+    <div id="header">
+      <div id="button-set">
+        <div class="">
+          <button v-if="!isTranscribing" class="button is-success" @click="startRecording"
+            :disabled="!transcriptionSupport">
+            <PlayIcon />
+            <span>Start Transcription</span>
+          </button>
+          <button v-else class="button is-danger" @click="stopRecording" :disabled="!transcriptionSupport">
+            <StopIcon />
+            <!-- TOOD: Put Frequencey Plot Here -->
+            <span>Stop Transcription</span>
           </button>
         </div>
-        <span v-else id="title-edit" class="has-text-dark" @click="isEditing = 1">
-          {{ currTitle }}
+
+        <div class="button-set-center">
+          <div id="title-edit" v-if="isEditing === 1">
+            <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
+
+            <button v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'" class="button"
+              @click="resetTitle">
+              <CancelIcon />
+            </button>
+          </div>
+          <span v-else id="title-edit" class="has-text-dark" @click="isEditing = 1">
+            {{ currTitle }}
+          </span>
+        </div>
+
+        <div>
+          <button v-if="noteId" class="button is-warning" @click="updateNote" :disabled="isChanged">Update</button>
+          <button v-else class="button is-primary" @click="submitNote">Submit</button>
+        </div>
+      </div>
+
+      <div id="label-set">
+        <span v-if="note.subject" class="course-pill" @click="
+          (e) => {
+            tooltipX = e.clientX;
+            tooltipY = e.clientY;
+
+            isEditing = 2;
+          }
+        ">
+          {{ note.subject }}
         </span>
 
-        <div id="tooltip-container">
-          <button class="button is-light" @click="isEditing = 2">
-            <DotsIcon />
-          </button>
+        <div id="tag-set" @click="
+          (e) => {
+            tooltipX = e.clientX;
+            tooltipY = e.clientY;
 
-          <div v-if="isEditing === 2" id="tooltip">
-            <v-select id="subject-edit" class="subject-edit has-background-light has-text-dark" placeholder="Subject"
-              :options="subjects" taggable v-model="currSubject">
-              <template #search="{ attributes, events }">
-                <input class="vs__search" v-bind="attributes" v-on="events" />
-              </template>
-
-              <template #no-options="{ search }">Add: {{ search }}</template>
-            </v-select>
-
-            <v-select id="tag-edit" class="has-background-light has-text-dark" placeholder="Tags" :options="tags"
-              multiple taggable v-model="currTags">
-              <template #search="{ attributes, events }">
-                <input class="vs__search" v-bind="attributes" v-on="events" />
-              </template>
-
-              <template #no-options="{ search }">Add: {{ search }}</template>
-            </v-select>
-          </div>
+            isEditing = 3;
+          }
+        ">
+          <span v-for="(tag, idx) in currTags.sort()" :key="`${tag}-${idx}`" class="tag-pill">
+            {{ tag }}
+          </span>
         </div>
-      </div>
-
-      <div class="">
-        <button v-if="noteId" class="button is-warning" @click="updateNote">Update</button>
-        <button v-else class="button is-primary" @click="submitNote">Submit</button>
       </div>
     </div>
 
@@ -323,6 +340,28 @@ onUnmounted(() => {
   </main>
 
   <div v-if="isEditing !== 0" id="click-exit" @click="isEditing = 0"></div>
+  <div v-if="isEditing === 2" id="subject-tooltip" class="tooltip"
+    :style="'left: ' + (tooltipX + 10) + 'px; top: ' + (tooltipY + 10) + 'px;'">
+    <v-select id="subject-edit" class="subject-edit has-background-light has-text-dark" placeholder="Subject"
+      :options="subjects" taggable v-model="currSubject">
+      <template #search="{ attributes, events }">
+        <input class="vs__search" v-bind="attributes" v-on="events" />
+      </template>
+
+      <template #no-options="{ search }">{{ search }}</template>
+    </v-select>
+  </div>
+  <div v-if="isEditing === 3" id="tag-tooltip" class="tooltip"
+    :style="'left: ' + (tooltipX + 10) + 'px; top: ' + (tooltipY + 10) + 'px;'">
+    <v-select id="tag-edit" class="has-background-light has-text-dark" placeholder="Tags" :options="tags" multiple
+      taggable v-model="currTags">
+      <template #search="{ attributes, events }">
+        <input class="vs__search" v-bind="attributes" v-on="events" />
+      </template>
+
+      <template #no-options="{ search }">{{ search }}</template>
+    </v-select>
+  </div>
 </template>
 
 <style>
@@ -338,6 +377,10 @@ onUnmounted(() => {
 .vs__selected-options {
   flex-wrap: nowrap;
   overflow: hidden;
+}
+
+#tag-edit .vs__selected-options {
+  flex-wrap: wrap;
 }
 
 .vs__selected {
@@ -356,6 +399,10 @@ onUnmounted(() => {
   height: 100vh;
 }
 
+#header {
+  margin-bottom: 1rem;
+}
+
 #button-set {
   display: flex;
   flex-direction: row;
@@ -363,7 +410,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 1rem;
 
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .button-set-center {
@@ -392,14 +439,51 @@ span#title-edit {
   padding: 7px 11px;
 }
 
+#label-set {
+  width: 100%;
+}
+
+#tag-set {
+  width: 100%;
+
+  margin-top: 0.5rem;
+}
+
+.course-pill {
+  border: 1px solid #000;
+  border-radius: 999px;
+  padding: 0.1rem 0.4rem;
+
+  color: rgb(50, 50, 50);
+  background: #f8b377;
+  font-size: 1rem;
+}
+
+.tag-pill {
+  margin-right: 0.5rem;
+  border: 1px solid #000;
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+
+  color: rgb(100, 100, 50);
+  background: #ffd9b5;
+  font-size: 0.9rem;
+}
+
 #subject-edit {
-  border-top-left-radius: var(--vs-border-radius);
-  border-top-right-radius: var(--vs-border-radius);
+  min-width: 15rem;
+
+  border-radius: var(--vs-border-radius);
 }
 
 #tag-edit {
-  border-bottom-left-radius: var(--vs-border-radius);
-  border-bottom-right-radius: var(--vs-border-radius);
+  width: 25rem;
+
+  border-radius: var(--vs-border-radius);
+}
+
+#tag-edit .vs__selected-options {
+  flex-wrap: wrap;
 }
 
 #tooltip-container {
@@ -407,11 +491,24 @@ span#title-edit {
 }
 
 #tooltip {
+  min-width: 15rem;
+
   display: hidden;
 
   position: absolute;
   z-index: 32;
   right: 2.5rem;
+
+  border: 3px solid black;
+  border-radius: 15px;
+  padding: 1rem;
+
+  background-color: gray;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 32;
 
   border: 3px solid black;
   border-radius: 15px;
