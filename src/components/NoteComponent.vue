@@ -314,7 +314,7 @@ onUnmounted(() => {
       licenseKey="gpl"
       :init="tinyMCEConfig"
       style="z-index: 29"
-      :initialValue="noteContent"
+      :initial-value="noteContent"
     />
   </main>
   <main v-else>
