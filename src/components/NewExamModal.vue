@@ -45,7 +45,7 @@ async function addExam() {
           <label class="label">Exam:</label>
           <div class="control">
             <input
-              class="input is-rounded"
+              class="input"
               type="text"
               required
               placeholder="exam name"
@@ -68,14 +68,14 @@ async function addExam() {
         <div class="field">
           <label class="label">Date & Time:</label>
           <div class="control">
-            <input class="input is-rounded" type="datetime-local" v-model="newExamDatetime" />
+            <input class="input" type="datetime-local" v-model="newExamDatetime" />
           </div>
         </div>
         <div class="field">
           <label class="label">Location:</label>
           <div class="control">
             <input
-              class="input is-rounded"
+              class="input"
               type="text"
               placeholder="room or hall"
               v-model="newExamLocation"
@@ -86,7 +86,7 @@ async function addExam() {
           <label class="label">Topics:</label>
           <div class="control">
             <input
-              class="input is-rounded"
+              class="input"
               type="text"
               placeholder="covered topics"
               v-model="newExamTopics"
@@ -95,7 +95,7 @@ async function addExam() {
         </div>
 
         <div class="field has-text-centered mt-5">
-          <button class="button is-primary is-fullwidth rounded-btn" @click="addExam">
+          <button class="button is-primary is-fullwidth rounded-btn">
             Save Exam
           </button>
         </div>
@@ -119,26 +119,34 @@ async function addExam() {
 
 /* Frosted container */
 .frosted-container {
-  background: rgba(255, 245, 245, 0.743);
+  background: var(--modal-color);
   backdrop-filter: blur(12px);
   border-radius: 20px;
   padding: 1.5rem;
   width: 100%;
   max-width: 40vw;
-  color: black;
 }
 
+.frosted-container {
+  width: 100%;
+  max-width: 520px;   /* desktop */
+  max-height: 90vh;   /* critical for phones */
+  overflow-y: auto;   /* allow scrolling */
+}
+
+
 .title {
-  color: rgb(193, 132, 20);
+  color: var(--h1-color);
 }
 
 label {
-  color: rgb(0, 0, 0);
+  color: var(--text);
 }
 
 input,
 select {
-  background-color: rgba(70, 69, 68, 0.605);
+  background-color: rgba(255, 255, 255, 0.549);
+  color: black;
 }
 
 /* Rounded Button */
@@ -148,8 +156,25 @@ select {
 
 /* Mobile tweaks */
 @media (max-width: 480px) {
-  .frosted-container {
-    padding: 1.5rem;
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
   }
+
+  .frosted-container {
+    border-radius: 16px 16px 0 0;
+    padding: 1.25rem;
+    max-height: 85vh;
+  }
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+.input,
+select {
+  min-height: 44px; /* Apple recommended */
+  font-size: 1rem;
 }
 </style>

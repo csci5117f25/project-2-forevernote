@@ -40,7 +40,8 @@ function showNewExamModal() {
 <template>
   <div id="dashboard-container">
     <div id="greeting">
-      <h1>Hey {{ user.displayName }}!</h1>
+      <h1>Hey 
+      <span class="greeting-name">{{ user.displayName }}</span>,</h1>
     </div>
 
     <div id="recent-notes">
@@ -117,7 +118,7 @@ function showNewExamModal() {
         </template>
       </Carousel>
       <div v-else class="gallery">
-        <p>You have no upcoming exams!</p>
+        <p class="no-upcoming-exam">You have no upcoming exams!</p>
       </div>
     </div>
 
@@ -129,13 +130,21 @@ function showNewExamModal() {
 #dashboard-container {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  align-items: left;
-
-  padding: 0rem 2rem 10rem;
-  width: 98%;
-  margin: 1%;
   gap: 1rem;
+  width: 100%;
+  padding-bottom: 10rem;
+}
+
+#greeting,
+#recent-notes > h2,
+#upcoming-exams-h, 
+.no-upcoming-exam {
+  padding-inline: 1.5rem;
+}
+
+#note-carousel,
+#exam-carousel {
+  width: 100vw;
 }
 
 #greeting {
@@ -144,31 +153,32 @@ function showNewExamModal() {
   text-align: left;
 }
 
+.greeting-name {
+  color: rgb(247, 165, 12)
+}
+
 #greeting > h1 {
-  color: var(--h1-color);
+  color: var(--dash-h1-color);
   width: 100%;
   font-size: 4rem;
   font-weight: 700;
 }
 
-/* #recent-notes {} */
-
-/* #upcoming-exams {} */
 #upcoming-exams-h {
   display: flex;
   flex-direction: row;
-
   margin-bottom: 2%;
+  justify-content: space-between;
+}
+
+#recent-notes, #upcoming-exams {
+  font-size: 1.3rem;
 }
 
 #add-exam-button {
   align-items: flex-end;
+
 }
-
-/* #note-carousel {} */
-/* #exam-carousel {} */
-
-/* Generic Class CSS */
 .gallery {
   height: 40vh;
 }
@@ -204,7 +214,7 @@ function showNewExamModal() {
   display: -webkit-box;
   -webkit-box-orient: vertical;
 
-  font-size: 1.2rem;
+  font-size: 2.0rem;
   font-weight: bold;
   color: white;
 
@@ -245,20 +255,50 @@ function showNewExamModal() {
 }
 
 @media (max-width: 480px) {
-  .gallery-cell {
-    width: 80vw;
+
+  #greeting > h1 {
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  line-height: 1.0;
+  word-break: break-word;
   }
 
+  #recent-notes, #upcoming-exams {
+  font-size: 1.0rem;
+}
+
+  .gallery-cell {
+    width: 85%;
+    max-height: 300px;
+  }
   .gallery {
-    height: 50vh;
-    width: 80vw;
+    height: auto;
+    max-height: 320px;
   }
 
   .hello-message-div h1 {
     color: var(--h1-color);
     width: 100%;
-    font-size: 2.4rem;
+    font-size: 1rem;
     font-weight: 700;
+  }
+
+  .gallery-cell-header > h2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: white;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    line-clamp: 1;
+    -webkit-line-clamp: 1;
+  }
+  #add-exam-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
   }
 }
 </style>

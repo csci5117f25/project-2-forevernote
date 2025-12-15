@@ -76,13 +76,20 @@ onMounted(() => {
         </div>
 
         <div class="navbar-end">
-          <div v-if="user" class="buttons">
-            <button class="button is-primary is-rounded" @click="toggle">
-              {{ isDark ? "☀️": "🌙" }}
+          <div v-if="user" class="nav-footer">
+            <button class="profile-pill"
+              @click="router.push({ name: 'profile' })">
+              👤 Profile
             </button>
-            <button v-if="!user" class="button is-primary is-rounded" @click="login">Get Started</button>
-            <button v-if="user"class="button is-primary is-rounded" @click="router.push({ name: 'profile' })">
-              View Profile
+          
+            <button class="theme-toggle" @click="toggle">
+              {{ isDark ? "☀️" : "🌙" }}
+            </button>
+          </div>
+        
+          <div v-else class="nav-footer">
+            <button class="profile-pill" @click="login">
+              Get Started
             </button>
           </div>
         </div>
@@ -107,14 +114,26 @@ nav {
   object-fit: contain;
 }
 
+.navbar-menu,
+.navbar-start,
+.navbar-end {
+  background-color: var(--navbar-bg);
+}
 .navbar {
   border-bottom: 1pt solid gray;
+  padding-inline: 0.5rem;
+  box-sizing: border-box;
   background-color: var(--navbar-bg);
-  color: var(--text);
+  color: white;
 }
 
 .navbar-item{
   font-weight: 600;
+  color: white;
+}
+
+.navbar-start{
+  background-color: var(--navbar-bg);
   color: var(--text);
 }
 
@@ -123,6 +142,43 @@ nav {
   flex-direction: row;
   align-items: center;
   gap: 0.25rem;
+  background-color: var(--navbar-bg);
+  color: white;
+}
+
+.nav-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.profile-pill {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  font-weight: 600;
+  border: none;
+}
+
+.theme-toggle {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+}
+.theme-toggle {
+  opacity: 0.85;
+}
+
+.theme-toggle:hover {
+  opacity: 1;
+}
+
+.navbar-item:hover,
+.navbar-item:focus {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: white;
 }
 
 
@@ -138,6 +194,13 @@ nav {
 
   #main-navbar {
     padding: 0.4rem 0.8rem;
+  }
+
+  .nav-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    justify-content: space-between;
+    width: 100%;
   }
 }
 </style>

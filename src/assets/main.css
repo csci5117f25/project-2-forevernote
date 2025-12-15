@@ -7,18 +7,20 @@
   --border: #dbdbdb;
   --navbar-bg: #db6307;
   --h1-color: rgb(255, 166, 0);
-  --modal-color: #f1eded2e;
+  --dash-h1-color: rgb(0, 0, 0);
+  --modal-color: #ede6d6;
   --question-block-bg: #f4e5c0c5;
 }
 
 .dark {
-  --bg: #28170d;
+  --bg: #1a110b;
   --text: #eaeaea;
   --card: #1e1e1e;
   --border: #363636;
   --navbar-bg: #db6307;
   --h1-color: rgb(255, 166, 0);
-  --modal-color: #18ae2cb3;
+  --dash-h1-color: rgb(255, 255, 255);
+  --modal-color: rgba(56, 55, 55, 0.845);
   --question-block-bg: #451b03;
 }
 
