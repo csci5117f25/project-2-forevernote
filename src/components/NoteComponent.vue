@@ -1,12 +1,14 @@
+<script>
+let speechObj = null;
+</script>
+
 <script setup>
 import 'vue-select/dist/vue-select.css';
 
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, onUnmounted, ref, watch } from 'vue';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { useCollection, useCurrentUser, useDocument, useFirestore } from 'vuefire';
 import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
-
-import AudioEngine from './AudioEngine.vue';
 
 import PlayIcon from './icons/IconPlay.vue';
 import StopIcon from './icons/IconStop.vue';
@@ -62,14 +64,30 @@ const tinyMCEConfig = {
   // height: 500,
   resize: false,
   promotion: false,
+  setup: (e) => {
+    editorRef.value = e;
+  },
 };
 
-const transcriptionSupport = typeof Worker !== 'undefined' && typeof AudioContext !== 'undefined';
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const transcriptionSupport = typeof SpeechRecognition !== 'undefined';
 
 const router = useRouter();
 const route = useRoute();
 const db = useFirestore();
 const user = useCurrentUser();
+
+onBeforeRouteLeave(() => {
+  if (isTranscribing.value) {
+    if (!confirm('Are you sure?')) return false;
+
+    return true;
+  }
+
+  return true;
+});
+
+const editorRef = ref(null);
 
 const noteId = computed(() => route.params.id);
 const isLoaded = ref(noteId.value ? false : true);
@@ -99,8 +117,24 @@ const isTranscribing = ref(false);
 
 function startRecording() {
   isTranscribing.value = true;
+
+  speechObj = new SpeechRecognition();
+  speechObj.start();
+  speechObj.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+
+    appendToEditor(transcript);
+  };
+  speechObj.onend = () => {
+    if (speechObj !== null && isTranscribing.value) {
+      speechObj.start();
+    }
+  };
 }
 function stopRecording() {
+  speechObj.stop();
+  speechObj = null;
+
   isTranscribing.value = false;
 }
 
@@ -123,15 +157,13 @@ function appendToEditor(text) {
     return;
   }
 
-  tinymce.activeEditor.execCommand('mceInsertContent', false, text);
-}
+  console.log(text);
 
-function transcriptionHandler(text) {
-  console.log(`In handler: ${text} (${typeof text})`);
-  if (text.includes('[')) return;
-  if (text.includes('(')) return;
+  editorRef.value.selection.select(editorRef.value.getBody(), true);
+  editorRef.value.selection.collapse(false);
+  editorRef.value.focus();
 
-  appendToEditor(text);
+  editorRef.value.insertContent(text);
 }
 
 async function submitNote() {
@@ -190,11 +222,16 @@ watch(note, () => {
     isLoaded.value = true;
   }
 });
+
+onUnmounted(() => {
+  if (speechObj !== null) {
+    speechObj.stop();
+    speechObj = null;
+  }
+});
 </script>
 
 <template>
-  <AudioEngine :isRecording="isTranscribing" @newTranscript="transcriptionHandler" />
-
   <main v-if="isLoaded">
     <div id="button-set">
       <div class="">
@@ -336,6 +373,7 @@ span#title-edit {
 .vs__search {
   line-height: 1.75;
 }
+
 .vs__search {
   color: var(--bulma-input-placeholder-color);
 }

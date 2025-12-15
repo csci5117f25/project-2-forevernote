@@ -7,7 +7,11 @@ const auth = useFirebaseAuth();
 const router = useRouter();
 
 async function logout() {
-  await signOut(auth);
+  try {
+    await signOut(auth);
+  } catch (e) {
+    console.error('error signing out:', e);
+  }
 
   router.push({ name: 'splash' });
 }
