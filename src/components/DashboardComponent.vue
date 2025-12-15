@@ -145,7 +145,7 @@ function showNewExamModal() {
 }
 
 #greeting > h1 {
-  color: rgb(0, 0, 0);
+  color: var(--h1-color);
   width: 100%;
   font-size: 4rem;
   font-weight: 700;
@@ -182,7 +182,7 @@ function showNewExamModal() {
 
   border-radius: 25px;
 
-  background-color: rgb(237, 237, 232);
+  background-color: var(--modal-color);
 }
 
 .note-cell {
@@ -230,8 +230,8 @@ function showNewExamModal() {
   border-radius: 0 0 22px 22px;
   padding: 0.6rem;
 
-  color: black;
-  background-color: rgb(231, 230, 216);
+  color: var(--text);
+  background-color: var(--bg);
 
   overflow: hidden;
   text-overflow: ellipsis;
@@ -239,8 +239,8 @@ function showNewExamModal() {
 }
 
 .exam-details li {
-  color: black;
-
+  color: var(--text);
+  font-weight: 400;
   text-indent: 4%;
 }
 
@@ -255,7 +255,7 @@ function showNewExamModal() {
   }
 
   .hello-message-div h1 {
-    color: rgb(0, 0, 0);
+    color: var(--h1-color);
     width: 100%;
     font-size: 2.4rem;
     font-weight: 700;

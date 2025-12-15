@@ -98,7 +98,7 @@ function gradeAnswers() {
   max-width: 70%;
   margin: 0 auto;
   padding: 1.5rem;
-  background: #f5f6fa;
+  background: var(--bg);
   border-radius: 20px;
   border: 2pt solid rgba(247, 168, 22, 0.682);
 }
@@ -112,7 +112,7 @@ h1 {
 
 .exam-card {
   margin-top: 2rem;
-  color: black;
+  color: var(--text);
   font-weight: 200;
 }
 
@@ -124,7 +124,7 @@ h1 {
 .gen-exam-form {
   display: flex;
   flex-direction: column;
-  color: black;
+  color: var(--text);
   padding: 0.3rem;
   justify-content: center;
   gap: 0.5rem;
@@ -148,11 +148,12 @@ h1 {
   margin-bottom: 1.75rem;
   padding: 1.25rem;
   border-radius: 12px;
-  background: white;
+  background: var(--question-block-bg);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .question-text {
+  color: var(--text);
   font-weight: 600;
   margin-bottom: 0.75rem;
 }
@@ -161,7 +162,7 @@ h1 {
   border-radius: 10px;
   padding: 0.5rem;
   margin-top: 0.8rem;
-  background-color: #d8d9df5b;
+  background-color: var(--modal-bg);
   font-weight: 100;
 }
 

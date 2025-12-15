@@ -1,6 +1,7 @@
 <script>
 import { GoogleAuthProvider } from 'firebase/auth';
 
+
 const googleAuthProvider = new GoogleAuthProvider();
 </script>
 
@@ -10,13 +11,15 @@ import { useRouter } from 'vue-router';
 import { useCurrentUser, useFirebaseAuth, useFirestore, useDocument } from 'vuefire';
 import { signInWithPopup } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-
 import logoImg from '@/assets/img/logo.png';
+import { useTheme } from '@/composables/useTheme';
 
 const router = useRouter();
 const auth = useFirebaseAuth();
 const user = useCurrentUser();
 const db = useFirestore();
+
+const {isDark, toggle} = useTheme();
 
 async function login() {
   await signInWithPopup(auth, googleAuthProvider);
@@ -74,11 +77,12 @@ onMounted(() => {
         </div>
 
         <div class="navbar-end">
-          <div v-if="!user" class="buttons">
-            <button class="button is-primary is-rounded" @click="login">Get Started</button>
-          </div>
-          <div v-else class="buttons">
-            <button class="button is-primary is-rounded" @click="router.push({ name: 'profile' })">
+          <div v-if="user" class="buttons">
+            <button class="button is-primary is-rounded" @click="toggle">
+              {{ isDark ? "☀️": "🌙" }}
+            </button>
+            <button v-if="!user" class="button is-primary is-rounded" @click="login">Get Started</button>
+            <button v-if="user"class="button is-primary is-rounded" @click="router.push({ name: 'profile' })">
               View Profile
             </button>
           </div>
@@ -106,7 +110,22 @@ nav {
 
 .navbar {
   border-bottom: 1pt solid gray;
+  background-color: var(--navbar-bg);
+  color: var(--text);
 }
+
+.navbar-item{
+  font-weight: 600;
+  color: var(--text);
+}
+
+.navbar-end{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 
 @media (max-width: 768px) {
   #logo {

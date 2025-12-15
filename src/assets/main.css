@@ -1,8 +1,31 @@
 @import url(./base.css);
 
+:root {
+  --bg: #fff7e5;
+  --text: #121212;
+  --card: #f5f5f5;
+  --border: #dbdbdb;
+  --navbar-bg: #db6307;
+  --h1-color: rgb(255, 166, 0);
+  --modal-color: #f1eded2e;
+  --question-block-bg: #f4e5c0c5;
+}
+
+.dark {
+  --bg: #28170d;
+  --text: #eaeaea;
+  --card: #1e1e1e;
+  --border: #363636;
+  --navbar-bg: #db6307;
+  --h1-color: rgb(255, 166, 0);
+  --modal-color: #18ae2cb3;
+  --question-block-bg: #451b03;
+}
+
 html,
 body {
-  background-color: white;
+  background-color: var(--bg);
+  color: var(--text);
   font-family: 'Momo Trust Display', sans-serif;
   font-weight: 200;
 }
@@ -12,5 +35,5 @@ html h1 {
 }
 
 html h2 {
-  color: black;
+  color: var(--text);
 }
