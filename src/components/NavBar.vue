@@ -7,9 +7,9 @@ const googleAuthProvider = new GoogleAuthProvider();
 <script setup>
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useCurrentUser, useFirebaseAuth, useFirestore, useDocument } from 'vuefire';
+import { useCurrentUser, useFirebaseAuth, useFirestore } from 'vuefire';
 import { signInWithPopup } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import logoImg from '@/assets/img/logo.png';
 
@@ -22,9 +22,9 @@ async function login() {
   await signInWithPopup(auth, googleAuthProvider);
 
   const userRef = doc(db, 'users', user.value.uid);
-  const userDoc = useDocument(userRef);
+  const userDoc = await getDoc(userRef);
 
-  if (!userDoc.value) {
+  if (!userDoc.exists()) {
     try {
       await setDoc(doc(db, 'users', user.value.uid), {
         themePref: 'auto',
@@ -34,7 +34,7 @@ async function login() {
     }
   }
 
-  router.push('/');
+  router.push({ name: 'dashboard' });
 }
 
 onMounted(() => {
@@ -68,9 +68,7 @@ onMounted(() => {
         <div class="navbar-start">
           <RouterLink to="/dashboard" class="navbar-item">Home</RouterLink>
           <RouterLink to="/notes" class="navbar-item">Notes</RouterLink>
-          <RouterLink to="/exams" class="navbar-item">Exams</RouterLink>
-          <RouterLink to="/practiceexams" class="navbar-item">✨Practice</RouterLink>
-          <RouterLink to="/live-transcription" class="navbar-item">Audio Transcription</RouterLink>
+          <RouterLink to="/practiceexams" class="navbar-item">✨ Practice</RouterLink>
         </div>
 
         <div class="navbar-end">
