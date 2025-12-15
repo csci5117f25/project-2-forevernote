@@ -44,13 +44,7 @@ async function addExam() {
         <div class="field">
           <label class="label">Exam:</label>
           <div class="control">
-            <input
-              class="input is-rounded"
-              type="text"
-              required
-              placeholder="exam name"
-              v-model="newExamTitle"
-            />
+            <input class="input is-rounded" type="text" required placeholder="exam name" v-model="newExamTitle" />
           </div>
         </div>
         <div class="field">
@@ -74,28 +68,18 @@ async function addExam() {
         <div class="field">
           <label class="label">Location:</label>
           <div class="control">
-            <input
-              class="input is-rounded"
-              type="text"
-              placeholder="room or hall"
-              v-model="newExamLocation"
-            />
+            <input class="input is-rounded" type="text" placeholder="room or hall" v-model="newExamLocation" />
           </div>
         </div>
         <div class="field">
           <label class="label">Topics:</label>
           <div class="control">
-            <input
-              class="input is-rounded"
-              type="text"
-              placeholder="covered topics"
-              v-model="newExamTopics"
-            />
+            <input class="input is-rounded" type="text" placeholder="covered topics" v-model="newExamTopics" />
           </div>
         </div>
 
         <div class="field has-text-centered mt-5">
-          <button class="button is-primary is-fullwidth rounded-btn" @click="addExam">
+          <button type="submit" class="button is-primary is-fullwidth rounded-btn">
             Save Exam
           </button>
         </div>
