@@ -273,14 +273,19 @@ function togglePreview(note) {
           </button>
 
           <button class="icon-btn expand" title="More" @click.stop="togglePreview(note)">
-            <DownIcon />
+            <DownIcon :class="['expand-icon', { rotated: expandedSet.has(note.id) }]"/>
           </button>
         </div>
 
-        <div v-if="expandedSet.has(note.id)" class="note-preview-row">
-          <div v-if="note.htmlContent" class="note-preview" v-html="note.htmlContent"></div>
-          <div v-else class="note-preview">{{ note.notes }}</div>
-        </div>
+        <transition name="slide-fade">
+          <div class="note-preview-row" :class="{ open: expandedSet.has(note.id) }" v-if="note.htmlContent">
+            <div class="note-preview" v-html="note.htmlContent"></div>
+          </div>
+
+          <div class="note-preview-row" :class="{ open: expandedSet.has(note.id) }" v-else>
+            <div class="note-preview">{{ note.notes }}</div>
+          </div>
+        </transition>
       </article>
     </section>
   </div>
@@ -399,6 +404,38 @@ function togglePreview(note) {
   grid-column: 2 / -1;
   color: #000;
   background: #FFF;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 300ms ease;
+  border-radius: 0.25rem;
+}
+
+.note-preview-row.open {
+  max-height: 1000px;
+}
+
+.note-preview {
+  padding: 0.5rem;
+  max-height: 50vh;
+  overflow: auto;   /* allow scrolling if content is tall */
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: opacity 1s cubic-bezier(.2,.9,.2,1), transform 1s cubic-bezier(.2,.9,.2,1), max-height 1s cubic-bezier(.2,.9,.2,1);
+  overflow: hidden;
+}
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+  max-height: 0;
+}
+.slide-fade-enter-to,
+.slide-fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 400px; /* large enough to contain preview */
 }
 
 /* Notion-style checkbox */
@@ -509,6 +546,15 @@ function togglePreview(note) {
 
 .icon-btn.expand {
   font-size: 1.2rem;
+}
+
+.expand-icon {
+  display: inline-block;
+  transition: transform 1s cubic-bezier(.2,.9,.2,1);
+}
+
+.expand-icon.rotated {
+  transform: rotate(180deg);
 }
 
 /* Floating add button */
