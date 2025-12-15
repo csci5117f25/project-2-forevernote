@@ -72,22 +72,45 @@ const tinyMCEConfig = {
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const transcriptionSupport =
-  !navigator.userAgent.includes('Mozilla') && typeof SpeechRecognition !== 'undefined';
+  typeof SpeechRecognition !== 'undefined' && typeof window.Worker !== 'undefined';
+const isFirefox = computed(() => navigator.userAgent.includes('Firefox'));
 
 const router = useRouter();
 const route = useRoute();
 const db = useFirestore();
 const user = useCurrentUser();
 
-onBeforeRouteLeave(() => {
+window.onbeforeunload = onExit;
+onBeforeRouteLeave(onExit);
+
+function onExit() {
   if (isTranscribing.value) {
-    if (!confirm('Are you sure?')) return false;
+    if (!confirm('You are currently transcribing? Are you sure?')) return false;
+
+    return true;
+  }
+
+  if (isChanged()) {
+    if (!confirm('You have unsaved changes! Are you sure?')) return false;
 
     return true;
   }
 
   return true;
-});
+}
+
+function isChanged() {
+  // Check for title changes
+  if (currTitle.value !== noteTitle.value) return true;
+  // Check for editor changes
+  if (editorRef.value && editorRef.value.isDirty()) return true;
+  // Check for subject changes
+  if (note.value && note.value.subject && currSubject.value !== note.value.subject) return true;
+  // Check for tag changes
+  // TODO
+
+  return false;
+}
 
 const editorRef = ref(null);
 
@@ -141,16 +164,15 @@ function stopRecording() {
 }
 
 const currTitle = ref(noteId.value ? '' : 'Untitled Note');
+const currSubject = ref('');
+const currTags = ref([]);
+
 function resetTitle() {
   if (noteId.value) currTitle.value = noteTitle.value;
   else currTitle.value = 'Untitled Note';
 
   isEditing.value = 0;
 }
-
-const currSubject = ref('');
-
-const currTags = ref([]);
 
 function appendToEditor(text) {
   if (!tinymce.activeEditor) {
@@ -189,6 +211,7 @@ async function submitNote() {
     console.error('error:', e);
   }
 }
+
 async function updateNote() {
   if (!tinymce.activeEditor) {
     console.error('Failed to get editor content: editor has not been initialized');
@@ -235,22 +258,14 @@ onUnmounted(() => {
   <main v-if="isLoaded">
     <div id="button-set">
       <div class="">
-        <button
-          v-if="!isTranscribing"
-          class="button is-success"
-          @click="startRecording"
-          :disabled="!transcriptionSupport"
-        >
+        <button v-if="!isTranscribing" class="button is-success" @click="startRecording"
+          :disabled="!transcriptionSupport">
           <PlayIcon />
           <span>Start Transcription</span>
         </button>
-        <button
-          v-else
-          class="button is-danger"
-          @click="stopRecording"
-          :disabled="!transcriptionSupport"
-        >
+        <button v-else class="button is-danger" @click="stopRecording" :disabled="!transcriptionSupport">
           <StopIcon />
+          <!-- TOOD: Put Frequencey Plot Here -->
           <span>Stop Transcription</span>
         </button>
       </div>
@@ -259,11 +274,8 @@ onUnmounted(() => {
         <div id="title-edit" v-if="isEditing === 1">
           <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
 
-          <button
-            v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'"
-            class="button"
-            @click="resetTitle"
-          >
+          <button v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'" class="button"
+            @click="resetTitle">
             <CancelIcon />
           </button>
         </div>
@@ -277,14 +289,8 @@ onUnmounted(() => {
           </button>
 
           <div v-if="isEditing === 2" id="tooltip">
-            <v-select
-              id="subject-edit"
-              class="subject-edit has-background-light has-text-dark"
-              placeholder="Subject"
-              :options="subjects"
-              taggable
-              v-model="currSubject"
-            >
+            <v-select id="subject-edit" class="subject-edit has-background-light has-text-dark" placeholder="Subject"
+              :options="subjects" taggable v-model="currSubject">
               <template #search="{ attributes, events }">
                 <input class="vs__search" v-bind="attributes" v-on="events" />
               </template>
@@ -292,15 +298,8 @@ onUnmounted(() => {
               <template #no-options="{ search }">Add: {{ search }}</template>
             </v-select>
 
-            <v-select
-              id="tag-edit"
-              class="has-background-light has-text-dark"
-              placeholder="Tags"
-              :options="tags"
-              multiple
-              taggable
-              v-model="currTags"
-            >
+            <v-select id="tag-edit" class="has-background-light has-text-dark" placeholder="Tags" :options="tags"
+              multiple taggable v-model="currTags">
               <template #search="{ attributes, events }">
                 <input class="vs__search" v-bind="attributes" v-on="events" />
               </template>
@@ -317,13 +316,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <Editor
-      id="uuid"
-      licenseKey="gpl"
-      :init="tinyMCEConfig"
-      style="z-index: 29"
-      :initial-value="noteContent"
-    />
+    <Editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" style="z-index: 29" :initial-value="noteContent" />
   </main>
   <main v-else>
     <div>Note is loading...</div>
