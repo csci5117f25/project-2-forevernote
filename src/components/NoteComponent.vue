@@ -1,16 +1,19 @@
+<script>
+// let speechObj = null;
+</script>
+
 <script setup>
 import 'vue-select/dist/vue-select.css';
 
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, onUnmounted, ref, watch } from 'vue';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { useCollection, useCurrentUser, useDocument, useFirestore } from 'vuefire';
 import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
-
-import AudioEngine from './AudioEngine.vue';
 
 import PlayIcon from './icons/IconPlay.vue';
 import StopIcon from './icons/IconStop.vue';
 import CancelIcon from './icons/IconCross.vue';
+import DotsIcon from './icons/IconDots.vue';
 
 import tinymce from 'tinymce';
 
@@ -62,14 +65,31 @@ const tinyMCEConfig = {
   // height: 500,
   resize: false,
   promotion: false,
+  setup: (e) => {
+    editorRef.value = e;
+  },
 };
 
-const transcriptionSupport = typeof Worker !== 'undefined' && typeof AudioContext !== 'undefined';
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const transcriptionSupport =
+  !navigator.userAgent.includes('Mozilla') && typeof SpeechRecognition !== 'undefined';
 
 const router = useRouter();
 const route = useRoute();
 const db = useFirestore();
 const user = useCurrentUser();
+
+onBeforeRouteLeave(() => {
+  if (isTranscribing.value) {
+    if (!confirm('Are you sure?')) return false;
+
+    return true;
+  }
+
+  return true;
+});
+
+const editorRef = ref(null);
 
 const noteId = computed(() => route.params.id);
 const isLoaded = ref(noteId.value ? false : true);
@@ -94,13 +114,29 @@ const noteContent = computed(() => {
   return note.value.htmlContent ? note.value.htmlContent : note.value.notes;
 });
 
-const isEditingTitle = ref(false);
+const isEditing = ref(0);
 const isTranscribing = ref(false);
 
 function startRecording() {
   isTranscribing.value = true;
+
+  // speechObj = new SpeechRecognition();
+  // speechObj.start();
+  // speechObj.onresult = (e) => {
+  //   const transcript = e.results[0][0].transcript;
+
+  //   appendToEditor(transcript);
+  // };
+  // speechObj.onend = () => {
+  //   if (speechObj !== null && isTranscribing.value) {
+  //     speechObj.start();
+  //   }
+  // };
 }
 function stopRecording() {
+  // speechObj.stop();
+  // speechObj = null;
+
   isTranscribing.value = false;
 }
 
@@ -109,7 +145,7 @@ function resetTitle() {
   if (noteId.value) currTitle.value = noteTitle.value;
   else currTitle.value = 'Untitled Note';
 
-  isEditingTitle.value = false;
+  isEditing.value = 0;
 }
 
 const currSubject = ref('');
@@ -123,15 +159,11 @@ function appendToEditor(text) {
     return;
   }
 
-  tinymce.activeEditor.execCommand('mceInsertContent', false, text);
-}
+  editorRef.value.selection.select(editorRef.value.getBody(), true);
+  editorRef.value.selection.collapse(false);
+  editorRef.value.focus();
 
-function transcriptionHandler(text) {
-  console.log(`In handler: ${text} (${typeof text})`);
-  if (text.includes('[')) return;
-  if (text.includes('(')) return;
-
-  appendToEditor(text);
+  editorRef.value.insertContent(text);
 }
 
 async function submitNote() {
@@ -190,11 +222,16 @@ watch(note, () => {
     isLoaded.value = true;
   }
 });
+
+onUnmounted(() => {
+  // if (speechObj !== null) {
+  //   speechObj.stop();
+  //   speechObj = null;
+  // }
+});
 </script>
 
 <template>
-  <AudioEngine :isRecording="isTranscribing" @newTranscript="transcriptionHandler" />
-
   <main v-if="isLoaded">
     <div id="button-set">
       <div class="">
@@ -219,7 +256,7 @@ watch(note, () => {
       </div>
 
       <div class="button-set-center">
-        <div id="title-edit" v-if="isEditingTitle">
+        <div id="title-edit" v-if="isEditing === 1">
           <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
 
           <button
@@ -230,40 +267,48 @@ watch(note, () => {
             <CancelIcon />
           </button>
         </div>
-        <span v-else id="title-edit" class="has-text-dark" @click="isEditingTitle = true">
+        <span v-else id="title-edit" class="has-text-dark" @click="isEditing = 1">
           {{ currTitle }}
         </span>
 
-        <v-select
-          id="subject-edit"
-          class="subject-edit has-background-light has-text-dark"
-          placeholder="Subject"
-          :options="subjects"
-          taggable
-          v-model="currSubject"
-        >
-          <template #search="{ attributes, events }">
-            <input class="vs__search" v-bind="attributes" v-on="events" />
-          </template>
+        <div id="tooltip-container">
+          <button class="button is-light" @click="isEditing = 2">
+            <DotsIcon />
+          </button>
 
-          <template #no-options="{ search }">Add: {{ search }}</template>
-        </v-select>
+          <div v-if="isEditing === 2" id="tooltip">
+            <v-select
+              id="subject-edit"
+              class="subject-edit has-background-light has-text-dark"
+              placeholder="Subject"
+              :options="subjects"
+              taggable
+              v-model="currSubject"
+            >
+              <template #search="{ attributes, events }">
+                <input class="vs__search" v-bind="attributes" v-on="events" />
+              </template>
 
-        <v-select
-          id="tag-edit"
-          class="has-background-light has-text-dark"
-          placeholder="Tags"
-          :options="tags"
-          multiple
-          taggable
-          v-model="currTags"
-        >
-          <template #search="{ attributes, events }">
-            <input class="vs__search" v-bind="attributes" v-on="events" />
-          </template>
+              <template #no-options="{ search }">Add: {{ search }}</template>
+            </v-select>
 
-          <template #no-options="{ search }">Add: {{ search }}</template>
-        </v-select>
+            <v-select
+              id="tag-edit"
+              class="has-background-light has-text-dark"
+              placeholder="Tags"
+              :options="tags"
+              multiple
+              taggable
+              v-model="currTags"
+            >
+              <template #search="{ attributes, events }">
+                <input class="vs__search" v-bind="attributes" v-on="events" />
+              </template>
+
+              <template #no-options="{ search }">Add: {{ search }}</template>
+            </v-select>
+          </div>
+        </div>
       </div>
 
       <div class="">
@@ -277,15 +322,35 @@ watch(note, () => {
       licenseKey="gpl"
       :init="tinyMCEConfig"
       style="z-index: 29"
-      :initialValue="noteContent"
+      :initial-value="noteContent"
     />
   </main>
   <main v-else>
     <div>Note is loading...</div>
   </main>
 
-  <div v-if="isEditingTitle" id="click-exit" @click="isEditingTitle = false"></div>
+  <div v-if="isEditing !== 0" id="click-exit" @click="isEditing = 0"></div>
 </template>
+
+<style>
+.vs__dropdown-toggle {
+  border: 0;
+}
+
+.vs__search {
+  line-height: 1.75;
+  color: var(--bulma-input-placeholder-color);
+}
+
+.vs__selected-options {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.vs__selected {
+  text-wrap: nowrap;
+}
+</style>
 
 <style scoped>
 #click-exit {
@@ -311,9 +376,10 @@ watch(note, () => {
 .button-set-center {
   flex-grow: 1;
 
-  display: grid;
-  grid-template-columns: 3fr 1fr 1.5fr;
-  gap: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
 }
 
 #title-edit {
@@ -333,10 +399,31 @@ span#title-edit {
   padding: 7px 11px;
 }
 
-.vs__search {
-  line-height: 1.75;
+#subject-edit {
+  border-top-left-radius: var(--vs-border-radius);
+  border-top-right-radius: var(--vs-border-radius);
 }
-.vs__search {
-  color: var(--bulma-input-placeholder-color);
+
+#tag-edit {
+  border-bottom-left-radius: var(--vs-border-radius);
+  border-bottom-right-radius: var(--vs-border-radius);
+}
+
+#tooltip-container {
+  position: relative;
+}
+
+#tooltip {
+  display: hidden;
+
+  position: absolute;
+  z-index: 32;
+  right: 2.5rem;
+
+  border: 3px solid black;
+  border-radius: 15px;
+  padding: 1rem;
+
+  background-color: gray;
 }
 </style>

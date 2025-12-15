@@ -12,11 +12,6 @@ import ExamGenerator from '@/components/ExamGenerator.vue';
 
 import NotFoundView from '@/views/NotFoundView.vue';
 
-// Dev/Testing pages (for now)
-import ExamList from '@/views/ExamList.vue';
-import ExamView from '@/views/ExamView.vue';
-import TranscriptionView from '@/views/LiveTranscriptionView.vue';
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -65,17 +60,9 @@ const router = createRouter({
       },
     },
     {
-      path: '/exams',
-      name: 'exam_list',
-      component: ExamList,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/exam/:id',
-      name: 'exam',
-      component: ExamView,
+      path: '/practiceexams',
+      name: 'practiceexams',
+      component: ExamGenerator,
       meta: {
         requiresAuth: true,
       },
@@ -87,19 +74,6 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
       },
-    },
-    {
-      path: '/practiceexams',
-      name: 'practiceexams',
-      component: ExamGenerator,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/live-transcription',
-      name: 'live-transcription',
-      component: TranscriptionView,
     },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
   ],

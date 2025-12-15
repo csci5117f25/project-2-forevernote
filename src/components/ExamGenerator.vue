@@ -1,45 +1,45 @@
 <script setup>
-import { number } from "motion";
-import { ref } from "vue";
+import { number } from 'motion';
+import { ref } from 'vue';
 
-const FUNCTION_URL = "https://on-request-api-key-zixtq6tzqq-uc.a.run.app"
+const FUNCTION_URL = 'https://on-request-api-key-zixtq6tzqq-uc.a.run.app';
 
 // Refs for input.
-const examTopic = ref("")
+const examTopic = ref('');
 const numberOfQuestions = ref(null);
 const genExamDetails = ref([]);
-const statusMessage = ref("");
+const statusMessage = ref('');
 const displayGrade = ref(false);
-
 
 async function generateExam() {
   // Function to call generative AI model to create exam questions.
-  console.log("Generating exam...")
-  statusMessage.value = ""
+  console.log('Generating exam...');
+  statusMessage.value = '';
   displayGrade.value = false;
   genExamDetails.value = [];
-  if (!examTopic.value || !numberOfQuestions.value){
-    statusMessage.value = "😬 Please enter a valid Exam Question and Number of Questions"
+  if (!examTopic.value || !numberOfQuestions.value) {
+    statusMessage.value = '😬 Please enter a valid Exam Question and Number of Questions';
     return;
   }
   const url = `${FUNCTION_URL}?topic=${encodeURIComponent(examTopic.value)}&no_of_questions=${numberOfQuestions.value}`;
-  statusMessage.value = "📝Working hard on your exam. 🐻 with us..."
+  statusMessage.value = '📝Working hard on your exam. 🐻 with us...';
   const response = await fetch(url);
-  console.log(`Response: ${response}`)
-  statusMessage.value = ""
-  if (!response.status === 200){
-    statusMessage.value = "🥷 Our server was raided by a pack of ninjas! Try to resubmit your request while we defend our dojo!"
-    console.error("Error generating exam:", response.statusText);
+  console.log(`Response: ${response}`);
+  statusMessage.value = '';
+  if (!response.status === 200) {
+    statusMessage.value =
+      '🥷 Our server was raided by a pack of ninjas! Try to resubmit your request while we defend our dojo!';
+    console.error('Error generating exam:', response.statusText);
     return;
   }
   const responseJson = await response.json();
   genExamDetails.value = responseJson.map((detail) => ({
     ...detail,
-    selected: null 
+    selected: null,
   }));
-  console.log("Response: ", responseJson)
+  console.log('Response: ', responseJson);
   displayGrade.value = false;
-  console.log("Display grade ", displayGrade.value)
+  console.log('Display grade ', displayGrade.value);
 }
 
 function gradeAnswers() {
@@ -62,7 +62,7 @@ function gradeAnswers() {
         </select>
         <span v-if="statusMessage !== ''">{{ statusMessage }}</span>
 
-        <button type="submit" class="button is-primary" >Generate Exam</button>
+        <button type="submit" class="button is-primary">Generate Exam</button>
       </form>
     </div>
 
@@ -79,13 +79,13 @@ function gradeAnswers() {
           v-if="displayGrade && genExamDetails.length"
           class="solution-block"
           :class="examDetail.selected === examDetail.correct_answer ? 'correct' : 'incorrect'"
-          >
-            <h2 class="right-answer" v-if="examDetail.selected === examDetail.correct_answer">
-              ✅You're Right
-            </h2>
-            <h2 class="wrong-answer" v-else>❌Oops...Nice Try</h2>
-            <h2>You selected: {{ examDetail.selected }}</h2>
-            <h2>Correct Answer: {{ examDetail.correct_answer }}</h2>
+        >
+          <h2 class="right-answer" v-if="examDetail.selected === examDetail.correct_answer">
+            ✅You're Right
+          </h2>
+          <h2 class="wrong-answer" v-else>❌Oops...Nice Try</h2>
+          <h2>You selected: {{ examDetail.selected }}</h2>
+          <h2>Correct Answer: {{ examDetail.correct_answer }}</h2>
         </div>
       </div>
       <button class="button is-info" @click="gradeAnswers">📝Grade Me!</button>
