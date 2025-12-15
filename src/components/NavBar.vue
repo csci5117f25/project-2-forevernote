@@ -81,7 +81,7 @@ onMounted(() => {
               {{ isDark ? "☀️": "🌙" }}
             </button>
             <button v-if="!user" class="button is-primary is-rounded" @click="login">Get Started</button>
-            <button v-if="user"class="button is-primary is-rounded" @click="router.push({ name: 'profile' })">
+            <button v-if="user" class="button is-primary is-rounded" @click="router.push({ name: 'profile' })">
               View Profile
             </button>
           </div>
