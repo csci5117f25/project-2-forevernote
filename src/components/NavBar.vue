@@ -39,7 +39,7 @@ async function login() {
 
 onMounted(() => {
   const navBurger = document.getElementById('nav-burger');
-  const navBar = document.getElementById('nav-bar');
+  const navBar = document.getElementById('navbar');
 
   navBurger?.addEventListener('click', () => {
     navBurger.classList.toggle('is-active');
