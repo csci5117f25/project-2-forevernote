@@ -79,15 +79,24 @@ const route = useRoute();
 const db = useFirestore();
 const user = useCurrentUser();
 
-onBeforeRouteLeave(() => {
-  if (isTranscribing.value) {
-    if (!confirm('Are you sure?')) return false;
+window.onbeforeunload = onExit;
+onBeforeRouteLeave(onExit);
+function onExit() {
+if (isTranscribing.value) {
+    if (!confirm('You are currently transcribing? Are you sure?')) return false;
+
+    return true;
+  }
+
+  if (currTitle.value !== noteTitle.value || editorRef.value.isDirty() || currSubject.value !== note) {
+    if (!confirm('You have unsaved changes! Are you sure?')) return false;
 
     return true;
   }
 
   return true;
-});
+}
+
 
 const editorRef = ref(null);
 
@@ -147,9 +156,7 @@ function resetTitle() {
 
   isEditing.value = 0;
 }
-
 const currSubject = ref('');
-
 const currTags = ref([]);
 
 function appendToEditor(text) {
