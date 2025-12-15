@@ -1,83 +1,45 @@
 <script setup>
-// import { GoogleGenAI } from "@google/genai";
+import { number } from "motion";
 import { ref } from "vue";
 
 const FUNCTION_URL = "https://on-request-api-key-zixtq6tzqq-uc.a.run.app"
 
-const fetchKey = async () => {
-  try {
-    const response = await fetch(FUNCTION_URL)
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`)
-    }
-
-    // Since your python function returns a raw string, we use .text()
-    // If you change python to return JSON, use .json()
-    const data = await response.text()
-    apiKey.value = data
-    
-  } catch (err) {
-    console.error(err)
-    error.value = "Failed to load API key"
-  }
-}
-
-// Dependencies for the addMessage function.
+// Refs for input.
 const examTopic = ref("")
 const numberOfQuestions = ref(null);
 const genExamDetails = ref([]);
-const loadingIndicator = ref(false);
+const statusMessage = ref("");
 const displayGrade = ref(false);
-const correctAnswers = ref([]);
-// const ai = new GoogleGenAI({apiKey: "AIzaSyCYCdk39X3t1z3bJWaRvzI64KyTb-kGQpg"});
-
-// const ai = new GoogleGenAI({apiKey: "AIzaSyBv6Y7Vkwr3_P8f6-ekwoaY9qiOxzBwg34"});
 
 
 async function generateExam() {
-  /*
-  YS: Refactor: Account for Catching Exceptions, Firebase functions
-  */
-  const apiKeyResponse = await fetch(FUNCTION_URL);
-  console.log(apiKeyResponse.text())
-  const prompt = `Generate ${numberOfQuestions.value} multiple choice questions about "${examTopic.value}".
-    Return the result strictly as a JSON array of objects.
-    Each object must use the following structure:
-    {
-      "question": "string",
-      "choices": ["A", "B", "C", "D"],
-      "correct_answer": "string"
-      }
-      Do NOT include explanations, prose, or anything outside the JSON.
-      Do NOT include letter demarkation in the possible choices.
-      Do NOT include letter demarkation in the correct_answer.
-      Return ONLY valid JSON.`
-  loadingIndicator.value = true
-  displayGrade.value = false
-  // const response = await ai.models.generateContent({
-  //   model: "gemini-2.5-flash",
-  //   contents: [{
-  //                       parts: [{ text: prompt }]
-  //                   }],
-  // });
-  // loadingIndicator.value = false
-  // let textResponse = response.text;
-  // textResponse = textResponse
-  //   .replace(/```json/g, "")
-  //   .replace(/```/g, "")
-  //   .replace(/`/g, "")
-  //   .trim();
-  // const examDetails = JSON.parse(textResponse);
-  // console.log(examDetails)
-  // genExamDetails.value = examDetails
-  // genExamDetails.value = examDetails.map((detail) => ({
-  //   ...detail, 
-  //   selected: null
-
-  // }));
-  // correctAnswers.value = examDetails.map((examDetail) => {return examDetail.correct_answer});
-  // console.log(correctAnswers);
+  // Function to call generative AI model to create exam questions.
+  console.log("Generating exam...")
+  statusMessage.value = ""
+  displayGrade.value = false;
+  genExamDetails.value = [];
+  if (!examTopic.value || !numberOfQuestions.value){
+    statusMessage.value = "😬 Please enter a valid Exam Question and Number of Questions"
+    return;
+  }
+  const url = `${FUNCTION_URL}?topic=${encodeURIComponent(examTopic.value)}&no_of_questions=${numberOfQuestions.value}`;
+  statusMessage.value = "📝Working hard on your exam. 🐻 with us..."
+  const response = await fetch(url);
+  console.log(`Response: ${response}`)
+  statusMessage.value = ""
+  if (!response.status === 200){
+    statusMessage.value = "🥷 Our server was raided by a pack of ninjas! Try to resubmit your request while we defend our dojo!"
+    console.error("Error generating exam:", response.statusText);
+    return;
+  }
+  const responseJson = await response.json();
+  genExamDetails.value = responseJson.map((detail) => ({
+    ...detail,
+    selected: null 
+  }));
+  console.log("Response: ", responseJson)
+  displayGrade.value = false;
+  console.log("Display grade ", displayGrade.value)
 }
 
 function gradeAnswers() {
@@ -98,15 +60,13 @@ function gradeAnswers() {
           <option>5</option>
           <option>10</option>
         </select>
-        <span v-if="loadingIndicator"
-          >We're working hard on writing your exam questions. 🐻 with us...</span
-        >
+        <span v-if="statusMessage !== ''">{{ statusMessage }}</span>
 
-        <button class="button is-primary">Generate Exam</button>
+        <button type="submit" class="button is-primary" >Generate Exam</button>
       </form>
     </div>
 
-    <div v-if="genExamDetails.length != 0" class="exam-card">
+    <div v-if="genExamDetails.length" class="exam-card">
       <div class="question-block" v-for="examDetail in genExamDetails" :key="examDetail.question">
         <div class="question-text">{{ examDetail.question }}</div>
 
@@ -116,19 +76,16 @@ function gradeAnswers() {
           </option>
         </select>
         <div
+          v-if="displayGrade && genExamDetails.length"
           class="solution-block"
-          v-if="displayGrade"
-          :class="{
-            correct: examDetail.selected === examDetail.correct_answer,
-            incorrect: examDetail.selected !== examDetail.correct_answer,
-          }"
-        >
-          <h2 class="right-answer" v-if="examDetail.selected === examDetail.correct_answer">
-            ✅You're Right
-          </h2>
-          <h2 class="wrong-answer" v-else>❌Oops...Nice Try</h2>
-          <h2>You selected: {{ examDetail.selected }}</h2>
-          <h2>Correct Answer: {{ examDetail.correct_answer }}</h2>
+          :class="examDetail.selected === examDetail.correct_answer ? 'correct' : 'incorrect'"
+          >
+            <h2 class="right-answer" v-if="examDetail.selected === examDetail.correct_answer">
+              ✅You're Right
+            </h2>
+            <h2 class="wrong-answer" v-else>❌Oops...Nice Try</h2>
+            <h2>You selected: {{ examDetail.selected }}</h2>
+            <h2>Correct Answer: {{ examDetail.correct_answer }}</h2>
         </div>
       </div>
       <button class="button is-info" @click="gradeAnswers">📝Grade Me!</button>

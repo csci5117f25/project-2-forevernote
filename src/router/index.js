@@ -15,7 +15,6 @@ import NotFoundView from '@/views/NotFoundView.vue';
 // Dev/Testing pages (for now)
 import ExamList from '@/views/ExamList.vue';
 import ExamView from '@/views/ExamView.vue';
-import ExamGenerator from '@/components/ExamGenerator.vue';
 import TranscriptionView from '@/views/LiveTranscriptionView.vue';
 
 const router = createRouter({
