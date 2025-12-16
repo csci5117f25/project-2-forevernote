@@ -1,0 +1,45 @@
+{
+  "name": "vue-project",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --fix --cache",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "@google/genai": "^1.30.0",
+    "@huggingface/transformers": "^3.8.0",
+    "@tinymce/tinymce-vue": "^6.3.0",
+    "@xenova/transformers": "^2.17.2",
+    "firebase": "^12.5.0",
+    "motion": "^12.23.24",
+    "motion-v": "^1.7.4",
+    "pinia": "^3.0.3",
+    "tinymce": "^8.2.1",
+    "vue": "^3.5.22",
+    "vue-router": "^4.6.3",
+    "vue-select": "^4.0.0-beta.6",
+    "vue3-carousel": "^0.17.0",
+    "vuefire": "^3.2.2",
+    "web-audio-api": "^0.2.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "@types/vue-select": "^3.16.8",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "eslint": "^9.37.0",
+    "eslint-plugin-vue": "~10.5.0",
+    "globals": "^16.4.0",
+    "prettier": "3.6.2",
+    "vite": "^7.2.1",
+    "vite-plugin-vue-devtools": "^8.0.3"
+  }
+}

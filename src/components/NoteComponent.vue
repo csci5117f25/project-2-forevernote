@@ -1,0 +1,523 @@
+<script>
+// let speechObj = null;
+</script>
+
+<script setup>
+import 'vue-select/dist/vue-select.css';
+
+import { nextTick } from 'vue';
+import { computed, onUnmounted, ref, watch, onMounted } from 'vue';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
+import { useCollection, useCurrentUser, useDocument, useFirestore } from 'vuefire';
+import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
+
+import PlayIcon from './icons/IconPlay.vue';
+import StopIcon from './icons/IconStop.vue';
+import CancelIcon from './icons/IconCross.vue';
+import DotsIcon from './icons/IconDots.vue';
+
+//AUDIO TRANSCRIPTION ENGINE IMPORT
+import AudioEngine from '@/components/AudioEngine.vue'
+
+
+import tinymce from 'tinymce';
+
+// TinyMCE default icons (required)
+import 'tinymce/icons/default/icons.min.js';
+
+// TinyMCE components (required)
+import 'tinymce/themes/silver/theme.min.js';
+import 'tinymce/models/dom/model.min.js';
+
+// TinyMCE skin
+import 'tinymce/skins/ui/oxide/skin.js';
+
+// TinyMCE plugins
+import 'tinymce/plugins/advlist';
+import 'tinymce/plugins/anchor';
+import 'tinymce/plugins/autolink';
+import 'tinymce/plugins/autoresize';
+import 'tinymce/plugins/charmap';
+import 'tinymce/plugins/code';
+import 'tinymce/plugins/fullscreen';
+import 'tinymce/plugins/image';
+import 'tinymce/plugins/insertdatetime';
+import 'tinymce/plugins/link';
+import 'tinymce/plugins/lists';
+import 'tinymce/plugins/media';
+import 'tinymce/plugins/preview';
+import 'tinymce/plugins/searchreplace';
+import 'tinymce/plugins/table';
+import 'tinymce/plugins/visualblocks';
+import 'tinymce/plugins/wordcount';
+import 'tinymce/plugins/emoticons';
+import 'tinymce/plugins/emoticons/js/emojis';
+
+// TinyMCE UI CSS (required)
+import 'tinymce/skins/ui/oxide/content.js';
+
+// TinyMCE Default CSS
+import 'tinymce/skins/content/default/content.js';
+
+// TinyMCE Vue Setup
+import Editor from '@tinymce/tinymce-vue';
+
+
+/**BEGIN AUDIO VARIABLES AND FUNCTIONS
+ *
+ */
+
+const isTranscribing = ref(false);
+const transcriptionMode = ref("google"); // default
+const apiSupport = ref(true);
+
+
+const setTranscriptionMode = async (mode) => {
+  if (transcriptionMode.value === mode) return;
+
+  const wasRecording = isTranscribing.value;
+
+  if (wasRecording) {
+    isTranscribing.value = false;
+    await nextTick(); // Wait for watchers to cleanup
+  }
+  //switch modes
+  transcriptionMode.value = mode;
+  if (wasRecording) {
+    isTranscribing.value = true;
+  }
+};
+//temporary span to get the interim results of google speech recognition to display
+//inside tinymce
+let interimSpanId = null;
+
+const handleTranscribed = (event) => {
+  const { text, isFinal } = event;
+  if (!text) return;
+
+  if (transcriptionMode.value === 'google') {
+    if (isFinal) {
+      // remove interim span if it exists
+      if (interimSpanId) {
+        editorRef.value.dom.remove(interimSpanId);
+        interimSpanId = null;
+      }
+
+      appendToEditor(text + ' ');
+    } else {
+      showInterimText(text);
+    }
+  } else {
+    appendToEditor(text + ' ');
+  }
+};
+
+function showInterimText(text) {
+  const editor = editorRef.value;
+  if (!editor) return;
+
+  editor.undoManager.ignore(() => {
+    // remove old interim
+    if (interimSpanId) {
+      editor.dom.remove(interimSpanId);
+    }
+
+    interimSpanId = editor.dom.uniqueId('interim');
+
+    editor.selection.select(editor.getBody(), true);
+    editor.selection.collapse(false);
+
+    editor.insertContent(
+      `<span id="${interimSpanId}" style="opacity:0.5;">${editor.dom.encode(text)}</span>`
+    );
+  });
+}
+
+
+const startRecording = () => {
+  isTranscribing.value = true;
+}
+
+const stopRecording = () => {
+  isTranscribing.value = false;
+}
+
+
+onMounted(() => {
+  if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+    transcriptionMode.value = "google";
+    apiSupport.value = true;
+  } else {
+    transcriptionMode.value = "private";
+    apiSupport.value = false;
+  }
+});
+
+/**END AUDIO VARIABLES AND FUNCTIONS
+ *
+ */
+
+
+const tinyMCEConfig = {
+  plugins:
+    'advlist anchor autolink autoresize charmap code fullscreen image insertdatetime link lists media preview searchreplace table visualblocks wordcount',
+  toolbar:
+    'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+  // height: 500,
+  resize: false,
+  promotion: false,
+  setup: (e) => {
+    editorRef.value = e;
+  },
+};
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const transcriptionSupport =
+  typeof SpeechRecognition !== 'undefined' && typeof window.Worker !== 'undefined';
+const isFirefox = computed(() => navigator.userAgent.includes('Firefox'));
+
+const router = useRouter();
+const route = useRoute();
+const db = useFirestore();
+const user = useCurrentUser();
+
+window.onbeforeunload = onExit;
+onBeforeRouteLeave(onExit);
+
+function onExit() {
+  if (isTranscribing.value) {
+    if (!confirm('You are currently transcribing? Are you sure?')) return false;
+
+    return true;
+  }
+
+  if (isChanged()) {
+    if (!confirm('You have unsaved changes! Are you sure?')) return false;
+
+    return true;
+  }
+
+  return true;
+}
+
+function isChanged() {
+  // Check for title changes
+  if (currTitle.value !== noteTitle.value) return true;
+  // Check for editor changes
+  if (editorRef.value && editorRef.value.isDirty()) return true;
+  // Check for subject changes
+  if (note.value && note.value.subject && currSubject.value !== note.value.subject) return true;
+  // Check for tag changes
+  // TODO
+
+  return false;
+}
+
+const editorRef = ref(null);
+
+const noteId = computed(() => route.params.id);
+const isLoaded = ref(noteId.value ? false : true);
+
+const notesRef = collection(db, 'users', user.value.uid, 'notes');
+const notes = useCollection(notesRef);
+const subjects = computed(() =>
+  notes.value.filter((note) => note.subject).map((note) => note.subject),
+);
+const tags = computed(() => notes.value.filter((note) => note.tags).flatMap((note) => note.tags));
+
+const noteRef = noteId.value ? doc(db, 'users', user.value.uid, 'notes', noteId.value) : undefined;
+const note = useDocument(noteRef);
+const noteTitle = computed(() => {
+  if (!note.value) return '';
+
+  return note.value.title;
+});
+const noteContent = computed(() => {
+  if (!note.value) return '';
+
+  return note.value.htmlContent ? note.value.htmlContent : note.value.notes;
+});
+
+const isEditing = ref(0);
+
+
+
+
+
+const currTitle = ref(noteId.value ? '' : 'Untitled Note');
+const currSubject = ref('');
+const currTags = ref([]);
+
+function resetTitle() {
+  if (noteId.value) currTitle.value = noteTitle.value;
+  else currTitle.value = 'Untitled Note';
+
+  isEditing.value = 0;
+}
+
+function appendToEditor(text) {
+  if (!tinymce.activeEditor) {
+    console.error('Failed to get editor content: editor has not been initialized');
+
+    return;
+  }
+
+  editorRef.value.selection.select(editorRef.value.getBody(), true);
+  editorRef.value.selection.collapse(false);
+  editorRef.value.focus();
+
+  editorRef.value.insertContent(text);
+}
+
+async function submitNote() {
+  if (!tinymce.activeEditor) {
+    console.error('Failed to get editor content: editor has not been initialized');
+
+    return;
+  }
+
+  const data = {
+    title: currTitle.value,
+    notes: tinymce.activeEditor.getContent({ format: 'text' }),
+    htmlContent: tinymce.activeEditor.getContent(),
+    createdAt: serverTimestamp(),
+    lastEdited: serverTimestamp(),
+  };
+
+  try {
+    const res = await addDoc(collection(db, 'users', user.value.uid, 'notes'), data);
+
+    router.push({ name: 'note', params: { id: res.id } });
+  } catch (e) {
+    console.error('error:', e);
+  }
+}
+
+async function updateNote() {
+  if (!tinymce.activeEditor) {
+    console.error('Failed to get editor content: editor has not been initialized');
+
+    return;
+  }
+
+  const data = {
+    title: currTitle.value,
+    notes: tinymce.activeEditor.getContent({ format: 'text' }),
+    subject: currSubject.value,
+    tags: currTags.value,
+    htmlContent: tinymce.activeEditor.getContent(),
+    lastEdited: serverTimestamp(),
+  };
+
+  try {
+    await setDoc(noteRef, data);
+  } catch (e) {
+    console.error('error:', e);
+  }
+}
+
+watch(note, () => {
+  if (noteId.value && note.value) {
+    currTitle.value = note.value.title;
+
+    currSubject.value = note.value.subject ?? '';
+    currTags.value = note.value.tags ?? [];
+
+    isLoaded.value = true;
+  }
+});
+
+
+</script>
+
+<template>
+  <main v-if="isLoaded">
+    <div id="button-set">
+      <div class="">
+        <button v-if="!isTranscribing" class="button is-success" @click="startRecording"
+          :disabled="!transcriptionSupport">
+          <PlayIcon />
+          <span>Start Transcription</span>
+        </button>
+        <button v-else class="button is-danger" @click="stopRecording" :disabled="!transcriptionSupport">
+          <StopIcon />
+          <!-- TOOD: Put Frequencey Plot Here -->
+          <span>Stop Transcription</span>
+        </button>
+
+         <div class="mode-switch">
+            <button
+            class="button is-small"
+            :disabled="!apiSupport"
+            :class="transcriptionMode === 'google' ? 'is-info is-selected' : ''"
+            @click="setTranscriptionMode('google')">
+            Online
+            </button>
+
+            <button
+            class="button is-small"
+            :class="transcriptionMode === 'private' ? 'is-info is-selected' : ''"
+            @click="setTranscriptionMode('private')">
+            Local
+            </button>
+        </div>
+
+        <div class="engine-wrapper" v-show="isTranscribing">
+          <AudioEngine :isRecording="isTranscribing"
+          :mode="transcriptionMode"
+          @newTranscript = "handleTranscribed" />
+        </div>
+
+      </div>
+
+
+      <div class="button-set-center">
+        <div id="title-edit" v-if="isEditing === 1">
+          <input class="input has-background-light has-text-dark" type="text" v-model="currTitle" />
+
+          <button v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'" class="button"
+            @click="resetTitle">
+            <CancelIcon />
+          </button>
+        </div>
+        <span v-else id="title-edit" class="has-text-dark" @click="isEditing = 1">
+          {{ currTitle }}
+        </span>
+
+        <div id="tooltip-container">
+          <button class="button is-light" @click="isEditing = 2">
+            <DotsIcon />
+          </button>
+
+          <div v-if="isEditing === 2" id="tooltip">
+            <v-select id="subject-edit" class="subject-edit has-background-light has-text-dark" placeholder="Subject"
+              :options="subjects" taggable v-model="currSubject">
+              <template #search="{ attributes, events }">
+                <input class="vs__search" v-bind="attributes" v-on="events" />
+              </template>
+
+              <template #no-options="{ search }">Add: {{ search }}</template>
+            </v-select>
+
+            <v-select id="tag-edit" class="has-background-light has-text-dark" placeholder="Tags" :options="tags"
+              multiple taggable v-model="currTags">
+              <template #search="{ attributes, events }">
+                <input class="vs__search" v-bind="attributes" v-on="events" />
+              </template>
+
+              <template #no-options="{ search }">Add: {{ search }}</template>
+            </v-select>
+          </div>
+        </div>
+      </div>
+
+      <div class="">
+        <button v-if="noteId" class="button is-warning" @click="updateNote">Update</button>
+        <button v-else class="button is-primary" @click="submitNote">Submit</button>
+      </div>
+    </div>
+
+    <Editor id="uuid" licenseKey="gpl" :init="tinyMCEConfig" style="z-index: 29" :initial-value="noteContent" />
+  </main>
+  <main v-else>
+    <div>Note is loading...</div>
+  </main>
+
+  <div v-if="isEditing !== 0" id="click-exit" @click="isEditing = 0"></div>
+</template>
+
+<style>
+.vs__dropdown-toggle {
+  border: 0;
+}
+
+.vs__search {
+  line-height: 1.75;
+  color: var(--bulma-input-placeholder-color);
+}
+
+.vs__selected-options {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.vs__selected {
+  text-wrap: nowrap;
+}
+</style>
+
+<style scoped>
+#click-exit {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 31;
+
+  width: 100vw;
+  height: 100vh;
+}
+
+#button-set {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+
+  margin-bottom: 1rem;
+}
+
+.button-set-center {
+  flex-grow: 1;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+#title-edit {
+  flex-grow: 2;
+
+  position: relative;
+  z-index: 32;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+span#title-edit {
+  padding: 7px 11px;
+}
+
+#subject-edit {
+  border-top-left-radius: var(--vs-border-radius);
+  border-top-right-radius: var(--vs-border-radius);
+}
+
+#tag-edit {
+  border-bottom-left-radius: var(--vs-border-radius);
+  border-bottom-right-radius: var(--vs-border-radius);
+}
+
+#tooltip-container {
+  position: relative;
+}
+
+#tooltip {
+  display: hidden;
+
+  position: absolute;
+  z-index: 32;
+  right: 2.5rem;
+
+  border: 3px solid black;
+  border-radius: 15px;
+  padding: 1rem;
+
+  background-color: gray;
+}
+</style>
