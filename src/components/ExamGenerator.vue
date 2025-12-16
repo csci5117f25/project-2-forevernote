@@ -70,11 +70,26 @@ function gradeAnswers() {
       <div class="question-block" v-for="examDetail in genExamDetails" :key="examDetail.question">
         <div class="question-text">{{ examDetail.question }}</div>
 
-        <select v-model="examDetail.selected">
+        <!-- <select v-model="examDetail.selected">
           <option v-for="choice in examDetail.choices" :key="choice" :value="choice">
             {{ choice }}
           </option>
-        </select>
+        </select> -->
+        <div class="choices">
+          <label
+            v-for="choice in examDetail.choices"
+            :key="choice"
+            class="choice"
+          >
+            <input
+              type="radio"
+              :name="examDetail.question"
+              :value="choice"
+              v-model="examDetail.selected"
+            />
+            <span class="choice-text">{{ choice }}</span>
+          </label>
+        </div>
         <div
           v-if="displayGrade && genExamDetails.length"
           class="solution-block"
@@ -103,6 +118,30 @@ function gradeAnswers() {
   border: 2pt solid rgba(247, 168, 22, 0.682);
 }
 
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.choice {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--question-block-bg);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.choice-text {
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.choice input {
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
 h1 {
   text-align: center;
   margin-bottom: 1.2rem;
@@ -187,11 +226,24 @@ h1 {
 }
 
 @media (max-width: 480px) {
+
+  .exam-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 1rem;
+  }
   .question-block {
     padding: 1rem;
   }
   h1 {
     font-size: 1.6rem;
   }
+
+  .gen-exam-form input,
+.gen-exam-form select {
+  min-height: 44px; /* Apple guideline */
+  font-size: 1rem;
+  padding: 0.4rem 0.6rem;
+}
 }
 </style>

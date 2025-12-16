@@ -34,11 +34,21 @@ async function addExam() {
 
   emit('close-modal');
 }
+
+function onBackdropClick() {
+  const isLargeScreen = window.matchMedia('(min-width: 768px)').matches
+  const isFinePointer = window.matchMedia('(pointer: fine)').matches
+
+  if (isLargeScreen || isFinePointer) {
+    emit('close-modal')
+  }
+}
 </script>
 
 <template>
-  <div class="modal-backdrop" @click="emit('close-modal')">
+  <div class="modal-backdrop" @click="onBackdropClick">
     <div class="modal-content frosted-container" @click.stop>
+    <button class="modal-close" @click="emit('close-modal')"></button>
       <h1 class="title is-4 has-text-centered">New Exam📝</h1>
       <form class="form-area" @submit.prevent="addExam">
         <div class="field">
@@ -69,6 +79,7 @@ async function addExam() {
           <label class="label">Date & Time:</label>
           <div class="control">
             <input class="input" type="datetime-local" v-model="newExamDatetime" />
+            <small class="hint">Select date & time after the current time</small>
           </div>
         </div>
         <div class="field">
@@ -117,7 +128,20 @@ async function addExam() {
   padding: 1rem;
 }
 
-/* Frosted container */
+.modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;  
+  background: black;
+  border: none;
+  font-size: 3rem;
+  color: var(--text);
+  z-index: 2;
+}
+
 .frosted-container {
   background: var(--modal-color);
   backdrop-filter: blur(12px);
@@ -134,6 +158,10 @@ async function addExam() {
   overflow-y: auto;   /* allow scrolling */
 }
 
+#add-exam-button {
+  touch-action: manipulation;
+}
+
 
 .title {
   color: var(--h1-color);
@@ -145,16 +173,19 @@ label {
 
 input,
 select {
-  background-color: rgba(255, 255, 255, 0.549);
-  color: black;
+  background-color: rgba(82, 76, 68, 0.812);
+  color: var(--text);
+
+}
+.hint {
+  color: var(--text);
+  font-size: 0.85rem;
 }
 
-/* Rounded Button */
 .rounded-btn {
   border-radius: 12px !important;
 }
 
-/* Mobile tweaks */
 @media (max-width: 480px) {
   .modal-backdrop {
     align-items: flex-end;
@@ -174,7 +205,7 @@ select {
 
 .input,
 select {
-  min-height: 44px; /* Apple recommended */
+  min-height: 44px; 
   font-size: 1rem;
 }
 </style>

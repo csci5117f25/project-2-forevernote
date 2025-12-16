@@ -193,6 +193,7 @@ function showNewExamModal() {
   border-radius: 25px;
 
   background-color: var(--modal-color);
+
 }
 
 .note-cell {
@@ -214,7 +215,7 @@ function showNewExamModal() {
   display: -webkit-box;
   -webkit-box-orient: vertical;
 
-  font-size: 2.0rem;
+  font-size: 1.5rem;
   font-weight: bold;
   color: white;
 
@@ -236,18 +237,19 @@ function showNewExamModal() {
 .gallery-cell-body {
   width: 100%;
   height: 100%;
-
   border-radius: 0 0 22px 22px;
   padding: 0.6rem;
-
   color: var(--text);
   background-color: var(--bg);
-
+  white-space: pre-wrap;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
 }
 
+.gallery-cell-body p{
+  white-space: pre-wrap;
+}
 .exam-details li {
   color: var(--text);
   font-weight: 400;
