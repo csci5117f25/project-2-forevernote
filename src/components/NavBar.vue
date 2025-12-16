@@ -76,20 +76,17 @@ onMounted(() => {
 
         <div class="navbar-end">
           <div v-if="user" class="nav-footer">
-            <button class="profile-pill"
-              @click="router.push({ name: 'profile' })">
+            <button class="profile-pill" @click="router.push({ name: 'profile' })">
               👤 Profile
             </button>
 
             <button class="theme-toggle" @click="toggle">
-              {{ isDark ? "☀️" : "🌙" }}
+              {{ isDark ? '☀️' : '🌙' }}
             </button>
           </div>
 
           <div v-else class="nav-footer">
-            <button class="profile-pill" @click="login">
-              Get Started
-            </button>
+            <button class="profile-pill" @click="login">Get Started</button>
           </div>
         </div>
       </div>
@@ -117,7 +114,9 @@ nav {
 .navbar-start,
 .navbar-end {
   background-color: var(--navbar-bg);
+  z-index: 9999;
 }
+
 .navbar {
   border-bottom: 1pt solid gray;
   padding-inline: 0.5rem;
@@ -131,7 +130,7 @@ nav {
   color: white;
 }
 
-.navbar-start{
+.navbar-start {
   background-color: var(--navbar-bg);
   color: var(--text);
 }

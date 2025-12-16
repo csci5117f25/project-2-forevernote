@@ -1,5 +1,5 @@
 <script>
-// let speechObj = null;
+let speechObj = null;
 </script>
 
 <script setup>
@@ -13,6 +13,7 @@ import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/fires
 import PlayIcon from './icons/IconPlay.vue';
 import StopIcon from './icons/IconStop.vue';
 import CancelIcon from './icons/IconCross.vue';
+import TagIcon from './icons/IconTag.vue';
 
 import tinymce from 'tinymce';
 
@@ -48,10 +49,10 @@ import 'tinymce/plugins/emoticons';
 import 'tinymce/plugins/emoticons/js/emojis';
 
 // TinyMCE UI CSS (required)
-import 'tinymce/skins/ui/oxide/content.js';
+import 'tinymce/skins/ui/oxide/content';
 
 // TinyMCE Default CSS
-import 'tinymce/skins/content/default/content.js';
+import 'tinymce/skins/content/default/content';
 
 // TinyMCE Vue Setup
 import Editor from '@tinymce/tinymce-vue';
@@ -61,11 +62,11 @@ const tinyMCEConfig = {
     'advlist anchor autolink autoresize charmap code fullscreen image insertdatetime link lists media preview searchreplace table visualblocks wordcount',
   toolbar:
     'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+  // skin: document.documentElement.classList.contains('dark') ? 'oxide-dark' : 'oxide',
   resize: false,
   promotion: false,
-  setup: (e) => {
-    editorRef.value = e;
-  },
+  branding: false,
+  content_css: '/css/editorstyle.css',
 };
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -88,7 +89,7 @@ function onExit() {
     return true;
   }
 
-  if (isChanged()) {
+  if (isChanged.value) {
     if (!confirm('You have unsaved changes! Are you sure?')) return false;
 
     return true;
@@ -97,30 +98,36 @@ function onExit() {
   return true;
 }
 
-function isChanged() {
+const isChanged = computed(() => {
+  if (!note.value) return false;
+
   // Check for title changes
-  if (currTitle.value !== noteTitle.value) return true;
+  if (currTitle.value !== note.value.title) return true;
 
   // Check for editor changes
-  if (editorRef.value && editorRef.value.isDirty()) return true;
+  if (note.value.htmlContent && currContent.value !== note.value.htmlContent) return true;
+  if (note.value.notes && !note.value.htmlContent) {
+    console.warn(
+      'This note contains only a notes entry, but new notes all contain htmlContent along with notes. Please update now!',
+    );
+
+    return true;
+  }
 
   // Check for subject changes
-  if (note.value && note.value.subject && currSubject.value !== note.value.subject) return true;
+  if (note.value.subject && currSubject.value !== note.value.subject) return true;
 
   // Check for tag changes
-  const noteSet = new Set(note.value.tags);
   const currSet = new Set(currTags.value);
+  const noteSet = new Set(note.value.tags);
   if (
-    note.value &&
     note.value.tags &&
     (noteSet.size !== currSet.size || !(noteSet.isSubsetOf(currSet) && currSet.isSubsetOf(noteSet)))
   )
     return true;
 
   return false;
-}
-
-const editorRef = ref(null);
+});
 
 const noteId = computed(() => route.params.id);
 const isLoaded = ref(noteId.value ? false : true);
@@ -136,56 +143,42 @@ const tags = computed(() => [
 
 const noteRef = noteId.value ? doc(db, 'users', user.value.uid, 'notes', noteId.value) : undefined;
 const note = useDocument(noteRef);
-const noteTitle = computed(() => {
-  if (!note.value) return '';
-
-  return note.value.title;
-});
-const noteContent = computed(() => {
-  if (!note.value) return '';
-
-  return note.value.htmlContent ? note.value.htmlContent : note.value.notes;
-});
 
 const isEditing = ref(0);
 const isTranscribing = ref(false);
 
+const tooltipSide = ref('right');
 const tooltipX = ref(0);
 const tooltipY = ref(0);
 
 function startRecording() {
   isTranscribing.value = true;
 
-  // speechObj = new SpeechRecognition();
-  // speechObj.start();
-  // speechObj.onresult = (e) => {
-  //   const transcript = e.results[0][0].transcript;
+  speechObj = new SpeechRecognition();
+  speechObj.continuous = true;
+  speechObj.start();
+  speechObj.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
 
-  //   appendToEditor(transcript);
-  // };
-  // speechObj.onend = () => {
-  //   if (speechObj !== null && isTranscribing.value) {
-  //     speechObj.start();
-  //   }
-  // };
+    appendToEditor(transcript);
+  };
+  speechObj.onend = () => {
+    if (speechObj !== null && isTranscribing.value) {
+      speechObj.start();
+    }
+  };
 }
 function stopRecording() {
-  // speechObj.stop();
-  // speechObj = null;
+  speechObj.stop();
+  speechObj = null;
 
   isTranscribing.value = false;
 }
 
 const currTitle = ref(noteId.value ? '' : 'Untitled Note');
+const currContent = ref('');
 const currSubject = ref('');
 const currTags = ref([]);
-
-function resetTitle() {
-  if (noteId.value) currTitle.value = noteTitle.value;
-  else currTitle.value = 'Untitled Note';
-
-  isEditing.value = 0;
-}
 
 function appendToEditor(text) {
   if (!tinymce.activeEditor) {
@@ -194,11 +187,13 @@ function appendToEditor(text) {
     return;
   }
 
-  editorRef.value.selection.select(editorRef.value.getBody(), true);
-  editorRef.value.selection.collapse(false);
-  editorRef.value.focus();
+  const editor = tinymce.activeEditor;
 
-  editorRef.value.insertContent(text);
+  editor.value.selection.select(editor.value.getBody(), true);
+  editor.value.selection.collapse(false);
+  editor.value.focus();
+
+  editor.value.insertContent(text);
 }
 
 async function submitNote() {
@@ -250,9 +245,26 @@ async function updateNote() {
   }
 }
 
+function onEditClick(i, e) {
+  const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+  const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+
+  tooltipX.value = e.clientX;
+  tooltipY.value = e.clientY;
+
+  if (vw - tooltipX.value < (vw * 40) / 100) {
+    tooltipSide.value = 'left';
+  } else {
+    tooltipSide.value = 'right';
+  }
+
+  isEditing.value = i;
+}
+
 watch(note, () => {
   if (noteId.value && note.value) {
     currTitle.value = note.value.title;
+    currContent.value = note.value.htmlContent ? note.value.htmlContent : note.value.notes;
 
     currSubject.value = note.value.subject ?? '';
     currTags.value = note.value.tags ?? [];
@@ -262,10 +274,10 @@ watch(note, () => {
 });
 
 onUnmounted(() => {
-  // if (speechObj !== null) {
-  //   speechObj.stop();
-  //   speechObj = null;
-  // }
+  if (speechObj !== null) {
+    speechObj.stop();
+    speechObj = null;
+  }
 });
 </script>
 
@@ -281,6 +293,7 @@ onUnmounted(() => {
             :disabled="!transcriptionSupport"
           >
             <PlayIcon />
+
             <span>Start Transcription</span>
           </button>
           <button
@@ -290,34 +303,35 @@ onUnmounted(() => {
             :disabled="!transcriptionSupport"
           >
             <StopIcon />
-            <!-- TOOD: Put Frequencey Plot Here -->
+
             <span>Stop Transcription</span>
           </button>
         </div>
 
         <div class="button-set-center">
           <div id="title-edit" v-if="isEditing === 1">
-            <input
-              class="input has-background-light has-text-dark"
-              type="text"
-              v-model="currTitle"
-            />
+            <input class="input" type="text" v-model="currTitle" />
 
             <button
-              v-if="noteId ? currTitle !== noteTitle : currTitle !== 'Untitled Note'"
+              v-if="noteId ? currTitle !== note.title : currTitle !== ''"
               class="button"
-              @click="resetTitle"
+              @click="currTitle = note.title"
             >
               <CancelIcon />
             </button>
           </div>
-          <span v-else id="title-edit" class="has-text-dark" @click="isEditing = 1">
-            {{ currTitle }}
+          <span v-else id="title-edit" @click="isEditing = 1">
+            {{ currTitle.length !== 0 ? currTitle : 'Untitled Note' }}
           </span>
         </div>
 
-        <div>
-          <button v-if="noteId" class="button is-warning" @click="updateNote" :disabled="isChanged">
+        <div id="desktop-buttons">
+          <button
+            v-if="noteId"
+            class="button is-warning"
+            @click="updateNote"
+            :disabled="!isChanged"
+          >
             Update
           </button>
           <button v-else class="button is-primary" @click="submitNote">Submit</button>
@@ -325,34 +339,24 @@ onUnmounted(() => {
       </div>
 
       <div id="label-set">
-        <span
-          v-if="note.subject"
-          class="course-pill"
-          @click="
-            (e) => {
-              tooltipX = e.clientX;
-              tooltipY = e.clientY;
+        <div id="subject-set" @click="(e) => onEditClick(2, e)">
+          <span class="course-pill">
+            {{ currSubject ? currSubject : 'No Subject' }}
+          </span>
+        </div>
 
-              isEditing = 2;
-            }
-          "
-        >
-          {{ note.subject }}
-        </span>
+        <div id="tag-set">
+          <span
+            v-for="(tag, idx) in currTags.sort()"
+            :key="`${tag}-${idx}`"
+            class="tag-pill"
+            @click="(e) => onEditClick(3, e)"
+          >
+            <TagIcon class="is-small" /> {{ tag }}
+          </span>
 
-        <div
-          id="tag-set"
-          @click="
-            (e) => {
-              tooltipX = e.clientX;
-              tooltipY = e.clientY;
-
-              isEditing = 3;
-            }
-          "
-        >
-          <span v-for="(tag, idx) in currTags.sort()" :key="`${tag}-${idx}`" class="tag-pill">
-            {{ tag }}
+          <span v-if="currTags.length === 0" class="tag-pill" @click="(e) => onEditClick(3, e)">
+            <TagIcon size="is-small" /> No Tags
           </span>
         </div>
       </div>
@@ -363,8 +367,23 @@ onUnmounted(() => {
       licenseKey="gpl"
       :init="tinyMCEConfig"
       style="z-index: 29"
-      :initial-value="noteContent"
+      v-model="currContent"
     />
+
+    <div id="mobile-buttons" class="buttons is-centered">
+      <button
+        v-if="noteId"
+        id="mobile-update-btn"
+        class="button is-warning"
+        @click="updateNote"
+        :disabled="!isChanged"
+      >
+        Update
+      </button>
+      <button v-else id="mobile-update-btn" class="button is-primary" @click="submitNote">
+        Submit
+      </button>
+    </div>
   </main>
   <main v-else>
     <div>Note is loading...</div>
@@ -375,7 +394,11 @@ onUnmounted(() => {
     v-if="isEditing === 2"
     id="subject-tooltip"
     class="tooltip"
-    :style="'left: ' + (tooltipX + 10) + 'px; top: ' + (tooltipY + 10) + 'px;'"
+    :style="
+      tooltipSide === 'right'
+        ? 'left: ' + (tooltipX + 10) + 'px; top: ' + (tooltipY + 10) + 'px;'
+        : 'left: ' + (tooltipX - 450) + 'px; top: ' + (tooltipY + 10) + 'px;'
+    "
   >
     <v-select
       id="subject-edit"
@@ -391,12 +414,24 @@ onUnmounted(() => {
 
       <template #no-options="{ search }">{{ search }}</template>
     </v-select>
+
+    <button
+      v-if="noteId && note.subject ? currSubject !== note.subject : false"
+      class="button"
+      @click="currSubject = note.subject"
+    >
+      <CancelIcon />
+    </button>
   </div>
   <div
     v-if="isEditing === 3"
     id="tag-tooltip"
     class="tooltip"
-    :style="'left: ' + (tooltipX + 10) + 'px; top: ' + (tooltipY + 10) + 'px;'"
+    :style="
+      tooltipSide === 'right'
+        ? 'left: ' + (tooltipX + 10) + 'px; top: ' + (tooltipY + 10) + 'px;'
+        : 'left: ' + (tooltipX - 450) + 'px; top: ' + (tooltipY + 10) + 'px;'
+    "
   >
     <v-select
       id="tag-edit"
@@ -413,10 +448,64 @@ onUnmounted(() => {
 
       <template #no-options="{ search }">{{ search }}</template>
     </v-select>
+
+    <button
+      v-if="noteId && note.tags ? currTags !== note.tags : false"
+      class="button"
+      @click="currTags = note.tags"
+    >
+      <CancelIcon />
+    </button>
   </div>
 </template>
 
 <style>
+.tox-tinymce {
+  border-color: var(--border) !important;
+
+  background-color: var(--editor) !important;
+}
+
+.tox-editor-header,
+.tox-sidebar-wrap,
+.tox-promotion,
+.tox-menubar,
+.tox-toolbar-overlord,
+.tox-toolbar__primary,
+.tox-anchorbar,
+.tox-statusbar {
+  border-color: var(--border) !important;
+
+  background-color: var(--card) !important;
+}
+
+.tox-mbtn,
+.tox-tbtn {
+  color: var(--text) !important;
+
+  background-color: var(--editor-btn-bg) !important;
+}
+
+.tox-mbtn,
+.tox-tbtn svg {
+  fill: var(--text) !important;
+}
+
+.tox-edit-area__iframe {
+  color: var(--text) !important;
+
+  background-color: var(--editor) !important;
+}
+
+.tox-statusbar__path-item,
+.tox-statusbar__wordcount {
+  color: var(--text) !important;
+}
+
+body#tinymce {
+  color: var(--text) !important;
+}
+
 .vs__dropdown-toggle {
   border: 0;
 }
@@ -441,11 +530,16 @@ onUnmounted(() => {
 </style>
 
 <style scoped>
+main {
+  margin: 0 1rem;
+  padding-bottom: 3rem;
+}
+
 #click-exit {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 31;
+  z-index: 28;
 
   width: 100vw;
   height: 100vh;
@@ -468,6 +562,8 @@ onUnmounted(() => {
 .button-set-center {
   flex-grow: 1;
 
+  width: 100%;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -478,24 +574,44 @@ onUnmounted(() => {
   flex-grow: 2;
 
   position: relative;
-  z-index: 32;
+  z-index: 29;
 
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
+
+  cursor: pointer;
+}
+
+#title-edit input {
+  color: var(--text);
+  background-color: var(--bg);
 }
 
 span#title-edit {
   padding: 7px 11px;
+
+  color: var(--text);
+  background-color: var(--bg);
 }
 
 #label-set {
   width: 100%;
 }
 
+#subject-set {
+  width: 100%;
+}
+
 #tag-set {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.75rem;
+
   width: 100%;
 
   margin-top: 0.5rem;
@@ -509,10 +625,19 @@ span#title-edit {
   color: rgb(50, 50, 50);
   background: #f8b377;
   font-size: 1rem;
+
+  cursor: pointer;
 }
 
 .tag-pill {
-  margin-right: 0.5rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3rem;
+
+  width: fit-content;
+
   border: 1px solid #000;
   border-radius: 999px;
   padding: 0.05rem 0.4rem;
@@ -520,16 +645,18 @@ span#title-edit {
   color: rgb(100, 100, 50);
   background: #ffd9b5;
   font-size: 0.9rem;
+
+  cursor: pointer;
 }
 
 #subject-edit {
-  min-width: 15rem;
+  width: 100%;
 
   border-radius: var(--vs-border-radius);
 }
 
 #tag-edit {
-  width: 25rem;
+  width: 100%;
 
   border-radius: var(--vs-border-radius);
 }
@@ -538,27 +665,13 @@ span#title-edit {
   flex-wrap: wrap;
 }
 
-#tooltip-container {
-  position: relative;
-}
-
-#tooltip {
-  min-width: 15rem;
-
-  display: hidden;
-
-  position: absolute;
-  z-index: 32;
-  right: 2.5rem;
-
-  border: 3px solid black;
-  border-radius: 15px;
-  padding: 1rem;
-
-  background-color: gray;
-}
-
 .tooltip {
+  width: 40vw;
+
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+
   position: fixed;
   z-index: 32;
 
@@ -566,6 +679,38 @@ span#title-edit {
   border-radius: 15px;
   padding: 1rem;
 
-  background-color: gray;
+  background-color: var(--modal-color);
+}
+
+#mobile-buttons {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  #button-set {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #desktop-buttons {
+    display: none;
+  }
+
+  #mobile-buttons {
+    display: flex;
+
+    margin-top: 1rem;
+  }
+
+  .tooltip {
+    width: 100vw;
+    left: 0px !important;
+  }
+
+  #tag-edit {
+    width: 100%;
+  }
 }
 </style>

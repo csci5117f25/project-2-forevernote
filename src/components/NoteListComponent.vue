@@ -9,6 +9,7 @@ import PinIcon from './icons/IconPin.vue';
 import PinFillIcon from './icons/IconPinFill.vue';
 import TrashIcon from './icons/IconTrashFill.vue';
 import DownIcon from './icons/IconDownCheveron.vue';
+import TagIcon from './icons/IconTag.vue';
 
 const router = useRouter();
 
@@ -127,6 +128,7 @@ async function deleteNote(id) {
     <section class="controls-row">
       <label class="control-chip">
         <input type="checkbox" v-model="pinnedOnly" />
+
         <span>Pinned only</span>
       </label>
 
@@ -161,7 +163,7 @@ async function deleteNote(id) {
               :key="`${tag}-${idx}`"
               :class="idx === 0 ? 'tag-pill' : 'tag-pill'"
             >
-              {{ tag }}
+              <TagIcon class="is-small" /> {{ tag }}
             </span>
           </div>
         </div>
@@ -172,14 +174,14 @@ async function deleteNote(id) {
 
         <!-- notes actions -->
         <div class="note-actions">
-          <button v-if="note.pinned" class="icon-btn active" @click="unpinNote(note.id)">
+          <button v-if="note.pinned" class="button" @click="unpinNote(note.id)">
             <PinFillIcon color="red" />
           </button>
-          <button v-else @click="pinNote(note.id)">
+          <button v-else class="button" @click="pinNote(note.id)">
             <PinIcon />
           </button>
 
-          <button class="icon-btn icon-delete" title="Delete" @click="deleteNote(note.id)">
+          <button class="button" title="Delete" @click="deleteNote(note.id)">
             <TrashIcon />
           </button>
 
@@ -199,12 +201,14 @@ async function deleteNote(id) {
 
 <style scoped>
 .notes-page {
-  position: relative;
   width: 98%;
+  position: relative;
+
   margin: 1% auto;
   padding: 1.2rem 1.8rem 4rem;
-  background: #f5f5f5;
   box-sizing: border-box;
+
+  background-color: var(--bg);
 }
 
 /* SEARCH BAR ROW (purple rectangles) */
@@ -248,12 +252,15 @@ async function deleteNote(id) {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.25rem 0.6rem;
+
   border-radius: 999px;
-  /* border: 1px solid #ccc; */
   border: 1px solid #00d1b2;
-  background: #fff;
+  padding: 0.25rem 0.6rem;
+
   font-size: 0.8rem;
+  background: #fff;
+  color: #121212;
+
   cursor: pointer;
 }
 
@@ -262,12 +269,15 @@ async function deleteNote(id) {
 }
 
 .controls-row select {
-  border-radius: 999px;
   border: 1px solid #00d1b2;
-  /* border: 1px solid #ccc; */
+  border-radius: 999px;
   padding: 0.25rem 0.6rem;
+
+  font-family: inherit;
   font-size: 0.8rem;
   background: #fff;
+
+  cursor: pointer;
 }
 
 /* NOTES LIST */
@@ -338,6 +348,14 @@ async function deleteNote(id) {
 }
 
 .tag-pill {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+
+  width: fit-content;
+
   border-radius: 999px;
   border: 1px solid #000;
   padding: 0.05rem 0.4rem;
@@ -377,25 +395,10 @@ async function deleteNote(id) {
   gap: 0.15rem;
 }
 
-.icon-btn {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 1.05rem;
-  padding: 0.15rem;
-}
-
-.icon-btn.active {
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
-}
-
-.icon-btn.icon-delete {
-  font-size: 1.2rem;
-  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', system-ui, sans-serif;
-}
-
-.icon-btn.expand {
-  font-size: 1.2rem;
+.button {
+  background-color: transparent;
+  border: 0px;
+  box-shadow: none;
 }
 
 /* Floating add button */
@@ -431,6 +434,7 @@ async function deleteNote(id) {
 
   .note-meta {
     grid-area: meta;
+    margin-top: 0.25rem;
   }
 
   .note-actions {

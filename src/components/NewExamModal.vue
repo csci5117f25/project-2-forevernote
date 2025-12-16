@@ -74,23 +74,13 @@ async function addExam() {
         <div class="field">
           <label class="label">Location:</label>
           <div class="control">
-            <input
-              class="input"
-              type="text"
-              placeholder="room or hall"
-              v-model="newExamLocation"
-            />
+            <input class="input" type="text" placeholder="room or hall" v-model="newExamLocation" />
           </div>
         </div>
         <div class="field">
           <label class="label">Topics:</label>
           <div class="control">
-            <input
-              class="input"
-              type="text"
-              placeholder="covered topics"
-              v-model="newExamTopics"
-            />
+            <input class="input" type="text" placeholder="covered topics" v-model="newExamTopics" />
           </div>
         </div>
 
@@ -129,11 +119,10 @@ async function addExam() {
 
 .frosted-container {
   width: 100%;
-  max-width: 520px;   /* desktop */
-  max-height: 90vh;   /* critical for phones */
-  overflow-y: auto;   /* allow scrolling */
+  max-width: 520px; /* desktop */
+  max-height: 90vh; /* critical for phones */
+  overflow-y: auto; /* allow scrolling */
 }
-
 
 .title {
   color: var(--h1-color);

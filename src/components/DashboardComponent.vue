@@ -40,8 +40,10 @@ function showNewExamModal() {
 <template>
   <div id="dashboard-container">
     <div id="greeting">
-      <h1>Hey 
-      <span class="greeting-name">{{ user.displayName }}</span>,</h1>
+      <h1>
+        Hey <span class="greeting-name">{{ user.displayName }}</span
+        >,
+      </h1>
     </div>
 
     <div id="recent-notes">
@@ -63,7 +65,12 @@ function showNewExamModal() {
             <h2>{{ note.title }}</h2>
           </div>
 
-          <div class="gallery-cell-body note-preview">
+          <div
+            v-if="note.htmlContent"
+            class="gallery-cell-body note-preview"
+            v-html="note.htmlContent"
+          ></div>
+          <div v-else class="gallery-cell-body note-preview">
             <p>{{ note.notes }}</p>
           </div>
         </Slide>
@@ -137,7 +144,7 @@ function showNewExamModal() {
 
 #greeting,
 #recent-notes > h2,
-#upcoming-exams-h, 
+#upcoming-exams-h,
 .no-upcoming-exam {
   padding-inline: 1.5rem;
 }
@@ -154,7 +161,7 @@ function showNewExamModal() {
 }
 
 .greeting-name {
-  color: rgb(247, 165, 12)
+  color: rgb(247, 165, 12);
 }
 
 #greeting > h1 {
@@ -171,14 +178,15 @@ function showNewExamModal() {
   justify-content: space-between;
 }
 
-#recent-notes, #upcoming-exams {
+#recent-notes,
+#upcoming-exams {
   font-size: 1.3rem;
 }
 
 #add-exam-button {
   align-items: flex-end;
-
 }
+
 .gallery {
   height: 40vh;
 }
@@ -193,6 +201,8 @@ function showNewExamModal() {
   border-radius: 25px;
 
   background-color: var(--modal-color);
+
+  cursor: pointer;
 }
 
 .note-cell {
@@ -214,7 +224,7 @@ function showNewExamModal() {
   display: -webkit-box;
   -webkit-box-orient: vertical;
 
-  font-size: 2.0rem;
+  font-size: 2rem;
   font-weight: bold;
   color: white;
 
@@ -255,21 +265,22 @@ function showNewExamModal() {
 }
 
 @media (max-width: 480px) {
-
   #greeting > h1 {
-  font-size: clamp(2.5rem, 8vw, 4rem);
-  line-height: 1.0;
-  word-break: break-word;
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    line-height: 1;
+    word-break: break-word;
   }
 
-  #recent-notes, #upcoming-exams {
-  font-size: 1.0rem;
-}
+  #recent-notes,
+  #upcoming-exams {
+    font-size: 1rem;
+  }
 
   .gallery-cell {
     width: 85%;
     max-height: 300px;
   }
+
   .gallery {
     height: auto;
     max-height: 320px;
@@ -296,6 +307,7 @@ function showNewExamModal() {
     line-clamp: 1;
     -webkit-line-clamp: 1;
   }
+
   #add-exam-button {
     padding: 0.6rem 1rem;
     font-size: 0.85rem;
