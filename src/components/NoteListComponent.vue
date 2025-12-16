@@ -73,9 +73,8 @@ const filteredNotes = computed(() => {
 
     // If query by subject
     if (classLc.length !== 0) {
-      if (!note.subject) return false;
-
-      if (!note.subject.trim().toLowerCase().includes(classLc)) return false;
+      if (!note.subject && !note.tags) return false;
+      if (!`${note.subject.trim().toLowerCase()} ${(note.tags || []).join(' ')}`.includes(classLc)) return false;
     }
 
     return true;
