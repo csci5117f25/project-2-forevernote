@@ -146,7 +146,6 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
   font-size: 1.6rem;
 }
 
-/* ---------- FEATURE ROWS ---------- */
 .editor-box,
 .audio-feature-div,
 .ai-exam-gen-feature-div {
@@ -209,7 +208,6 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
   font-size: 1.8rem;
 }
 
-/* ---------- MOBILE ---------- */
 @media (max-width: 768px) {
   #splash-page-container {
     padding: 1rem;
