@@ -45,7 +45,8 @@ https://www.canva.com/design/DAG4aRBi1ik/SJLDngZ8nj8_Kzjo0kR3QQ/view?utm_content
 
 - If the Practice Exam Generator fails during testing, it might be primarily due to hitting Gemini API's maximum quota. We have our Google Project linked to a billing account, however, can't guarantee yet that Gemini will reliably use this billing account since we haven't encountered any issues as such during our testing. We are including screenshots of the practice exam pages as well.
 - The TinyMCE editor remains white in Dark Mode - We've tried to modify the color of the editor on dark mode, to no avail.
-
+- Our audio transcription in the notes section does not work on Firefox due to API integration difficulties
+  
 ## Screenshots of Site (complete)
 
 **[Add a screenshot of each key page](https://stackoverflow.com/questions/10189356/how-to-add-screenshot-to-readmes-in-github-repository)
