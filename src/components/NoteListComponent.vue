@@ -187,15 +187,11 @@ async function deleteSelectedNotes() {
     <!-- Notes List -->
     <section class="notes-list">
       <article v-for="note in filteredNotes" :key="note.id" class="note-row">
-        <button
-          v-if="selected.includes(note.id)"
-          class="select-circle selected"
-          @click="
-            () => {
-              selected = selected.filter((n) => n !== note.id);
-            }
-          "
-        />
+        <button v-if="selected.includes(note.id)" class="select-circle selected" @click="
+          () => {
+            selected = selected.filter((n) => n !== note.id);
+          }
+        " />
         <button v-else class="select-circle" @click="selected.push(note.id)" />
 
         <div class="note-main" @click="router.push({ name: 'note', params: { id: note.id } })">
@@ -207,11 +203,7 @@ async function deleteSelectedNotes() {
               {{ note.subject }}
             </span>
 
-            <span
-              v-for="(tag, idx) in note.tags"
-              :key="`${tag}-${idx}`"
-              :class="idx === 0 ? 'tag-pill' : 'tag-pill'"
-            >
+            <span v-for="(tag, idx) in note.tags" :key="`${tag}-${idx}`" :class="idx === 0 ? 'tag-pill' : 'tag-pill'">
               <!-- <TagIcon class="is-small" /> {{ tag }} -->
               🏷️&nbsp;{{ tag }}
             </span>
@@ -238,22 +230,14 @@ async function deleteSelectedNotes() {
             🗑️
           </button>
 
-          <button
-            class="button"
-            title="More"
-            @click="isPreview = isPreview === note.id ? '' : note.id"
-          >
+          <button class="button" title="More" @click="isPreview = isPreview === note.id ? '' : note.id">
             <!-- <DownIcon /> -->
             ⬇️
           </button>
         </div>
 
         <transition name="slide-fade">
-          <div
-            v-if="note.htmlContent"
-            class="note-preview-row"
-            :class="{ open: isPreview === note.id }"
-          >
+          <div v-if="note.htmlContent" class="note-preview-row" :class="{ open: isPreview === note.id }">
             <div class="note-preview" v-html="note.htmlContent"></div>
           </div>
 
@@ -267,15 +251,12 @@ async function deleteSelectedNotes() {
 
   <button id="new-note" @click="router.push({ name: 'new_note' })">
     <!-- <PlusIcon class="is-large" /> -->
-    <span
-      style="
+    <span style="
         border: 2px solid black;
         border-radius: 999px;
         padding: 1rem;
         background-color: var(--input-bg);
-      "
-      >➕</span
-    >
+      ">➕</span>
   </button>
 </template>
 
@@ -442,6 +423,8 @@ async function deleteSelectedNotes() {
   padding: 0.5rem;
   max-height: 50vh;
   overflow: auto;
+
+  background-color: var(--bg);
 }
 
 .slide-fade-enter-active,
