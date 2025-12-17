@@ -52,21 +52,21 @@ https://www.canva.com/design/DAG4aRBi1ik/SJLDngZ8nj8_Kzjo0kR3QQ/view?utm_content
 along with a very brief caption:**
 
 <img width="1470" height="841" alt="image" src="https://github.com/user-attachments/assets/4f595535-88a0-4f8b-8b26-3d38a3ef04c8" />
-_Splash page_
+Splash page
 <img width="1470" height="839" alt="image" src="https://github.com/user-attachments/assets/cc9748c4-7058-45f7-af41-38997111baa5" />
-_Profile page_
+Profile page
 <img width="1469" height="839" alt="image" src="https://github.com/user-attachments/assets/617bfe92-a927-427d-90d2-4c0a4ea72355" />
-_Dashboard_
+Dashboard
 <img width="1470" height="839" alt="image" src="https://github.com/user-attachments/assets/ee7f0a26-61dc-4739-b315-2e28fe594369" />
-*Create new exam modal*
+Create new exam modal
 <img width="1470" height="839" alt="image" src="https://github.com/user-attachments/assets/0a7905aa-0da5-496e-a01a-9966c703af6f" />
-_Notes page_
+Notes page
 <img width="1470" height="838" alt="image" src="https://github.com/user-attachments/assets/72e8683a-b6e0-45ad-a2ae-225a4997b075" />
-_Notes Editor page_
+Notes Editor page
 <img width="1470" height="840" alt="image" src="https://github.com/user-attachments/assets/45c1a092-c0dc-4ea5-8b50-7c5b574ed33b" />
-_Exam Generator page_
+Exam Generator page
 <img width="1470" height="836" alt="image" src="https://github.com/user-attachments/assets/e4da181e-4285-4efe-b63d-954275c320eb" />
-_404 page_
+404 page
 
 
 ## External Dependencies
