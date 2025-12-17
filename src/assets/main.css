@@ -13,6 +13,7 @@
   --input-bg: #efd29fca;
   --editor: white;
   --editor-btn-bg: #ededed;
+
 }
 
 .dark {
@@ -23,7 +24,7 @@
   --navbar-bg: #db6307;
   --h1-color: rgb(255, 166, 0);
   --dash-h1-color: rgb(255, 255, 255);
-  --modal-color: rgba(56, 55, 55, 0.845);
+  --modal-color: rgb(29, 20, 2);
   --question-block-bg: #451b03;
   --input-bg: rgba(82, 76, 68, 0.812);
   --editor: #111;

@@ -60,12 +60,12 @@ const router = createRouter({
       },
     },
     {
-      path: '/practiceexams',
+      path: '/practiceexams/:topics?',
       name: 'practiceexams',
       component: ExamGenerator,
       meta: {
         requiresAuth: true,
-      },
+      }
     },
     {
       path: '/profile',

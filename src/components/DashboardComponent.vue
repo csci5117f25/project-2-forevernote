@@ -37,6 +37,21 @@ const showModal = ref(false);
 function showNewExamModal() {
   showModal.value = true;
 }
+
+function routeToPracticeExams(topics) {
+  if (topics.length === 0) {
+    console.log("No topics in route");
+    router.push({ name: 'practiceexams' });
+    return;
+  } 
+  console.log("Routing to practice exams with topics: ", topics);
+  const topicsString = topics.map(topic => topic.trim()).join(',');
+  router.push({ name: 'practiceexams', params: { topics: topicsString } });
+}
+
+function routeToNewNote(){
+  router.push({ name: 'new_note' });
+}
 </script>
 
 <template>
@@ -49,7 +64,16 @@ function showNewExamModal() {
     </div>
 
     <div id="recent-notes">
-      <h2>Recently Viewed Notes</h2>
+      <div class="carousel-headers">
+        <h2>Recently Viewed Notes</h2>
+
+        <button
+          id="new-note-button"
+          class="button is-primary is-dark is-small is-rounded"
+          @click="routeToNewNote()">
+          Create New Note
+        </button>
+      </div>
 
       <Carousel
         v-if="notes.length !== 0"
@@ -87,7 +111,7 @@ function showNewExamModal() {
     </div>
 
     <div id="upcoming-exams">
-      <div id="upcoming-exams-h">
+      <div id="upcoming-exams-h" class="carousel-headers">
         <h2>Upcoming Exams⏳</h2>
 
         <button
@@ -108,6 +132,7 @@ function showNewExamModal() {
         <Slide v-for="exam in exams" :key="exam.id" class="gallery-cell exam-cell">
           <div class="gallery-cell-header">
             <h2>{{ exam.subject }}</h2>
+            
           </div>
 
           <div class="gallery-cell-body exam-details">
@@ -118,6 +143,7 @@ function showNewExamModal() {
             <ul v-if="exam.topics.length !== 0">
               <li v-for="topic in exam.topics" :key="topic">💡{{ topic }}</li>
             </ul>
+            <button class="button is-success is-full-width-mobile is-medium is-rounded" @click="routeToPracticeExams(exam.topics)">✨Practice Topics</button>
           </div>
         </Slide>
 
@@ -146,9 +172,19 @@ function showNewExamModal() {
 
 #greeting,
 #recent-notes > h2,
-#upcoming-exams-h,
 .no-upcoming-exam {
   padding-inline: 1.5rem;
+}
+
+.carousel-headers{
+  display: flex; 
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-inline: 1.5rem;
+  padding: 0.4rem;
+  margin: 0 0 0 0;
+
 }
 
 #note-carousel,
@@ -173,20 +209,14 @@ function showNewExamModal() {
   font-weight: 700;
 }
 
-#upcoming-exams-h {
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 2%;
-  justify-content: space-between;
-}
-
 #recent-notes,
 #upcoming-exams {
   font-size: 1.3rem;
 }
 
-#add-exam-button {
+#add-exam-button, #new-note-button {
   align-items: flex-end;
+  margin-right: 1.2rem;
 }
 
 .gallery {
@@ -236,7 +266,9 @@ function showNewExamModal() {
   line-clamp: 1;
   -webkit-line-clamp: 1;
 }
-
+button{
+  white-space: nowrap;
+}
 .note-cell .gallery-cell-header {
   background-image: linear-gradient(to right, rgb(252, 164, 0), rgb(183, 119, 0));
 }
@@ -253,7 +285,7 @@ function showNewExamModal() {
   color: var(--text);
   background-color: var(--bg);
   white-space: pre-wrap;
-  overflow: hidden;
+  overflow: auto;
   text-overflow: ellipsis;
   white-space: normal;
 }
@@ -272,6 +304,10 @@ function showNewExamModal() {
     font-size: clamp(2.5rem, 8vw, 4rem);
     line-height: 1;
     word-break: break-word;
+  }
+
+  .gallery-cell-body button{
+    width: 100%
   }
 
   #recent-notes,
@@ -311,8 +347,8 @@ function showNewExamModal() {
     -webkit-line-clamp: 1;
   }
 
-  #add-exam-button {
-    padding: 0.6rem 1rem;
+  #add-exam-button, #new-note-button {
+    padding: 0.3rem 0.7rem;
     font-size: 0.85rem;
   }
 }

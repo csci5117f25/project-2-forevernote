@@ -1,8 +1,24 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { onMounted } from 'vue';
+
 
 const FUNCTION_URL = 'https://on-request-api-key-zixtq6tzqq-uc.a.run.app';
 
+
+const route = useRouter();
+
+function loadRouteParams() {
+  console.log("Current route params on load: ", route.currentRoute.value.params);
+  if (route.currentRoute.value.params.topics) {
+    examTopic.value = route.currentRoute.value.params.topics; 
+  }
+};
+
+onMounted(() => {
+  loadRouteParams();
+});
 // Refs for input.
 const examTopic = ref('');
 const numberOfQuestions = ref(null);
@@ -205,7 +221,7 @@ h1 {
 }
 
 .wrong-answer {
-  color: rgba(240, 32, 32, 0.57);
+  color: rgba(246, 46, 28, 0.57);
   font-weight: 100;
   font-size: 1rem;
 }
@@ -217,19 +233,22 @@ h1 {
 }
 
 .correct {
-  border: 2pt solid rgba(4, 241, 4, 0.532);
+  border: 2pt solid rgb(2, 136, 2);
 }
 
 .incorrect {
-  border: 2pt solid rgba(241, 60, 60, 0.532);
+  border: 2pt solid rgb(255, 0, 0);
 }
 
 @media (max-width: 480px) {
 
   .exam-container {
     max-width: 100%;
+    max-height: 98vh;
+    overflow-y: auto;
     margin: 0;
     padding: 1rem;
+    border: none;
   }
   .question-block {
     padding: 1rem;
@@ -240,7 +259,7 @@ h1 {
 
   .gen-exam-form input,
 .gen-exam-form select {
-  min-height: 44px; /* Apple guideline */
+  min-height: 44px; 
   font-size: 1rem;
   padding: 0.4rem 0.6rem;
 }
