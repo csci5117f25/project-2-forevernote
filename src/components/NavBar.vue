@@ -69,7 +69,7 @@ onMounted(() => {
       </div>
 
       <div id="navbar" class="navbar-menu">
-        <div class="navbar-start">
+        <div class="navbar-start" v-if="user">
           <RouterLink to="/dashboard" class="navbar-item">Home</RouterLink>
           <RouterLink to="/notes" class="navbar-item">Notes</RouterLink>
           <RouterLink to="/practiceexams" class="navbar-item">✨ Practice</RouterLink>
