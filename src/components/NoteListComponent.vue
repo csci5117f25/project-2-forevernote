@@ -4,12 +4,12 @@ import { useRouter } from 'vue-router';
 import { useCollection, useCurrentUser, useFirestore } from 'vuefire';
 import { collection, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 
-import PlusIcon from './icons/IconPlus.vue';
-import PinIcon from './icons/IconPin.vue';
-import PinFillIcon from './icons/IconPinFill.vue';
-import TrashIcon from './icons/IconTrashFill.vue';
-import DownIcon from './icons/IconDownCheveron.vue';
-import TagIcon from './icons/IconTag.vue';
+// import PlusIcon from './icons/IconPlus.vue';
+// import PinIcon from './icons/IconPin.vue';
+// import PinFillIcon from './icons/IconPinFill.vue';
+// import TrashIcon from './icons/IconTrashFill.vue';
+// import DownIcon from './icons/IconDownCheveron.vue';
+// import TagIcon from './icons/IconTag.vue';
 
 const router = useRouter();
 
@@ -175,25 +175,23 @@ async function deleteSelectedNotes() {
       </select>
 
       <button class="button" :class="{ show: selected.length !== 0 }" @click="pinSelectedNotes">
-        <PinFillIcon class="is-small" color="red" /> Pin Selected Notes
+        <!-- <PinFillIcon class="is-small" color="red" /> Pin Selected Notes -->
+        📌&nbsp;Pin Selected Notes
       </button>
       <button class="button" :class="{ show: selected.length !== 0 }" @click="deleteSelectedNotes">
-        <TrashIcon class="is-small" /> Delete Selected Notes
+        <!-- <TrashIcon class="is-small" /> Delete Selected Notes -->
+        🗑️&nbsp;Delete Selected Notes
       </button>
     </section>
 
     <!-- Notes List -->
     <section class="notes-list">
       <article v-for="note in filteredNotes" :key="note.id" class="note-row">
-        <button
-          v-if="selected.includes(note.id)"
-          class="select-circle selected"
-          @click="
-            () => {
-              selected = selected.filter((n) => n !== note.id);
-            }
-          "
-        />
+        <button v-if="selected.includes(note.id)" class="select-circle selected" @click="
+          () => {
+            selected = selected.filter((n) => n !== note.id);
+          }
+        " />
         <button v-else class="select-circle" @click="selected.push(note.id)" />
 
         <div class="note-main" @click="router.push({ name: 'note', params: { id: note.id } })">
@@ -205,12 +203,9 @@ async function deleteSelectedNotes() {
               {{ note.subject }}
             </span>
 
-            <span
-              v-for="(tag, idx) in note.tags"
-              :key="`${tag}-${idx}`"
-              :class="idx === 0 ? 'tag-pill' : 'tag-pill'"
-            >
-              <TagIcon class="is-small" /> {{ tag }}
+            <span v-for="(tag, idx) in note.tags" :key="`${tag}-${idx}`" :class="idx === 0 ? 'tag-pill' : 'tag-pill'">
+              <!-- <TagIcon class="is-small" /> {{ tag }} -->
+              🏷️&nbsp;{{ tag }}
             </span>
           </div>
         </div>
@@ -222,31 +217,27 @@ async function deleteSelectedNotes() {
         <!-- Notes Actions -->
         <div class="note-actions">
           <button v-if="note.pinned" class="button" @click="unpinNote(note.id)">
-            <PinFillIcon color="red" />
+            <!-- <PinFillIcon color="red" /> -->
+            <span style="rotate: -45deg">📌</span>
           </button>
           <button v-else class="button" @click="pinNote(note.id)">
-            <PinIcon />
+            <span>📌</span>
+            <!-- <PinIcon /> -->
           </button>
 
           <button class="button" @click="deleteNote(note.id)">
-            <TrashIcon />
+            <!-- <TrashIcon /> -->
+            🗑️
           </button>
 
-          <button
-            class="button"
-            title="More"
-            @click="isPreview = isPreview === note.id ? '' : note.id"
-          >
-            <DownIcon />
+          <button class="button" title="More" @click="isPreview = isPreview === note.id ? '' : note.id">
+            <!-- <DownIcon /> -->
+            ⬇️
           </button>
         </div>
 
         <transition name="slide-fade">
-          <div
-            v-if="note.htmlContent"
-            class="note-preview-row"
-            :class="{ open: isPreview === note.id }"
-          >
+          <div v-if="note.htmlContent" class="note-preview-row" :class="{ open: isPreview === note.id }">
             <div class="note-preview" v-html="note.htmlContent"></div>
           </div>
 
@@ -259,7 +250,8 @@ async function deleteSelectedNotes() {
   </div>
 
   <button id="new-note" @click="router.push({ name: 'new_note' })">
-    <PlusIcon class="is-large" />
+    <!-- <PlusIcon class="is-large" /> -->
+    <span style="border: 2px solid black; border-radius: 999px; padding: 1rem; background-color: var(--input-bg);">➕</span>
   </button>
 </template>
 
@@ -359,6 +351,7 @@ async function deleteSelectedNotes() {
     visibility 0s,
     opacity 0.5s linear;
 }
+
 .controls-row .button.show {
   height: initial;
   visibility: visible;
@@ -558,8 +551,8 @@ async function deleteSelectedNotes() {
 /* Floating Add Button */
 #new-note {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
+  bottom: 3rem;
+  right: 2rem;
 
   cursor: pointer;
 }
