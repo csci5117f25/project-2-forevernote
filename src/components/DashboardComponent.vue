@@ -40,17 +40,14 @@ function showNewExamModal() {
 
 function routeToPracticeExams(topics) {
   if (topics.length === 0) {
-    console.log("No topics in route");
     router.push({ name: 'practiceexams' });
-    return;
-  } 
-  console.log("Routing to practice exams with topics: ", topics);
-  const topicsString = topics.map(topic => topic.trim()).join(',');
-  router.push({ name: 'practiceexams', params: { topics: topicsString } });
-}
 
-function routeToNewNote(){
-  router.push({ name: 'new_note' });
+    return;
+  }
+
+  const topicsString = topics.map((topic) => topic.trim()).join(',');
+
+  router.push({ name: 'practiceexams', params: { topics: topicsString } });
 }
 </script>
 
@@ -70,7 +67,8 @@ function routeToNewNote(){
         <button
           id="new-note-button"
           class="button is-primary is-dark is-small is-rounded"
-          @click="routeToNewNote()">
+          @click="router.push('/note/new')"
+        >
           Create New Note
         </button>
       </div>
@@ -132,7 +130,6 @@ function routeToNewNote(){
         <Slide v-for="exam in exams" :key="exam.id" class="gallery-cell exam-cell">
           <div class="gallery-cell-header">
             <h2>{{ exam.subject }}</h2>
-            
           </div>
 
           <div class="gallery-cell-body exam-details">
@@ -143,8 +140,15 @@ function routeToNewNote(){
             <ul v-if="exam.topics.length !== 0">
               <li v-for="topic in exam.topics" :key="topic">💡{{ topic }}</li>
             </ul>
-            <button class="button is-success is-full-width-mobile is-medium is-rounded" @click="routeToPracticeExams(exam.topics)">✨Practice Topics</button>
           </div>
+
+          <button
+            id="practice-button"
+            class="button is-success is-full-width-mobile is-medium is-rounded"
+            @click="routeToPracticeExams(exam.topics)"
+          >
+            ✨ Practice
+          </button>
         </Slide>
 
         <template #addons>
@@ -153,7 +157,7 @@ function routeToNewNote(){
         </template>
       </Carousel>
       <div v-else class="gallery">
-        <p class="no-upcoming-exam">You have no upcoming exams!</p>
+        <p>You have no upcoming exams!</p>
       </div>
     </div>
 
@@ -176,15 +180,14 @@ function routeToNewNote(){
   padding-inline: 1.5rem;
 }
 
-.carousel-headers{
-  display: flex; 
+.carousel-headers {
+  display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   padding-inline: 1.5rem;
   padding: 0.4rem;
   margin: 0 0 0 0;
-
 }
 
 #note-carousel,
@@ -214,7 +217,8 @@ function routeToNewNote(){
   font-size: 1.3rem;
 }
 
-#add-exam-button, #new-note-button {
+#add-exam-button,
+#new-note-button {
   align-items: flex-end;
   margin-right: 1.2rem;
 }
@@ -233,12 +237,12 @@ function routeToNewNote(){
   border-radius: 25px;
 
   background-color: var(--modal-color);
-
-  cursor: pointer;
 }
 
 .note-cell {
   border: 3px solid rgb(252, 164, 0);
+
+  cursor: pointer;
 }
 
 .exam-cell {
@@ -246,6 +250,11 @@ function routeToNewNote(){
 }
 
 .gallery-cell-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
   width: 100%;
 
   border-radius: 22px 22px 0 0;
@@ -266,9 +275,17 @@ function routeToNewNote(){
   line-clamp: 1;
   -webkit-line-clamp: 1;
 }
-button{
+
+#practice-button {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+}
+
+button {
   white-space: nowrap;
 }
+
 .note-cell .gallery-cell-header {
   background-image: linear-gradient(to right, rgb(252, 164, 0), rgb(183, 119, 0));
 }
@@ -293,6 +310,7 @@ button{
 .gallery-cell-body p {
   white-space: pre-wrap;
 }
+
 .exam-details li {
   color: var(--text);
   font-weight: 400;
@@ -306,8 +324,8 @@ button{
     word-break: break-word;
   }
 
-  .gallery-cell-body button{
-    width: 100%
+  .gallery-cell-body button {
+    width: 100%;
   }
 
   #recent-notes,
@@ -347,7 +365,8 @@ button{
     -webkit-line-clamp: 1;
   }
 
-  #add-exam-button, #new-note-button {
+  #add-exam-button,
+  #new-note-button {
     padding: 0.3rem 0.7rem;
     font-size: 0.85rem;
   }

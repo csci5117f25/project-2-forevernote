@@ -115,6 +115,8 @@ async function pinSelectedNotes() {
   } catch (e) {
     console.error('unable to pin notes:', e);
   }
+
+  selected.value = [];
 }
 
 async function deleteNote(id) {
@@ -123,6 +125,8 @@ async function deleteNote(id) {
   } catch (e) {
     console.error('unable to delete note:', e);
   }
+
+  selected.value = [];
 }
 
 async function deleteSelectedNotes() {

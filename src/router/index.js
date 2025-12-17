@@ -65,7 +65,7 @@ const router = createRouter({
       component: ExamGenerator,
       meta: {
         requiresAuth: true,
-      }
+      },
     },
     {
       path: '/profile',

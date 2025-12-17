@@ -12,14 +12,11 @@ import { signInWithPopup } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import logoImg from '@/assets/img/logo.png';
-import { useTheme } from '@/composables/useTheme';
 
 const router = useRouter();
 const auth = useFirebaseAuth();
 const user = useCurrentUser();
 const db = useFirestore();
-
-const { isDark, toggle } = useTheme();
 
 async function login() {
   await signInWithPopup(auth, googleAuthProvider);
@@ -191,13 +188,6 @@ nav {
 
   #main-navbar {
     padding: 0.4rem 0.8rem;
-  }
-
-  .nav-footer {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    justify-content: space-between;
-    width: 100%;
   }
 }
 </style>

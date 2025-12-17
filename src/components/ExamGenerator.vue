@@ -3,18 +3,16 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
 
-
 const FUNCTION_URL = 'https://on-request-api-key-zixtq6tzqq-uc.a.run.app';
-
 
 const route = useRouter();
 
 function loadRouteParams() {
-  console.log("Current route params on load: ", route.currentRoute.value.params);
+  console.log('Current route params on load: ', route.currentRoute.value.params);
   if (route.currentRoute.value.params.topics) {
-    examTopic.value = route.currentRoute.value.params.topics; 
+    examTopic.value = route.currentRoute.value.params.topics;
   }
-};
+}
 
 onMounted(() => {
   loadRouteParams();
@@ -253,10 +251,10 @@ h1 {
   }
 
   .gen-exam-form input,
-.gen-exam-form select {
-  min-height: 44px; 
-  font-size: 1rem;
-  padding: 0.4rem 0.6rem;
-}
+  .gen-exam-form select {
+    min-height: 44px;
+    font-size: 1rem;
+    padding: 0.4rem 0.6rem;
+  }
 }
 </style>

@@ -1,11 +1,12 @@
 <script>
-let speechObj = null;
+// let speechObj = null;
 </script>
 
 <script setup>
 import 'vue-select/dist/vue-select.css';
 
-import { computed, onUnmounted, ref, watch } from 'vue';
+// import { nextTick } from 'vue';
+import { computed, onUnmounted, ref, watch, onMounted } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { useCollection, useCurrentUser, useDocument, useFirestore } from 'vuefire';
 import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
@@ -14,6 +15,9 @@ import PlayIcon from './icons/IconPlay.vue';
 import StopIcon from './icons/IconStop.vue';
 import CancelIcon from './icons/IconCross.vue';
 import TagIcon from './icons/IconTag.vue';
+
+// AUDIO TRANSCRIPTION ENGINE IMPORT
+import AudioEngine from '@/components/AudioEngine.vue';
 
 import tinymce from 'tinymce';
 
@@ -57,21 +61,107 @@ import 'tinymce/skins/content/default/content';
 // TinyMCE Vue Setup
 import Editor from '@tinymce/tinymce-vue';
 
+/**
+ * BEGIN AUDIO VARIABLES AND FUNCTIONS
+ */
+
+const isTranscribing = ref(false);
+const transcriptionMode = ref('google'); // default
+const apiSupport = ref(true);
+
+let interimSpanId = null; // Temp span for interim results
+
+// const setTranscriptionMode = async (mode) => {
+//   if (transcriptionMode.value === mode) return;
+
+//   const wasRecording = isTranscribing.value;
+
+//   if (wasRecording) {
+//     isTranscribing.value = false;
+//     await nextTick(); // Wait for watchers to cleanup
+//   }
+
+//   // switch modes
+//   transcriptionMode.value = mode;
+//   if (wasRecording) {
+//     isTranscribing.value = true;
+//   }
+// };
+
+const handleTranscribed = (event) => {
+  const { text, isFinal } = event;
+  if (!text) return;
+
+  const editor = tinymce.activeEditor;
+
+  if (transcriptionMode.value === 'google') {
+    if (isFinal) {
+      // remove interim span if it exists
+      if (interimSpanId) {
+        editor.dom.remove(interimSpanId);
+
+        interimSpanId = null;
+      }
+
+      appendToEditor(text + ' ');
+    } else {
+      showInterimText(text);
+    }
+  } else {
+    appendToEditor(text + ' ');
+  }
+};
+
+function showInterimText(text) {
+  const editor = tinymce.activeEditor;
+
+  if (!editor) return;
+
+  editor.undoManager.ignore(() => {
+    if (interimSpanId) {
+      editor.dom.remove(interimSpanId);
+    }
+
+    interimSpanId = editor.dom.uniqueId('interim');
+
+    editor.selection.select(editor.getBody(), true);
+    editor.selection.collapse(false);
+
+    editor.insertContent(
+      `<span id="${interimSpanId}" style="opacity:0.5;">${editor.dom.encode(text)}</span>`,
+    );
+  });
+}
+
+const startRecording = () => {
+  isTranscribing.value = true;
+};
+
+const stopRecording = () => {
+  isTranscribing.value = false;
+};
+
+/**
+ * END AUDIO VARIABLES AND FUNCTIONS
+ */
+
 const tinyMCEConfig = {
   plugins:
     'advlist anchor autolink autoresize charmap code fullscreen image insertdatetime link lists media preview searchreplace table visualblocks wordcount',
   toolbar:
     'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+  // height: 500,
   resize: false,
   promotion: false,
   branding: false,
   content_css: '/css/editorstyle.css',
 };
 
+const isFirefox = navigator.userAgent.includes('Firefox');
+
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const transcriptionSupport =
-  typeof SpeechRecognition !== 'undefined' && typeof window.Worker !== 'undefined';
-const isFirefox = navigator.userAgent.includes('Firefox');
+  !isFirefox && typeof SpeechRecognition !== 'undefined' && typeof window.Worker !== 'undefined';
 
 const router = useRouter();
 const route = useRoute();
@@ -133,46 +223,44 @@ const isLoaded = ref(noteId.value ? false : true);
 
 const notesRef = collection(db, 'users', user.value.uid, 'notes');
 const notes = useCollection(notesRef);
-const subjects = computed(() => [
-  ...new Set(notes.value.filter((note) => note.subject).map((note) => note.subject)),
-]);
-const tags = computed(() => [
-  ...new Set(notes.value.filter((note) => note.tags).flatMap((note) => note.tags)),
-]);
+const subjects = computed(() =>
+  notes.value.filter((note) => note.subject).map((note) => note.subject),
+);
+const tags = computed(() => notes.value.filter((note) => note.tags).flatMap((note) => note.tags));
 
 const noteRef = noteId.value ? doc(db, 'users', user.value.uid, 'notes', noteId.value) : undefined;
 const note = useDocument(noteRef);
 
 const isEditing = ref(0);
-const isTranscribing = ref(false);
+// const isTranscribing = ref(false);
 
 const tooltipSide = ref('right');
 const tooltipX = ref(0);
 const tooltipY = ref(0);
 
-function startRecording() {
-  isTranscribing.value = true;
+// function startRecording() {
+//   isTranscribing.value = true;
 
-  speechObj = new SpeechRecognition();
-  speechObj.continuous = true;
-  speechObj.start();
-  speechObj.onresult = (e) => {
-    const transcript = e.results[0][0].transcript;
+//   speechObj = new SpeechRecognition();
+//   speechObj.continuous = true;
+//   speechObj.start();
+//   speechObj.onresult = (e) => {
+//     const transcript = e.results[0][0].transcript;
 
-    appendToEditor(transcript);
-  };
-  speechObj.onend = () => {
-    if (speechObj !== null && isTranscribing.value) {
-      speechObj.start();
-    }
-  };
-}
-function stopRecording() {
-  speechObj.stop();
-  speechObj = null;
+//     appendToEditor(transcript);
+//   };
+//   speechObj.onend = () => {
+//     if (speechObj !== null && isTranscribing.value) {
+//       speechObj.start();
+//     }
+//   };
+// }
+// function stopRecording() {
+//   speechObj.stop();
+//   speechObj = null;
 
-  isTranscribing.value = false;
-}
+//   isTranscribing.value = false;
+// }
 
 const currTitle = ref(noteId.value ? '' : 'Untitled Note');
 const currContent = ref('');
@@ -188,11 +276,11 @@ function appendToEditor(text) {
 
   const editor = tinymce.activeEditor;
 
-  editor.value.selection.select(editor.value.getBody(), true);
-  editor.value.selection.collapse(false);
-  editor.value.focus();
+  editor.selection.select(editor.getBody(), true);
+  editor.selection.collapse(false);
+  editor.focus();
 
-  editor.value.insertContent(text);
+  editor.insertContent(text);
 }
 
 async function submitNote() {
@@ -206,8 +294,6 @@ async function submitNote() {
     title: currTitle.value,
     notes: tinymce.activeEditor.getContent({ format: 'text' }),
     htmlContent: tinymce.activeEditor.getContent(),
-    subject: currSubject.value,
-    tags: currTags.value,
     createdAt: serverTimestamp(),
     lastEdited: serverTimestamp(),
   };
@@ -231,9 +317,9 @@ async function updateNote() {
   const data = {
     title: currTitle.value,
     notes: tinymce.activeEditor.getContent({ format: 'text' }),
-    htmlContent: tinymce.activeEditor.getContent(),
     subject: currSubject.value,
     tags: currTags.value,
+    htmlContent: tinymce.activeEditor.getContent(),
     lastEdited: serverTimestamp(),
   };
 
@@ -246,7 +332,7 @@ async function updateNote() {
 
 function onEditClick(i, e) {
   const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-  const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+  // const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
 
   tooltipX.value = e.clientX;
   tooltipY.value = e.clientY;
@@ -272,92 +358,125 @@ watch(note, () => {
   }
 });
 
-onUnmounted(() => {
-  if (speechObj !== null) {
-    speechObj.stop();
-    speechObj = null;
+// onUnmounted(() => {
+//   if (speechObj !== null) {
+//     speechObj.stop();
+//     speechObj = null;
+//   }
+// });
+
+onMounted(() => {
+  if (SpeechRecognition !== undefined) {
+    transcriptionMode.value = 'google';
+    apiSupport.value = true;
+  } else {
+    transcriptionMode.value = 'private';
+    apiSupport.value = false;
   }
+});
+
+onUnmounted(() => {
+  isTranscribing.value = false;
 });
 </script>
 
 <template>
   <main v-if="isLoaded">
-    <div id="header">
-      <div id="button-set">
-        <div class="">
+    <div id="button-set">
+      <div>
+        <button
+          v-if="!isTranscribing"
+          class="button is-success"
+          @click="startRecording"
+          :disabled="!transcriptionSupport"
+        >
+          <PlayIcon />
+          <span>Start Transcription</span>
+        </button>
+        <button
+          v-else
+          class="button is-danger"
+          @click="stopRecording"
+          :disabled="!transcriptionSupport"
+        >
+          <StopIcon />
+          <!-- TOOD: Put Frequencey Plot Here -->
+          <span>Stop Transcription</span>
+        </button>
+
+        <!-- <div class="mode-switch">
           <button
-            v-if="!isTranscribing"
-            class="button is-success"
-            @click="startRecording"
-            :disabled="!transcriptionSupport"
+            class="button is-small"
+            :disabled="!apiSupport"
+            :class="transcriptionMode === 'google' ? 'is-info is-selected' : ''"
+            @click="setTranscriptionMode('google')"
           >
-            <PlayIcon />
-
-            <span>Start Transcription</span>
+            Online
           </button>
+
           <button
-            v-else
-            class="button is-danger"
-            @click="stopRecording"
-            :disabled="!transcriptionSupport"
+            class="button is-small"
+            :class="transcriptionMode === 'private' ? 'is-info is-selected' : ''"
+            @click="setTranscriptionMode('private')"
           >
-            <StopIcon />
-
-            <span>Stop Transcription</span>
+            Local
           </button>
-        </div>
+        </div> -->
 
-        <div class="button-set-center">
-          <div id="title-edit" v-if="isEditing === 1">
-            <input class="input" type="text" v-model="currTitle" />
-
-            <button
-              v-if="noteId ? currTitle !== note.title : currTitle !== ''"
-              class="button"
-              @click="currTitle = note.title"
-            >
-              <CancelIcon />
-            </button>
-          </div>
-          <span v-else id="title-edit" @click="isEditing = 1">
-            {{ currTitle.length !== 0 ? currTitle : 'Untitled Note' }}
-          </span>
-        </div>
-
-        <div id="desktop-buttons">
-          <button
-            v-if="noteId"
-            class="button is-warning"
-            @click="updateNote"
-            :disabled="!isChanged"
-          >
-            Update
-          </button>
-          <button v-else class="button is-primary" @click="submitNote">Submit</button>
+        <div class="engine-wrapper" v-show="isTranscribing">
+          <AudioEngine
+            :isRecording="isTranscribing"
+            :mode="transcriptionMode"
+            @newTranscript="handleTranscribed"
+          />
         </div>
       </div>
 
-      <div id="label-set">
-        <div id="subject-set" @click="(e) => onEditClick(2, e)">
-          <span class="course-pill">
-            {{ currSubject ? currSubject : 'No Subject' }}
-          </span>
-        </div>
+      <div class="button-set-center">
+        <div id="title-edit" v-if="isEditing === 1">
+          <input class="input" type="text" v-model="currTitle" />
 
-        <div id="tag-set">
-          <span
-            v-for="(tag, idx) in currTags.sort()"
-            :key="`${tag}-${idx}`"
-            class="tag-pill"
-            @click="(e) => onEditClick(3, e)"
+          <button
+            v-if="noteId ? currTitle !== note.title : currTitle !== ''"
+            class="button"
+            @click="currTitle = note.title"
           >
-            <TagIcon class="is-small" /> {{ tag }}
-          </span>
-
-          <span v-if="currTags.length === 0" class="tag-pill" @click="(e) => onEditClick(3, e)">
-            <TagIcon size="is-small" /> No Tags
-          </span>
+            <CancelIcon />
+          </button>
         </div>
+        <span v-else id="title-edit" @click="isEditing = 1">
+          {{ currTitle.length !== 0 ? currTitle : 'Untitled Note' }}
+        </span>
+      </div>
+
+      <div id="desktop-buttons">
+        <button v-if="noteId" class="button is-warning" @click="updateNote" :disabled="!isChanged">
+          Update
+        </button>
+        <button v-else class="button is-primary" @click="submitNote">Submit</button>
+      </div>
+    </div>
+
+    <div id="label-set">
+      <div id="subject-set" @click="(e) => onEditClick(2, e)">
+        <span class="course-pill">
+          {{ currSubject ? currSubject : 'No Subject' }}
+        </span>
+      </div>
+
+      <div id="tag-set">
+        <span
+          v-for="(tag, idx) in currTags.sort()"
+          :key="`${tag}-${idx}`"
+          class="tag-pill"
+          @click="(e) => onEditClick(3, e)"
+        >
+          <TagIcon class="is-small" /> {{ tag }}
+        </span>
+
+        <span v-if="currTags.length === 0" class="tag-pill" @click="(e) => onEditClick(3, e)">
+          <TagIcon size="is-small" /> No Tags
+        </span>
       </div>
     </div>
 
@@ -515,12 +634,8 @@ body#tinymce {
 }
 
 .vs__selected-options {
-  flex-wrap: nowrap;
-  overflow: hidden;
-}
-
-#tag-edit .vs__selected-options {
   flex-wrap: wrap;
+  overflow: hidden;
 }
 
 .vs__selected {
@@ -544,10 +659,6 @@ main {
   height: 100vh;
 }
 
-#header {
-  margin-bottom: 1rem;
-}
-
 #button-set {
   display: flex;
   flex-direction: row;
@@ -555,7 +666,7 @@ main {
   align-items: center;
   gap: 1rem;
 
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.5em;
 }
 
 .button-set-center {
@@ -598,6 +709,8 @@ span#title-edit {
 
 #label-set {
   width: 100%;
+
+  margin-bottom: 1rem;
 }
 
 #subject-set {
