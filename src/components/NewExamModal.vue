@@ -144,6 +144,7 @@ function onBackdropClick() {
 
 .frosted-container {
   background: var(--modal-color);
+  border: 3pt solid rgb(246, 174, 38);
   backdrop-filter: blur(12px);
   border-radius: 20px;
   padding: 1.5rem;
@@ -153,9 +154,8 @@ function onBackdropClick() {
 
 .frosted-container {
   width: 100%;
-  max-width: 520px;   /* desktop */
-  max-height: 90vh;   /* critical for phones */
-  overflow-y: auto;   /* allow scrolling */
+  max-width: 520px;    
+  overflow-y: auto;   
 }
 
 #add-exam-button {
@@ -173,9 +173,14 @@ label {
 
 input,
 select {
-  background-color: rgba(82, 76, 68, 0.812);
+  background-color: var(--input-bg);
   color: var(--text);
 
+}
+
+input::placeholder {
+  color: var(--text);
+  opacity: 0.7;
 }
 .hint {
   color: var(--text);
