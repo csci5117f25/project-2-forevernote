@@ -225,18 +225,19 @@ function showNewExamModal() {
 .gallery-cell-body {
   width: 100%;
   height: 100%;
-
   border-radius: 0 0 22px 22px;
   padding: 0.6rem;
-
   color: var(--text);
   background-color: var(--bg);
-
+  white-space: pre-wrap;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
 }
 
+.gallery-cell-body p{
+  white-space: pre-wrap;
+}
 .exam-details li {
   color: var(--text);
   font-weight: 400;

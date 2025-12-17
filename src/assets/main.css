@@ -10,6 +10,7 @@
   --dash-h1-color: rgb(0, 0, 0);
   --modal-color: #ede6d6;
   --question-block-bg: #f4e5c0c5;
+  --input-bg: #efd29fca;
   --editor: white;
   --editor-btn-bg: #ededed;
 }
@@ -24,6 +25,7 @@
   --dash-h1-color: rgb(255, 255, 255);
   --modal-color: rgba(56, 55, 55, 0.845);
   --question-block-bg: #451b03;
+  --input-bg: rgba(82, 76, 68, 0.812);
   --editor: #111;
   --editor-btn-bg: #2a2a2a;
 }
