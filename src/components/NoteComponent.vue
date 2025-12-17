@@ -524,7 +524,6 @@ onUnmounted(() => {
   >
     <v-select
       id="subject-edit"
-      class="subject-edit has-background-light has-text-dark"
       placeholder="Subject"
       :options="subjects"
       taggable
@@ -539,7 +538,7 @@ onUnmounted(() => {
 
     <button
       v-if="noteId && note.subject ? currSubject !== note.subject : false"
-      class="button"
+      class="button reset"
       @click="currSubject = note.subject"
     >
       <CancelIcon />
@@ -555,15 +554,7 @@ onUnmounted(() => {
         : 'left: ' + (tooltipX - 450) + 'px; top: ' + (tooltipY + 10) + 'px;'
     "
   >
-    <v-select
-      id="tag-edit"
-      class="has-background-light has-text-dark"
-      placeholder="Tags"
-      :options="tags"
-      multiple
-      taggable
-      v-model="currTags"
-    >
+    <v-select id="tag-edit" placeholder="Tags" :options="tags" multiple taggable v-model="currTags">
       <template #search="{ attributes, events }">
         <input class="vs__search" v-bind="attributes" v-on="events" />
       </template>
@@ -573,7 +564,7 @@ onUnmounted(() => {
 
     <button
       v-if="noteId && note.tags ? currTags !== note.tags : false"
-      class="button"
+      class="button reset"
       @click="currTags = note.tags"
     >
       <CancelIcon />
@@ -644,6 +635,18 @@ body#tinymce {
 
 .vs__selected {
   text-wrap: nowrap;
+
+  color: var(--text);
+  background-color: var(--input-bg);
+}
+
+.vs__selected .vs__deselect {
+  fill: var(--deselect-x);
+}
+
+.vs__dropdown-menu {
+  color: var(--text);
+  background-color: var(--input-bg);
 }
 </style>
 
@@ -771,12 +774,18 @@ span#title-edit {
   width: 100%;
 
   border-radius: var(--vs-border-radius);
+
+  color: var(--text);
+  background-color: var(--input-bg);
 }
 
 #tag-edit {
   width: 100%;
 
   border-radius: var(--vs-border-radius);
+
+  color: var(--text);
+  background-color: var(--input-bg);
 }
 
 #tag-edit .vs__selected-options {
@@ -802,6 +811,11 @@ span#title-edit {
 
 #mobile-buttons {
   display: none;
+}
+
+.button.reset {
+  color: var(--text);
+  background-color: var(--editor-btn-bg);
 }
 
 @media (max-width: 768px) {

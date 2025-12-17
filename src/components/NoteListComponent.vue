@@ -65,7 +65,11 @@ const filteredNotes = computed(() => {
 
       if (note.subject && note.subject.trim().toLowerCase().includes(subTagLc)) return true;
 
-      if (note.tags.length !== 0 && note.tags.filter(tag => tag.trim().toLowerCase().includes(subTagLc)).length !== 0) return true;
+      if (
+        note.tags.length !== 0 &&
+        note.tags.filter((tag) => tag.trim().toLowerCase().includes(subTagLc)).length !== 0
+      )
+        return true;
 
       return false;
     }

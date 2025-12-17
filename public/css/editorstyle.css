@@ -1,16 +1,16 @@
-@import url("../../src/assets/main.css");
+@import url(./main.css);
 
 html, body {
   background-color: var(--editor);
   color: var(--text);
-  font-weight: 400 !important;
-  font-size: 16px !important;
+  font-weight: 400;
+  font-size: 16px;
 }
 
 p, h1, h2, h3, h4, h5, h6 {
-  color: var(--text) !important;
+  color: var(--text);
 }
 
 strong {
-  font-weight: 600 !important;
+  font-weight: 600;
 }

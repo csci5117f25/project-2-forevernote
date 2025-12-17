@@ -44,7 +44,8 @@ function onBackdropClick() {
     <div class="modal-content frosted-container" @click.stop>
       <button class="modal-close" @click="emit('close-modal')"></button>
       <h1 class="title is-4 has-text-centered">New Exam📝</h1>
-      <form class="form-area" @submit.prevent="addExam">
+
+      <form class="form-area" @submit.prevent="">
         <div class="field">
           <label class="label">Exam:</label>
           <div class="control">
@@ -57,6 +58,7 @@ function onBackdropClick() {
             />
           </div>
         </div>
+
         <div class="field">
           <label class="label">Type of Exam:</label>
           <div class="control">
@@ -69,6 +71,7 @@ function onBackdropClick() {
             </div>
           </div>
         </div>
+
         <div class="field">
           <label class="label">Date & Time:</label>
           <div class="control">
@@ -76,12 +79,14 @@ function onBackdropClick() {
             <small class="hint">Select date & time after the current time</small>
           </div>
         </div>
+
         <div class="field">
           <label class="label">Location:</label>
           <div class="control">
             <input class="input" type="text" placeholder="room or hall" v-model="newExamLocation" />
           </div>
         </div>
+
         <div class="field">
           <label class="label">Topics:</label>
           <div class="control">
