@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { useCollection, useFirebaseAuth, useCurrentUser, useFirestore, useDocument } from 'vuefire';
+import { useCollection, useFirebaseAuth, useCurrentUser, useFirestore } from 'vuefire';
 import { signOut } from 'firebase/auth';
-import { collection, doc } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 
 const auth = useFirebaseAuth();
 const router = useRouter();
