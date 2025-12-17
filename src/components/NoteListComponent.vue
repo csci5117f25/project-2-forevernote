@@ -19,6 +19,9 @@ const db = useFirestore();
 const notesRef = collection(db, 'users', user.value.uid, 'notes');
 const notes = useCollection(notesRef);
 
+const selected = ref([]);
+const isPreview = ref('');
+
 // === Filter State ===
 const titleFilter = ref('');
 const subjectFilter = ref('');
@@ -58,9 +61,9 @@ const filteredNotes = computed(() => {
 
     // If query by subject
     if (classLc.length !== 0) {
-      if (!note.subject) return false;
-
-      if (!note.subject.trim().toLowerCase().includes(classLc)) return false;
+      if (!note.subject && !note.tags) return false;
+      if (!`${note.subject.trim().toLowerCase()} ${(note.tags || []).join(' ')}`.includes(classLc))
+        return false;
     }
 
     return true;
@@ -78,14 +81,12 @@ const filteredNotes = computed(() => {
   pinned.sort(sortByFn);
   unpinned.sort(sortByFn);
 
-  return [...pinned, ...unpinned];
+  const out = [...pinned, ...unpinned];
+
+  return out;
 });
 
 // === UI Actions ===
-function toggleSelected(note) {
-  note.isSelected = !note.isSelected;
-}
-
 async function pinNote(id) {
   try {
     await updateDoc(doc(db, 'users', user.value.uid, 'notes', id), {
@@ -95,6 +96,7 @@ async function pinNote(id) {
     console.error('unable to pin note:', e);
   }
 }
+
 async function unpinNote(id) {
   try {
     await updateDoc(doc(db, 'users', user.value.uid, 'notes', id), {
@@ -105,11 +107,31 @@ async function unpinNote(id) {
   }
 }
 
+async function pinSelectedNotes() {
+  try {
+    selected.value.forEach(async (id) => {
+      await pinNote(id);
+    });
+  } catch (e) {
+    console.error('unable to pin notes:', e);
+  }
+}
+
 async function deleteNote(id) {
   try {
     await deleteDoc(doc(db, 'users', user.value.uid, 'notes', id));
   } catch (e) {
     console.error('unable to delete note:', e);
+  }
+}
+
+async function deleteSelectedNotes() {
+  try {
+    selected.value.forEach(async (id) => {
+      await deleteNote(id);
+    });
+  } catch (e) {
+    console.error('unable to pin notes:', e);
   }
 }
 </script>
@@ -139,16 +161,28 @@ async function deleteNote(id) {
         <option value="titleAsc">Sort: Title A-Z</option>
         <option value="titleDesc">Sort: Title Z-A</option>
       </select>
+
+      <button class="button" :class="{ show: selected.length !== 0 }" @click="pinSelectedNotes">
+        <PinFillIcon class="is-small" color="red" /> Pin Selected Notes
+      </button>
+      <button class="button" :class="{ show: selected.length !== 0 }" @click="deleteSelectedNotes">
+        <TrashIcon class="is-small" /> Delete Selected Notes
+      </button>
     </section>
 
     <!-- Notes List -->
     <section class="notes-list">
       <article v-for="note in filteredNotes" :key="note.id" class="note-row">
         <button
-          class="select-circle"
-          :class="{ selected: note.isSelected }"
-          @click.stop="toggleSelected(note)"
+          v-if="selected.includes(note.id)"
+          class="select-circle selected"
+          @click="
+            () => {
+              selected = selected.filter((n) => n !== note.id);
+            }
+          "
         />
+        <button v-else class="select-circle" @click="selected.push(note.id)" />
 
         <div class="note-main" @click="router.push({ name: 'note', params: { id: note.id } })">
           <div class="note-title">
@@ -173,7 +207,7 @@ async function deleteNote(id) {
           <div class="meta-line">Last Edited: {{ note.lastEdited.toDate().toLocaleString() }}</div>
         </div>
 
-        <!-- notes actions -->
+        <!-- Notes Actions -->
         <div class="note-actions">
           <button v-if="note.pinned" class="button" @click="unpinNote(note.id)">
             <PinFillIcon color="red" />
@@ -182,14 +216,32 @@ async function deleteNote(id) {
             <PinIcon />
           </button>
 
-          <button class="button" title="Delete" @click="deleteNote(note.id)">
+          <button class="button" @click="deleteNote(note.id)">
             <TrashIcon />
           </button>
 
-          <button class="icon-btn expand" title="More">
+          <button
+            class="button"
+            title="More"
+            @click="isPreview = isPreview === note.id ? '' : note.id"
+          >
             <DownIcon />
           </button>
         </div>
+
+        <transition name="slide-fade">
+          <div
+            v-if="note.htmlContent"
+            class="note-preview-row"
+            :class="{ open: isPreview === note.id }"
+          >
+            <div class="note-preview" v-html="note.htmlContent"></div>
+          </div>
+
+          <div v-else class="note-preview-row">
+            <div class="note-preview">{{ note.notes }}</div>
+          </div>
+        </transition>
       </article>
     </section>
   </div>
@@ -211,7 +263,7 @@ async function deleteNote(id) {
   background-color: var(--bg);
 }
 
-/* SEARCH BAR ROW (purple rectangles) */
+/* Search Bar Row */
 .search-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -221,7 +273,6 @@ async function deleteNote(id) {
 
 .search-box {
   background: #ffffff;
-  /* border-color: #00D1B2; */
   border: 3px solid #00d1b2;
   border-radius: 1rem;
   padding: 0.35rem 0.6rem;
@@ -239,13 +290,14 @@ async function deleteNote(id) {
   outline: none;
 }
 
-/* CONTROLS ROW */
+/* Controls Row */
 .controls-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 0.8rem;
   align-items: center;
+  gap: 0.5rem;
+
+  margin-bottom: 0.8rem;
 }
 
 .control-chip {
@@ -280,6 +332,45 @@ async function deleteNote(id) {
   cursor: pointer;
 }
 
+.controls-row .button {
+  border: 1px solid #00d1b2;
+  border-radius: 999px;
+
+  font-size: 0.8rem;
+  color: var(--text);
+  background: #fff;
+
+  height: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s,
+    opacity 0.5s linear;
+}
+.controls-row .button.show {
+  height: initial;
+  visibility: visible;
+  opacity: 1;
+}
+
+.controls-row .button .icon {
+  margin-right: 0.3rem;
+}
+
+.selected-text-functionality {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+
+  font-size: 0.9rem;
+
+  cursor: pointer;
+}
+
 /* Notes List */
 .notes-list {
   display: flex;
@@ -298,6 +389,58 @@ async function deleteNote(id) {
   border-radius: 0.5rem;
 }
 
+.note-preview-row {
+  max-height: 0;
+
+  grid-column: 2 / -1;
+
+  margin: 0.25rem 0 0 0;
+  border-radius: 0.25rem;
+
+  color: #000;
+  background: #fff;
+
+  overflow: hidden;
+
+  transition: max-height 300ms ease;
+}
+
+.note-preview-row.open {
+  max-height: 1000px;
+}
+
+.note-preview {
+  padding: 0.5rem;
+  max-height: 50vh;
+  overflow: auto;
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition:
+    opacity 1s cubic-bezier(0.2, 0.9, 0.2, 1),
+    transform 1s cubic-bezier(0.2, 0.9, 0.2, 1),
+    max-height 1s cubic-bezier(0.2, 0.9, 0.2, 1);
+
+  overflow: hidden;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+
+  transform: translateY(-8px);
+  max-height: 0;
+}
+
+.slide-fade-enter-to,
+.slide-fade-leave-from {
+  opacity: 1;
+
+  transform: translateY(0);
+  max-height: 400px;
+}
+
 /* Notion-style checkbox */
 .select-circle {
   width: 22px;
@@ -312,7 +455,7 @@ async function deleteNote(id) {
   background: #000;
 }
 
-/* Main note content */
+/* Main Note Content */
 .note-main {
   display: flex;
   flex-direction: column;
@@ -322,7 +465,6 @@ async function deleteNote(id) {
 
 .note-title {
   background: rgb(252, 143, 0);
-  /* background-image: linear-gradient(to right, rgb(252, 164, 0), rgb(183, 119, 0)); */
   border: 1.5px solid #000;
   padding: 0.25rem 0.4rem;
   font-weight: 600;
@@ -364,7 +506,7 @@ async function deleteNote(id) {
   color: rgb(100, 100, 50);
 }
 
-/* Meta info */
+/* Meta Info */
 .note-meta {
   font-size: 0.75rem;
   color: #2b2b2b;
@@ -395,13 +537,13 @@ async function deleteNote(id) {
   gap: 0.15rem;
 }
 
-.button {
+.note-actions .button {
   background-color: transparent;
   border: 0px;
   box-shadow: none;
 }
 
-/* Floating add button */
+/* Floating Add Button */
 #new-note {
   position: fixed;
   bottom: 1.5rem;

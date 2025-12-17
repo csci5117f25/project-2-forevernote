@@ -3,7 +3,6 @@ import imgSrc from '@/assets/img/scratch_notes.jpg';
 import audioImgSrc from '@/assets/img/audio.jpeg';
 
 import geminiImgSrc from '@/assets/img/gemini.jpg';
-
 </script>
 
 <template>
@@ -34,10 +33,12 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
       </div>
       <div class="editor-description-div">
         <h2 class="feature-h2">Extensive and Powerful Editor</h2>
-        <p>Want to highlight that note your professor told you not to forget? Or quickly add an image of Benzene for your chemistry class?
-          Our rich-text editor, powered by TinyMCE, has you covered with a plethora of text styling options, image embedding, and more to revamp your notes to perfection.
+        <p>
+          Want to highlight that note your professor told you not to forget? Or quickly add an image
+          of Benzene for your chemistry class? Our rich-text editor, powered by TinyMCE, has you
+          covered with a plethora of text styling options, image embedding, and more to revamp your
+          notes to perfection.
         </p>
-
       </div>
     </div>
     <div class="audio-feature-div">
@@ -46,9 +47,12 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
       </div>
       <div class="audio-feature-desc-div">
         <h2 class="feature-h2">AI-Powered Audio Transcription</h2>
-        <p>Ever wished you could focus on Lectures without taking notes? Our OpenAI-powered audio transcription tool accurately converts speech to text in real-time, allowing you to capture every detail of your lectures. Just click record, and let ForeverNote handle the rest! 
+        <p>
+          Ever wished you could focus on Lectures without taking notes? Our OpenAI-powered audio
+          transcription tool accurately converts speech to text in real-time, allowing you to
+          capture every detail of your lectures. Just click record, and let ForeverNote handle the
+          rest!
         </p>
-
       </div>
     </div>
     <div class="ai-exam-gen-feature-div">
@@ -57,7 +61,9 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
       </div>
       <div class="audio-feature-desc-div">
         <h2 class="feature-h2">AI-Powered Exam Generation</h2>
-        <p>Need to prepare for that exam? Our Gemini-powered exam generation tool creates and grades multiple-choice exams based on topics, helping you prepare for tests with confidence.
+        <p>
+          Need to prepare for that exam? Our Gemini-powered exam generation tool creates and grades
+          multiple-choice exams based on topics, helping you prepare for tests with confidence.
         </p>
       </div>
     </div>
@@ -117,9 +123,8 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
   max-width: 420px;
   border-radius: 20px;
   object-fit: cover;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
-
 
 .features-card {
   background: #db6307f0;
@@ -143,7 +148,7 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
 
 /* ---------- FEATURE ROWS ---------- */
 .editor-box,
-.audio-feature-div, 
+.audio-feature-div,
 .ai-exam-gen-feature-div {
   display: flex;
   align-items: center;
@@ -153,7 +158,7 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
 
 .editor-demo,
 .audio-img-div,
-.gemini-img-div{
+.gemini-img-div {
   flex: 1;
   display: flex;
   justify-content: center;
@@ -163,22 +168,21 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
   width: 100%;
   max-width: 560px;
   border-radius: 16px;
-  box-shadow: 0 10px 35px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
 }
 
 .audio-img-div img {
   width: 100%;
   max-width: 420px;
   border-radius: 18px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
-
-.gemini-img{
+.gemini-img {
   width: 100%;
   max-width: 420px;
   border-radius: 18px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .editor-description-div,
@@ -209,7 +213,7 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
 @media (max-width: 768px) {
   #splash-page-container {
     padding: 1rem;
-    gap: 2.0rem;
+    gap: 2rem;
   }
 
   .splash-box {
@@ -231,7 +235,7 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
   }
 
   .editor-box,
-  .audio-feature-div, 
+  .audio-feature-div,
   .ai-exam-gen-feature-div {
     flex-direction: column;
     gap: 2rem;
@@ -242,13 +246,13 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
   }
 
   .editor-description-div p,
-  .audio-feature-desc-div p, 
+  .audio-feature-desc-div p,
   .ai-exam-gen-feature-div p {
     font-size: 1rem;
   }
 
   .editor-demo video,
-  .audio-img-div img, 
+  .audio-img-div img,
   .gemini-img-div img {
     max-width: 100%;
   }

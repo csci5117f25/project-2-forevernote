@@ -59,7 +59,7 @@ function routeToNewNote(){
     <div id="greeting">
       <h1>
         Hey <span class="greeting-name">{{ user.displayName }}</span
-        >,
+        >!
       </h1>
     </div>
 
@@ -290,7 +290,7 @@ button{
   white-space: normal;
 }
 
-.gallery-cell-body p{
+.gallery-cell-body p {
   white-space: pre-wrap;
 }
 .exam-details li {

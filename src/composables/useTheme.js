@@ -2,10 +2,20 @@ import { ref, watch } from 'vue';
 const isDark = ref(false);
 
 export function useTheme() {
+  const setLightMode = () => {
+    isDark.value = false;
+  };
+
+  const setDarkMode = () => {
+    isDark.value = true;
+  };
+
   const toggle = () => {
     const isDarkMode = isDark.value;
+
     isDark.value = !isDarkMode;
   };
+
   watch(
     isDark,
     (newVal) => {
@@ -16,6 +26,8 @@ export function useTheme() {
   );
 
   return {
+    setLightMode,
+    setDarkMode,
     isDark,
     toggle,
   };

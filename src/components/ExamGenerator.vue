@@ -91,11 +91,7 @@ function gradeAnswers() {
           </option>
         </select> -->
         <div class="choices">
-          <label
-            v-for="choice in examDetail.choices"
-            :key="choice"
-            class="choice"
-          >
+          <label v-for="choice in examDetail.choices" :key="choice" class="choice">
             <input
               type="radio"
               :name="examDetail.question"
@@ -241,7 +237,6 @@ h1 {
 }
 
 @media (max-width: 480px) {
-
   .exam-container {
     max-width: 100%;
     max-height: 98vh;
