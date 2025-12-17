@@ -1,7 +1,6 @@
 <script>
 import { GoogleAuthProvider } from 'firebase/auth';
 
-
 const googleAuthProvider = new GoogleAuthProvider();
 </script>
 
@@ -20,7 +19,7 @@ const auth = useFirebaseAuth();
 const user = useCurrentUser();
 const db = useFirestore();
 
-const {isDark, toggle} = useTheme();
+const { isDark, toggle } = useTheme();
 
 async function login() {
   await signInWithPopup(auth, googleAuthProvider);
@@ -39,6 +38,14 @@ async function login() {
   }
 
   router.push({ name: 'dashboard' });
+}
+
+function closeNavBarMobile() {
+  const navBurger = document.getElementById('nav-burger');
+  const navBar = document.getElementById('navbar');
+
+  navBurger.classList.remove('is-active');
+  navBar?.classList.remove('is-active');
 }
 
 onMounted(() => {
@@ -70,27 +77,36 @@ onMounted(() => {
 
       <div id="navbar" class="navbar-menu">
         <div class="navbar-start" v-if="user">
-          <RouterLink to="/dashboard" class="navbar-item">Home</RouterLink>
-          <RouterLink to="/notes" class="navbar-item">Notes</RouterLink>
-          <RouterLink to="/practiceexams" class="navbar-item">✨ Practice</RouterLink>
+          <RouterLink to="/dashboard" class="navbar-item" @click="closeNavBarMobile()"
+            >Home</RouterLink
+          >
+          <RouterLink to="/notes" class="navbar-item" @click="closeNavBarMobile()"
+            >Notes</RouterLink
+          >
+          <RouterLink to="/practiceexams" class="navbar-item" @click="closeNavBarMobile()"
+            >✨ Practice</RouterLink
+          >
         </div>
 
         <div class="navbar-end">
           <div v-if="user" class="nav-footer">
-            <button class="profile-pill"
-              @click="router.push({ name: 'profile' })">
+            <button
+              class="profile-pill"
+              @click="
+                closeNavBarMobile();
+                router.push({ name: 'profile' });
+              "
+            >
               👤 Profile
             </button>
-          
+
             <button class="theme-toggle" @click="toggle">
-              {{ isDark ? "☀️" : "🌙" }}
+              {{ isDark ? '☀️' : '🌙' }}
             </button>
           </div>
-        
+
           <div v-else class="nav-footer">
-            <button class="profile-pill" @click="login">
-              Get Started
-            </button>
+            <button class="profile-pill" @click="login">Get Started</button>
           </div>
         </div>
       </div>
@@ -118,7 +134,9 @@ nav {
 .navbar-start,
 .navbar-end {
   background-color: var(--navbar-bg);
+  z-index: 9999;
 }
+
 .navbar {
   border-bottom: 1pt solid gray;
   padding-inline: 0.5rem;
@@ -127,17 +145,17 @@ nav {
   color: white;
 }
 
-.navbar-item{
+.navbar-item {
   font-weight: 600;
   color: white;
 }
 
-.navbar-start{
+.navbar-start {
   background-color: var(--navbar-bg);
   color: var(--text);
 }
 
-.navbar-end{
+.navbar-end {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -181,7 +199,6 @@ nav {
   color: white;
 }
 
-
 @media (max-width: 768px) {
   #logo {
     max-height: 2rem;
@@ -194,13 +211,6 @@ nav {
 
   #main-navbar {
     padding: 0.4rem 0.8rem;
-  }
-
-  .nav-footer {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    justify-content: space-between;
-    width: 100%;
   }
 }
 </style>

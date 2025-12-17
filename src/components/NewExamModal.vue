@@ -11,36 +11,30 @@ const newExamTitle = ref('');
 const newExamLocation = ref('');
 const newExamType = ref('');
 const newExamDatetime = ref('');
-const newExamTopics = ref('');
+const newExamTopics = ref([]);
 
 const db = useFirestore();
-console.log(`Exams from ${user.value.uid} in new exam modal`);
 const examCollection = collection(db, 'users', user.value.uid, 'exams');
-console.log(`exam collection loaded: ${Object.entries(examCollection)} from new exam modal`);
 
 async function addExam() {
-  console.log('raw:', newExamDatetime.value);
-
   const dt = new Date(newExamDatetime.value);
 
-  console.log('converted:', dt);
-  const newExamPromise = await addDoc(examCollection, {
+  await addDoc(examCollection, {
     subject: newExamTitle.value,
     location: newExamLocation.value,
     examDate: dt,
-    topics: newExamTopics.value.split(',').map((t) => t.trim()),
+    topics: newExamTopics.value,
   });
-  console.log(`new exam promise: ${newExamPromise}`);
 
   emit('close-modal');
 }
 
 function onBackdropClick() {
-  const isLargeScreen = window.matchMedia('(min-width: 768px)').matches
-  const isFinePointer = window.matchMedia('(pointer: fine)').matches
+  const isLargeScreen = window.matchMedia('(min-width: 768px)').matches;
+  const isFinePointer = window.matchMedia('(pointer: fine)').matches;
 
   if (isLargeScreen || isFinePointer) {
-    emit('close-modal')
+    emit('close-modal');
   }
 }
 </script>
@@ -48,14 +42,15 @@ function onBackdropClick() {
 <template>
   <div class="modal-backdrop" @click="onBackdropClick">
     <div class="modal-content frosted-container" @click.stop>
-    <button class="modal-close" @click="emit('close-modal')"></button>
+      <button class="modal-close" @click="emit('close-modal')"></button>
       <h1 class="title is-4 has-text-centered">New Exam📝</h1>
-      <form class="form-area" @submit.prevent="addExam">
+
+      <form class="form-area" @submit.prevent="">
         <div class="field">
           <label class="label">Exam:</label>
           <div class="control">
             <input
-              class="input"
+              class="input is-rounded"
               type="text"
               required
               placeholder="exam name"
@@ -63,6 +58,7 @@ function onBackdropClick() {
             />
           </div>
         </div>
+
         <div class="field">
           <label class="label">Type of Exam:</label>
           <div class="control">
@@ -75,6 +71,7 @@ function onBackdropClick() {
             </div>
           </div>
         </div>
+
         <div class="field">
           <label class="label">Date & Time:</label>
           <div class="control">
@@ -82,31 +79,25 @@ function onBackdropClick() {
             <small class="hint">Select date & time after the current time</small>
           </div>
         </div>
+
         <div class="field">
           <label class="label">Location:</label>
           <div class="control">
-            <input
-              class="input"
-              type="text"
-              placeholder="room or hall"
-              v-model="newExamLocation"
-            />
+            <input class="input" type="text" placeholder="room or hall" v-model="newExamLocation" />
           </div>
         </div>
+
         <div class="field">
           <label class="label">Topics:</label>
           <div class="control">
-            <input
-              class="input"
-              type="text"
-              placeholder="covered topics"
-              v-model="newExamTopics"
-            />
+            <v-select id="topic-select" multiple taggable v-model="newExamTopics">
+              <template #no-options="{ search }">{{ search }}</template>
+            </v-select>
           </div>
         </div>
 
         <div class="field has-text-centered mt-5">
-          <button class="button is-primary is-fullwidth rounded-btn">
+          <button class="button is-primary is-fullwidth rounded-btn" @click="addExam">
             Save Exam
           </button>
         </div>
@@ -134,7 +125,7 @@ function onBackdropClick() {
   right: 1rem;
   width: 1rem;
   height: 1rem;
-  cursor: pointer;  
+  cursor: pointer;
   background: black;
   border: none;
   font-size: 3rem;
@@ -144,6 +135,7 @@ function onBackdropClick() {
 
 .frosted-container {
   background: var(--modal-color);
+  border: 3pt solid rgb(246, 174, 38);
   backdrop-filter: blur(12px);
   border-radius: 20px;
   padding: 1.5rem;
@@ -153,15 +145,20 @@ function onBackdropClick() {
 
 .frosted-container {
   width: 100%;
-  max-width: 520px;   /* desktop */
-  max-height: 90vh;   /* critical for phones */
-  overflow-y: auto;   /* allow scrolling */
+  max-width: 520px;
+  overflow-y: auto;
 }
 
 #add-exam-button {
   touch-action: manipulation;
-}
 
+  /* desktop */
+  max-width: 520px;
+  /* critical for phones */
+  max-height: 90vh;
+  /* allow scrolling */
+  overflow-y: auto;
+}
 
 .title {
   color: var(--h1-color);
@@ -172,11 +169,24 @@ label {
 }
 
 input,
-select {
-  background-color: rgba(82, 76, 68, 0.812);
+select,
+#topic-select {
+  background-color: var(--input-bg);
   color: var(--text);
-
 }
+
+#topic-select {
+  border-width: var(--bulma-control-border-width);
+  border-style: solid;
+  border-color: var(--bulma-input-border-color);
+  border-radius: var(--bulma-input-radius);
+}
+
+input::placeholder {
+  color: var(--text);
+  opacity: 0.7;
+}
+
 .hint {
   color: var(--text);
   font-size: 0.85rem;
@@ -204,8 +214,9 @@ select {
 }
 
 .input,
-select {
-  min-height: 44px; 
+select,
+#topic-select {
+  min-height: 44px;
   font-size: 1rem;
 }
 </style>

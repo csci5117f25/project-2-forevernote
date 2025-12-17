@@ -4,11 +4,12 @@ import { useRouter } from 'vue-router';
 import { useCollection, useCurrentUser, useFirestore } from 'vuefire';
 import { collection, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 
-import PlusIcon from './icons/IconPlus.vue';
-import PinIcon from './icons/IconPin.vue';
-import PinFillIcon from './icons/IconPinFill.vue';
-import TrashIcon from './icons/IconTrashFill.vue';
-import DownIcon from './icons/IconDownCheveron.vue';
+// import PlusIcon from './icons/IconPlus.vue';
+// import PinIcon from './icons/IconPin.vue';
+// import PinFillIcon from './icons/IconPinFill.vue';
+// import TrashIcon from './icons/IconTrashFill.vue';
+// import DownIcon from './icons/IconDownCheveron.vue';
+// import TagIcon from './icons/IconTag.vue';
 
 const router = useRouter();
 
@@ -18,13 +19,16 @@ const db = useFirestore();
 const notesRef = collection(db, 'users', user.value.uid, 'notes');
 const notes = useCollection(notesRef);
 
-// ---------- FILTER STATE ----------
+const selected = ref([]);
+const isPreview = ref('');
+
+// === Filter State ===
 const titleFilter = ref('');
-const subjectFilter = ref('');
+const subjectTagFilter = ref('');
 const pinnedOnly = ref(false);
 const sortBy = ref('updatedDesc'); // updatedDesc | updatedAsc | titleAsc | titleDesc
 
-// ---------- CORE FILTER FUNCTION ----------
+// === Core Filter Function ===
 function sortByFn(a, b) {
   switch (sortBy.value) {
     case 'updatedDesc':
@@ -37,9 +41,10 @@ function sortByFn(a, b) {
       return b.title.localeCompare(a.title);
   }
 }
+
 const filteredNotes = computed(() => {
   const titleLc = titleFilter.value.trim().toLowerCase();
-  const classLc = subjectFilter.value.trim().toLowerCase();
+  const subTagLc = subjectTagFilter.value.trim().toLowerCase();
 
   let filtered = notes.value.filter((note) => {
     // If only showing pinned
@@ -54,11 +59,19 @@ const filteredNotes = computed(() => {
       if (!note.title.trim().toLowerCase().includes(titleLc)) return false;
     }
 
-    // If query by subject
-    if (classLc.length !== 0) {
-      if (!note.subject) return false;
+    // If query by subject or tag
+    if (subTagLc.length !== 0) {
+      if (!note.subject && !note.tags) return false;
 
-      if (!note.subject.trim().toLowerCase().includes(classLc)) return false;
+      if (note.subject && note.subject.trim().toLowerCase().includes(subTagLc)) return true;
+
+      if (
+        note.tags.length !== 0 &&
+        note.tags.filter((tag) => tag.trim().toLowerCase().includes(subTagLc)).length !== 0
+      )
+        return true;
+
+      return false;
     }
 
     return true;
@@ -76,14 +89,12 @@ const filteredNotes = computed(() => {
   pinned.sort(sortByFn);
   unpinned.sort(sortByFn);
 
-  return [...pinned, ...unpinned];
+  const out = [...pinned, ...unpinned];
+
+  return out;
 });
 
-// ---------- UI ACTIONS ----------
-function toggleSelected(note) {
-  note.isSelected = !note.isSelected;
-}
-
+// === UI Actions ===
 async function pinNote(id) {
   try {
     await updateDoc(doc(db, 'users', user.value.uid, 'notes', id), {
@@ -93,6 +104,7 @@ async function pinNote(id) {
     console.error('unable to pin note:', e);
   }
 }
+
 async function unpinNote(id) {
   try {
     await updateDoc(doc(db, 'users', user.value.uid, 'notes', id), {
@@ -103,30 +115,55 @@ async function unpinNote(id) {
   }
 }
 
+async function pinSelectedNotes() {
+  try {
+    selected.value.forEach(async (id) => {
+      await pinNote(id);
+    });
+  } catch (e) {
+    console.error('unable to pin notes:', e);
+  }
+
+  selected.value = [];
+}
+
 async function deleteNote(id) {
   try {
     await deleteDoc(doc(db, 'users', user.value.uid, 'notes', id));
   } catch (e) {
     console.error('unable to delete note:', e);
   }
+
+  selected.value = [];
+}
+
+async function deleteSelectedNotes() {
+  try {
+    selected.value.forEach(async (id) => {
+      await deleteNote(id);
+    });
+  } catch (e) {
+    console.error('unable to pin notes:', e);
+  }
 }
 </script>
 
 <template>
   <div class="notes-page">
-    <!-- searching features -->
+    <!-- Searching Features -->
     <section class="search-row">
       <div class="search-box">
         <input v-model="titleFilter" type="text" placeholder="<search by title>" />
       </div>
       <div class="search-box">
-        <input v-model="subjectFilter" type="text" placeholder="<search by class or tags>" />
+        <input v-model="subjectTagFilter" type="text" placeholder="<search by class or tags>" />
       </div>
     </section>
 
     <section class="controls-row">
       <label class="control-chip">
         <input type="checkbox" v-model="pinnedOnly" />
+
         <span>Pinned only</span>
       </label>
 
@@ -136,16 +173,26 @@ async function deleteNote(id) {
         <option value="titleAsc">Sort: Title A-Z</option>
         <option value="titleDesc">Sort: Title Z-A</option>
       </select>
+
+      <button class="button" :class="{ show: selected.length !== 0 }" @click="pinSelectedNotes">
+        <!-- <PinFillIcon class="is-small" color="red" /> Pin Selected Notes -->
+        📌&nbsp;Pin Selected Notes
+      </button>
+      <button class="button" :class="{ show: selected.length !== 0 }" @click="deleteSelectedNotes">
+        <!-- <TrashIcon class="is-small" /> Delete Selected Notes -->
+        🗑️&nbsp;Delete Selected Notes
+      </button>
     </section>
 
-    <!-- NOTES LIST -->
+    <!-- Notes List -->
     <section class="notes-list">
       <article v-for="note in filteredNotes" :key="note.id" class="note-row">
-        <button
-          class="select-circle"
-          :class="{ selected: note.isSelected }"
-          @click.stop="toggleSelected(note)"
-        />
+        <button v-if="selected.includes(note.id)" class="select-circle selected" @click="
+          () => {
+            selected = selected.filter((n) => n !== note.id);
+          }
+        " />
+        <button v-else class="select-circle" @click="selected.push(note.id)" />
 
         <div class="note-main" @click="router.push({ name: 'note', params: { id: note.id } })">
           <div class="note-title">
@@ -156,12 +203,9 @@ async function deleteNote(id) {
               {{ note.subject }}
             </span>
 
-            <span
-              v-for="(tag, idx) in note.tags"
-              :key="`${tag}-${idx}`"
-              :class="idx === 0 ? 'tag-pill' : 'tag-pill'"
-            >
-              {{ tag }}
+            <span v-for="(tag, idx) in note.tags" :key="`${tag}-${idx}`" :class="idx === 0 ? 'tag-pill' : 'tag-pill'">
+              <!-- <TagIcon class="is-small" /> {{ tag }} -->
+              🏷️&nbsp;{{ tag }}
             </span>
           </div>
         </div>
@@ -170,44 +214,60 @@ async function deleteNote(id) {
           <div class="meta-line">Last Edited: {{ note.lastEdited.toDate().toLocaleString() }}</div>
         </div>
 
-        <!-- notes actions -->
+        <!-- Notes Actions -->
         <div class="note-actions">
-          <button v-if="note.pinned" class="icon-btn active" @click="unpinNote(note.id)">
-            <PinFillIcon color="red" />
+          <button v-if="note.pinned" class="button" @click="unpinNote(note.id)">
+            <!-- <PinFillIcon color="red" /> -->
+            <span style="rotate: -45deg">📌</span>
           </button>
-          <button v-else @click="pinNote(note.id)">
-            <PinIcon />
-          </button>
-
-          <button class="icon-btn icon-delete" title="Delete" @click="deleteNote(note.id)">
-            <TrashIcon />
+          <button v-else class="button" @click="pinNote(note.id)">
+            <span>📌</span>
+            <!-- <PinIcon /> -->
           </button>
 
-          <button class="icon-btn expand" title="More">
-            <!-- TODO: display the notes slightly? or redirect the the edit page -->
-            <DownIcon />
+          <button class="button" @click="deleteNote(note.id)">
+            <!-- <TrashIcon /> -->
+            🗑️
+          </button>
+
+          <button class="button" title="More" @click="isPreview = isPreview === note.id ? '' : note.id">
+            <!-- <DownIcon /> -->
+            ⬇️
           </button>
         </div>
+
+        <transition name="slide-fade">
+          <div v-if="note.htmlContent" class="note-preview-row" :class="{ open: isPreview === note.id }">
+            <div class="note-preview" v-html="note.htmlContent"></div>
+          </div>
+
+          <div v-else class="note-preview-row">
+            <div class="note-preview">{{ note.notes }}</div>
+          </div>
+        </transition>
       </article>
     </section>
   </div>
 
   <button id="new-note" @click="router.push({ name: 'new_note' })">
-    <PlusIcon class="is-large" />
+    <!-- <PlusIcon class="is-large" /> -->
+    <span style="border: 2px solid black; border-radius: 999px; padding: 1rem; background-color: var(--input-bg);">➕</span>
   </button>
 </template>
 
 <style scoped>
 .notes-page {
-  position: relative;
   width: 98%;
+  position: relative;
+
   margin: 1% auto;
   padding: 1.2rem 1.8rem 4rem;
-  background: #f5f5f5;
   box-sizing: border-box;
+
+  background-color: var(--bg);
 }
 
-/* SEARCH BAR ROW (purple rectangles) */
+/* Search Bar Row */
 .search-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -217,7 +277,6 @@ async function deleteNote(id) {
 
 .search-box {
   background: #ffffff;
-  /* border-color: #00D1B2; */
   border: 3px solid #00d1b2;
   border-radius: 1rem;
   padding: 0.35rem 0.6rem;
@@ -235,25 +294,29 @@ async function deleteNote(id) {
   outline: none;
 }
 
-/* CONTROLS ROW */
+/* Controls Row */
 .controls-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 0.8rem;
   align-items: center;
+  gap: 0.5rem;
+
+  margin-bottom: 0.8rem;
 }
 
 .control-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.25rem 0.6rem;
+
   border-radius: 999px;
-  /* border: 1px solid #ccc; */
   border: 1px solid #00d1b2;
-  background: #fff;
+  padding: 0.25rem 0.6rem;
+
   font-size: 0.8rem;
+  background: #fff;
+  color: #121212;
+
   cursor: pointer;
 }
 
@@ -262,15 +325,58 @@ async function deleteNote(id) {
 }
 
 .controls-row select {
-  border-radius: 999px;
   border: 1px solid #00d1b2;
-  /* border: 1px solid #ccc; */
+  border-radius: 999px;
   padding: 0.25rem 0.6rem;
+
+  font-family: inherit;
   font-size: 0.8rem;
   background: #fff;
+
+  cursor: pointer;
 }
 
-/* NOTES LIST */
+.controls-row .button {
+  border: 1px solid #00d1b2;
+  border-radius: 999px;
+
+  font-size: 0.8rem;
+  color: var(--text);
+  background: #fff;
+
+  height: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s,
+    opacity 0.5s linear;
+}
+
+.controls-row .button.show {
+  height: initial;
+  visibility: visible;
+  opacity: 1;
+}
+
+.controls-row .button .icon {
+  margin-right: 0.3rem;
+}
+
+.selected-text-functionality {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+
+  font-size: 0.9rem;
+
+  cursor: pointer;
+}
+
+/* Notes List */
 .notes-list {
   display: flex;
   flex-direction: column;
@@ -288,6 +394,58 @@ async function deleteNote(id) {
   border-radius: 0.5rem;
 }
 
+.note-preview-row {
+  max-height: 0;
+
+  grid-column: 2 / -1;
+
+  margin: 0.25rem 0 0 0;
+  border-radius: 0.25rem;
+
+  color: #000;
+  background: #fff;
+
+  overflow: hidden;
+
+  transition: max-height 300ms ease;
+}
+
+.note-preview-row.open {
+  max-height: 1000px;
+}
+
+.note-preview {
+  padding: 0.5rem;
+  max-height: 50vh;
+  overflow: auto;
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition:
+    opacity 1s cubic-bezier(0.2, 0.9, 0.2, 1),
+    transform 1s cubic-bezier(0.2, 0.9, 0.2, 1),
+    max-height 1s cubic-bezier(0.2, 0.9, 0.2, 1);
+
+  overflow: hidden;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+
+  transform: translateY(-8px);
+  max-height: 0;
+}
+
+.slide-fade-enter-to,
+.slide-fade-leave-from {
+  opacity: 1;
+
+  transform: translateY(0);
+  max-height: 400px;
+}
+
 /* Notion-style checkbox */
 .select-circle {
   width: 22px;
@@ -302,7 +460,7 @@ async function deleteNote(id) {
   background: #000;
 }
 
-/* Main note content */
+/* Main Note Content */
 .note-main {
   display: flex;
   flex-direction: column;
@@ -312,7 +470,6 @@ async function deleteNote(id) {
 
 .note-title {
   background: rgb(252, 143, 0);
-  /* background-image: linear-gradient(to right, rgb(252, 164, 0), rgb(183, 119, 0)); */
   border: 1.5px solid #000;
   padding: 0.25rem 0.4rem;
   font-weight: 600;
@@ -338,6 +495,14 @@ async function deleteNote(id) {
 }
 
 .tag-pill {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+
+  width: fit-content;
+
   border-radius: 999px;
   border: 1px solid #000;
   padding: 0.05rem 0.4rem;
@@ -346,7 +511,7 @@ async function deleteNote(id) {
   color: rgb(100, 100, 50);
 }
 
-/* Meta info */
+/* Meta Info */
 .note-meta {
   font-size: 0.75rem;
   color: #2b2b2b;
@@ -377,32 +542,17 @@ async function deleteNote(id) {
   gap: 0.15rem;
 }
 
-.icon-btn {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 1.05rem;
-  padding: 0.15rem;
+.note-actions .button {
+  background-color: transparent;
+  border: 0px;
+  box-shadow: none;
 }
 
-.icon-btn.active {
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
-}
-
-.icon-btn.icon-delete {
-  font-size: 1.2rem;
-  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', system-ui, sans-serif;
-}
-
-.icon-btn.expand {
-  font-size: 1.2rem;
-}
-
-/* Floating add button */
+/* Floating Add Button */
 #new-note {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
+  bottom: 3rem;
+  right: 2rem;
 
   cursor: pointer;
 }
@@ -431,6 +581,7 @@ async function deleteNote(id) {
 
   .note-meta {
     grid-area: meta;
+    margin-top: 0.25rem;
   }
 
   .note-actions {

@@ -5,7 +5,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCollection, useCurrentUser, useFirestore } from 'vuefire';
 import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel';
-import { collection, orderBy, query, Timestamp, where } from 'firebase/firestore';
+import { collection, orderBy, query, Timestamp, where, limit } from 'firebase/firestore';
 
 import CreateExamModal from './NewExamModal.vue';
 
@@ -13,7 +13,9 @@ const user = useCurrentUser();
 const db = useFirestore();
 const router = useRouter();
 
-const notesRef = computed(() => collection(db, 'users', user.value.uid, 'notes'));
+const notesRef = computed(() =>
+  query(collection(db, 'users', user.value.uid, 'notes'), orderBy('lastEdited', 'desc'), limit(5)),
+);
 const notes = useCollection(notesRef);
 const examsRef = computed(() =>
   query(
@@ -35,17 +37,41 @@ const showModal = ref(false);
 function showNewExamModal() {
   showModal.value = true;
 }
+
+function routeToPracticeExams(topics) {
+  if (topics.length === 0) {
+    router.push({ name: 'practiceexams' });
+
+    return;
+  }
+
+  const topicsString = topics.map((topic) => topic.trim()).join(',');
+
+  router.push({ name: 'practiceexams', params: { topics: topicsString } });
+}
 </script>
 
 <template>
   <div id="dashboard-container">
     <div id="greeting">
-      <h1>Hey 
-      <span class="greeting-name">{{ user.displayName }}</span>,</h1>
+      <h1>
+        Hey <span class="greeting-name">{{ user.displayName }}</span
+        >!
+      </h1>
     </div>
 
     <div id="recent-notes">
-      <h2>Recently Viewed Notes</h2>
+      <div class="carousel-headers">
+        <h2>Recently Viewed Notes</h2>
+
+        <button
+          id="new-note-button"
+          class="button is-primary is-dark is-small is-rounded"
+          @click="router.push('/note/new')"
+        >
+          Create New Note
+        </button>
+      </div>
 
       <Carousel
         v-if="notes.length !== 0"
@@ -63,7 +89,12 @@ function showNewExamModal() {
             <h2>{{ note.title }}</h2>
           </div>
 
-          <div class="gallery-cell-body note-preview">
+          <div
+            v-if="note.htmlContent"
+            class="gallery-cell-body note-preview"
+            v-html="note.htmlContent"
+          ></div>
+          <div v-else class="gallery-cell-body note-preview">
             <p>{{ note.notes }}</p>
           </div>
         </Slide>
@@ -78,7 +109,7 @@ function showNewExamModal() {
     </div>
 
     <div id="upcoming-exams">
-      <div id="upcoming-exams-h">
+      <div id="upcoming-exams-h" class="carousel-headers">
         <h2>Upcoming Exams⏳</h2>
 
         <button
@@ -110,6 +141,14 @@ function showNewExamModal() {
               <li v-for="topic in exam.topics" :key="topic">💡{{ topic }}</li>
             </ul>
           </div>
+
+          <button
+            id="practice-button"
+            class="button is-success is-full-width-mobile is-medium is-rounded"
+            @click="routeToPracticeExams(exam.topics)"
+          >
+            ✨ Practice
+          </button>
         </Slide>
 
         <template #addons>
@@ -118,7 +157,7 @@ function showNewExamModal() {
         </template>
       </Carousel>
       <div v-else class="gallery">
-        <p class="no-upcoming-exam">You have no upcoming exams!</p>
+        <p>You have no upcoming exams!</p>
       </div>
     </div>
 
@@ -137,9 +176,18 @@ function showNewExamModal() {
 
 #greeting,
 #recent-notes > h2,
-#upcoming-exams-h, 
 .no-upcoming-exam {
   padding-inline: 1.5rem;
+}
+
+.carousel-headers {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-inline: 1.5rem;
+  padding: 0.4rem;
+  margin: 0 0 0 0;
 }
 
 #note-carousel,
@@ -154,7 +202,7 @@ function showNewExamModal() {
 }
 
 .greeting-name {
-  color: rgb(247, 165, 12)
+  color: rgb(247, 165, 12);
 }
 
 #greeting > h1 {
@@ -164,21 +212,17 @@ function showNewExamModal() {
   font-weight: 700;
 }
 
-#upcoming-exams-h {
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 2%;
-  justify-content: space-between;
-}
-
-#recent-notes, #upcoming-exams {
+#recent-notes,
+#upcoming-exams {
   font-size: 1.3rem;
 }
 
-#add-exam-button {
+#add-exam-button,
+#new-note-button {
   align-items: flex-end;
-
+  margin-right: 1.2rem;
 }
+
 .gallery {
   height: 40vh;
 }
@@ -193,11 +237,12 @@ function showNewExamModal() {
   border-radius: 25px;
 
   background-color: var(--modal-color);
-
 }
 
 .note-cell {
   border: 3px solid rgb(252, 164, 0);
+
+  cursor: pointer;
 }
 
 .exam-cell {
@@ -205,6 +250,11 @@ function showNewExamModal() {
 }
 
 .gallery-cell-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
   width: 100%;
 
   border-radius: 22px 22px 0 0;
@@ -215,7 +265,7 @@ function showNewExamModal() {
   display: -webkit-box;
   -webkit-box-orient: vertical;
 
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: bold;
   color: white;
 
@@ -224,6 +274,16 @@ function showNewExamModal() {
   white-space: normal;
   line-clamp: 1;
   -webkit-line-clamp: 1;
+}
+
+#practice-button {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+}
+
+button {
+  white-space: nowrap;
 }
 
 .note-cell .gallery-cell-header {
@@ -242,14 +302,15 @@ function showNewExamModal() {
   color: var(--text);
   background-color: var(--bg);
   white-space: pre-wrap;
-  overflow: hidden;
+  overflow: auto;
   text-overflow: ellipsis;
   white-space: normal;
 }
 
-.gallery-cell-body p{
+.gallery-cell-body p {
   white-space: pre-wrap;
 }
+
 .exam-details li {
   color: var(--text);
   font-weight: 400;
@@ -257,21 +318,26 @@ function showNewExamModal() {
 }
 
 @media (max-width: 480px) {
-
   #greeting > h1 {
-  font-size: clamp(2.5rem, 8vw, 4rem);
-  line-height: 1.0;
-  word-break: break-word;
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    line-height: 1;
+    word-break: break-word;
   }
 
-  #recent-notes, #upcoming-exams {
-  font-size: 1.0rem;
-}
+  .gallery-cell-body button {
+    width: 100%;
+  }
+
+  #recent-notes,
+  #upcoming-exams {
+    font-size: 1rem;
+  }
 
   .gallery-cell {
     width: 85%;
     max-height: 300px;
   }
+
   .gallery {
     height: auto;
     max-height: 320px;
@@ -298,8 +364,10 @@ function showNewExamModal() {
     line-clamp: 1;
     -webkit-line-clamp: 1;
   }
-  #add-exam-button {
-    padding: 0.6rem 1rem;
+
+  #add-exam-button,
+  #new-note-button {
+    padding: 0.3rem 0.7rem;
     font-size: 0.85rem;
   }
 }
