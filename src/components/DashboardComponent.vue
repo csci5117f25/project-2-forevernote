@@ -43,35 +43,21 @@ function showNewExamModal() {
   <div id="dashboard-container">
     <div id="greeting">
       <h1>
-        Hey <span class="greeting-name">{{ user.displayName }}</span
-        >,
+        Hey <span class="greeting-name">{{ user.displayName }}</span>!
       </h1>
     </div>
 
     <div id="recent-notes">
       <h2>Recently Viewed Notes</h2>
 
-      <Carousel
-        v-if="notes.length !== 0"
-        id="note-carousel"
-        class="gallery"
-        v-bind="carouselConfig"
-      >
-        <Slide
-          v-for="note in notes"
-          :key="note.id"
-          class="gallery-cell note-cell"
-          @click="router.push({ name: 'note', params: { id: note.id } })"
-        >
+      <Carousel v-if="notes.length !== 0" id="note-carousel" class="gallery" v-bind="carouselConfig">
+        <Slide v-for="note in notes" :key="note.id" class="gallery-cell note-cell"
+          @click="router.push({ name: 'note', params: { id: note.id } })">
           <div class="gallery-cell-header">
             <h2>{{ note.title }}</h2>
           </div>
 
-          <div
-            v-if="note.htmlContent"
-            class="gallery-cell-body note-preview"
-            v-html="note.htmlContent"
-          ></div>
+          <div v-if="note.htmlContent" class="gallery-cell-body note-preview" v-html="note.htmlContent"></div>
           <div v-else class="gallery-cell-body note-preview">
             <p>{{ note.notes }}</p>
           </div>
@@ -90,21 +76,12 @@ function showNewExamModal() {
       <div id="upcoming-exams-h">
         <h2>Upcoming Exams⏳</h2>
 
-        <button
-          id="add-exam-button"
-          class="button is-primary is-dark is-small is-rounded"
-          @click="showNewExamModal"
-        >
+        <button id="add-exam-button" class="button is-primary is-dark is-small is-rounded" @click="showNewExamModal">
           Create New Exam
         </button>
       </div>
 
-      <Carousel
-        v-if="exams.length !== 0"
-        id="exam-carousel"
-        class="gallery"
-        v-bind="carouselConfig"
-      >
+      <Carousel v-if="exams.length !== 0" id="exam-carousel" class="gallery" v-bind="carouselConfig">
         <Slide v-for="exam in exams" :key="exam.id" class="gallery-cell exam-cell">
           <div class="gallery-cell-header">
             <h2>{{ exam.subject }}</h2>
@@ -145,7 +122,7 @@ function showNewExamModal() {
 }
 
 #greeting,
-#recent-notes > h2,
+#recent-notes>h2,
 #upcoming-exams-h,
 .no-upcoming-exam {
   padding-inline: 1.5rem;
@@ -166,7 +143,7 @@ function showNewExamModal() {
   color: rgb(247, 165, 12);
 }
 
-#greeting > h1 {
+#greeting>h1 {
   color: var(--dash-h1-color);
   width: 100%;
   font-size: 4rem;
@@ -222,7 +199,7 @@ function showNewExamModal() {
   padding: 0.8rem;
 }
 
-.gallery-cell-header > h2 {
+.gallery-cell-header>h2 {
   display: -webkit-box;
   -webkit-box-orient: vertical;
 
@@ -267,7 +244,7 @@ function showNewExamModal() {
 }
 
 @media (max-width: 480px) {
-  #greeting > h1 {
+  #greeting>h1 {
     font-size: clamp(2.5rem, 8vw, 4rem);
     line-height: 1;
     word-break: break-word;
@@ -295,7 +272,7 @@ function showNewExamModal() {
     font-weight: 700;
   }
 
-  .gallery-cell-header > h2 {
+  .gallery-cell-header>h2 {
     display: -webkit-box;
     -webkit-box-orient: vertical;
 
