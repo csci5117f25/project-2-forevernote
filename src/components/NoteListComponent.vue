@@ -19,13 +19,13 @@ const db = useFirestore();
 const notesRef = collection(db, 'users', user.value.uid, 'notes');
 const notes = useCollection(notesRef);
 
-// ---------- FILTER STATE ----------
+// === Filter State ===
 const titleFilter = ref('');
 const subjectFilter = ref('');
 const pinnedOnly = ref(false);
 const sortBy = ref('updatedDesc'); // updatedDesc | updatedAsc | titleAsc | titleDesc
 
-// ---------- CORE FILTER FUNCTION ----------
+// === Core Filter Function ===
 function sortByFn(a, b) {
   switch (sortBy.value) {
     case 'updatedDesc':
@@ -38,6 +38,7 @@ function sortByFn(a, b) {
       return b.title.localeCompare(a.title);
   }
 }
+
 const filteredNotes = computed(() => {
   const titleLc = titleFilter.value.trim().toLowerCase();
   const classLc = subjectFilter.value.trim().toLowerCase();
@@ -80,7 +81,7 @@ const filteredNotes = computed(() => {
   return [...pinned, ...unpinned];
 });
 
-// ---------- UI ACTIONS ----------
+// === UI Actions ===
 function toggleSelected(note) {
   note.isSelected = !note.isSelected;
 }
@@ -115,7 +116,7 @@ async function deleteNote(id) {
 
 <template>
   <div class="notes-page">
-    <!-- searching features -->
+    <!-- Searching Features -->
     <section class="search-row">
       <div class="search-box">
         <input v-model="titleFilter" type="text" placeholder="<search by title>" />
@@ -140,7 +141,7 @@ async function deleteNote(id) {
       </select>
     </section>
 
-    <!-- NOTES LIST -->
+    <!-- Notes List -->
     <section class="notes-list">
       <article v-for="note in filteredNotes" :key="note.id" class="note-row">
         <button
@@ -186,7 +187,6 @@ async function deleteNote(id) {
           </button>
 
           <button class="icon-btn expand" title="More">
-            <!-- TODO: display the notes slightly? or redirect the the edit page -->
             <DownIcon />
           </button>
         </div>
@@ -280,7 +280,7 @@ async function deleteNote(id) {
   cursor: pointer;
 }
 
-/* NOTES LIST */
+/* Notes List */
 .notes-list {
   display: flex;
   flex-direction: column;

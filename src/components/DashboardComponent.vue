@@ -5,7 +5,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCollection, useCurrentUser, useFirestore } from 'vuefire';
 import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel';
-import { collection, orderBy, query, Timestamp, where } from 'firebase/firestore';
+import { collection, orderBy, query, Timestamp, where, limit } from 'firebase/firestore';
 
 import CreateExamModal from './NewExamModal.vue';
 
@@ -13,7 +13,9 @@ const user = useCurrentUser();
 const db = useFirestore();
 const router = useRouter();
 
-const notesRef = computed(() => collection(db, 'users', user.value.uid, 'notes'));
+const notesRef = computed(() =>
+  query(collection(db, 'users', user.value.uid, 'notes'), orderBy('lastEdited', 'desc'), limit(5)),
+);
 const notes = useCollection(notesRef);
 const examsRef = computed(() =>
   query(
