@@ -24,7 +24,7 @@ const isPreview = ref('');
 
 // === Filter State ===
 const titleFilter = ref('');
-const subjectFilter = ref('');
+const subjectTagFilter = ref('');
 const pinnedOnly = ref(false);
 const sortBy = ref('updatedDesc'); // updatedDesc | updatedAsc | titleAsc | titleDesc
 
@@ -44,7 +44,7 @@ function sortByFn(a, b) {
 
 const filteredNotes = computed(() => {
   const titleLc = titleFilter.value.trim().toLowerCase();
-  const classLc = subjectFilter.value.trim().toLowerCase();
+  const subTagLc = subjectTagFilter.value.trim().toLowerCase();
 
   let filtered = notes.value.filter((note) => {
     // If only showing pinned
@@ -59,11 +59,15 @@ const filteredNotes = computed(() => {
       if (!note.title.trim().toLowerCase().includes(titleLc)) return false;
     }
 
-    // If query by subject
-    if (classLc.length !== 0) {
+    // If query by subject or tag
+    if (subTagLc.length !== 0) {
       if (!note.subject && !note.tags) return false;
-      if (!`${note.subject.trim().toLowerCase()} ${(note.tags || []).join(' ')}`.includes(classLc))
-        return false;
+
+      if (note.subject && note.subject.trim().toLowerCase().includes(subTagLc)) return true;
+
+      if (note.tags.length !== 0 && note.tags.filter(tag => tag.trim().toLowerCase().includes(subTagLc)).length !== 0) return true;
+
+      return false;
     }
 
     return true;
@@ -148,7 +152,7 @@ async function deleteSelectedNotes() {
         <input v-model="titleFilter" type="text" placeholder="<search by title>" />
       </div>
       <div class="search-box">
-        <input v-model="subjectFilter" type="text" placeholder="<search by class or tags>" />
+        <input v-model="subjectTagFilter" type="text" placeholder="<search by class or tags>" />
       </div>
     </section>
 
