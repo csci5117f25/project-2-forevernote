@@ -543,8 +543,8 @@ onUnmounted(() => {
       class="button reset"
       @click="currSubject = note.subject"
     >
-    <!-- <CancelIcon /> -->
-    ❌
+      <!-- <CancelIcon /> -->
+      ❌
     </button>
   </div>
   <div
