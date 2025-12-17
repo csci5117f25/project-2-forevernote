@@ -7,25 +7,33 @@ env.useBrowserCache = true;
 
 // for AI transcription
 let transcriber = null;
+let loadingPromise = null;
 
-console.log('Loading model...');
-transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en', {
-  device: 'webgpu',
-  chunk_length_s: 5,
-  stride_length_s: 1,
-});
-console.log('Model loaded.');
+async function loadModel() {
+  if (transcriber) return transcriber;
 
-async function processAudio(pcmArray) {
-  if (!transcriber) {
-    console.warn('Transcriber not ready yet');
+  if (!loadingPromise) {
+    console.log('Loading model...');
+    loadingPromise = pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en', {
+      device: 'webgpu',
+      chunk_length_s: 5,
+      stride_length_s: 1,
+    }).then((model) => {
+      console.log('Model loaded.');
 
-    // return empty string
-    return '';
+      transcriber = model;
+      return model;
+    });
   }
 
+  return loadingPromise;
+}
+
+async function processAudio(pcmArray) {
+  const model = await loadModel();
+
   try {
-    const result = await transcriber(pcmArray);
+    const result = await model(pcmArray);
 
     return result.text;
   } catch (error) {
@@ -47,6 +55,5 @@ onmessage = async function (event) {
   }
 
   const text = await processAudio(array, sampleRate);
-
   postMessage({ text });
 };
