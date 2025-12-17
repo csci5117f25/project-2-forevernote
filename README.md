@@ -83,6 +83,6 @@ Please do not document required libraries (e.g., VUE, Firebase, vuefire).**
 relied on external code, expertise, or anything else, please disclose that
 here:**
 
-- Our Exam Generator functionality relies on Firebase functions that are deployed using Firebase Functions. The code - sanitized of any API secrets - can be found here:
+- Our Exam Generator functionality relies on Firebase functions that are deployed using Firebase Functions. The code - sanitized of any API secrets - can be found here: https://github.com/yaseenshakil/Gemini-Firebase-Function
 
 ...
