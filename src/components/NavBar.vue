@@ -77,14 +77,26 @@ onMounted(() => {
 
       <div id="navbar" class="navbar-menu">
         <div class="navbar-start">
-          <RouterLink to="/dashboard" class="navbar-item" @click="closeNavBarMobile()">Home</RouterLink>
-          <RouterLink to="/notes" class="navbar-item" @click="closeNavBarMobile()">Notes</RouterLink>
-          <RouterLink to="/practiceexams" class="navbar-item" @click="closeNavBarMobile()">✨ Practice</RouterLink>
+          <RouterLink to="/dashboard" class="navbar-item" @click="closeNavBarMobile()"
+            >Home</RouterLink
+          >
+          <RouterLink to="/notes" class="navbar-item" @click="closeNavBarMobile()"
+            >Notes</RouterLink
+          >
+          <RouterLink to="/practiceexams" class="navbar-item" @click="closeNavBarMobile()"
+            >✨ Practice</RouterLink
+          >
         </div>
 
         <div class="navbar-end">
           <div v-if="user" class="nav-footer">
-            <button class="profile-pill" @click="closeNavBarMobile(); router.push({ name: 'profile' })">
+            <button
+              class="profile-pill"
+              @click="
+                closeNavBarMobile();
+                router.push({ name: 'profile' });
+              "
+            >
               👤 Profile
             </button>
 
