@@ -43,7 +43,8 @@ Our mockup is located at this link:
 
 **Is there anything special we need to know in order to effectively test your app? (optional):**
 
-- ...
+- If the Practice Exam Generator fails during testing, it might be primarily due to hitting Gemini API's maximum quota. We have our Google Project linked to a billing account, however, can't guarantee yet that Gemini will reliably use this billing account since we haven't encountered any issues as such during our testing. We are including screenshots of the practice exam pages as well.
+- The TinyMCE editor remains white in Dark Mode - We've tried to modify the color of the editor on dark mode, to no avail.
 
 ## Screenshots of Site (complete)
 
@@ -65,5 +66,7 @@ Please do not document required libraries (e.g., VUE, Firebase, vuefire).**
 **If there's anything else you would like to disclose about how your project
 relied on external code, expertise, or anything else, please disclose that
 here:**
+
+- Our Exam Generator functionality relies on Firebase functions that are deployed using Firebase Functions. The code - sanitized of any API secrets - can be found here:
 
 ...
