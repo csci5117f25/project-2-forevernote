@@ -36,11 +36,11 @@ async function addExam() {
 }
 
 function onBackdropClick() {
-  const isLargeScreen = window.matchMedia('(min-width: 768px)').matches
-  const isFinePointer = window.matchMedia('(pointer: fine)').matches
+  const isLargeScreen = window.matchMedia('(min-width: 768px)').matches;
+  const isFinePointer = window.matchMedia('(pointer: fine)').matches;
 
   if (isLargeScreen || isFinePointer) {
-    emit('close-modal')
+    emit('close-modal');
   }
 }
 </script>
@@ -48,7 +48,7 @@ function onBackdropClick() {
 <template>
   <div class="modal-backdrop" @click="onBackdropClick">
     <div class="modal-content frosted-container" @click.stop>
-    <button class="modal-close" @click="emit('close-modal')"></button>
+      <button class="modal-close" @click="emit('close-modal')"></button>
       <h1 class="title is-4 has-text-centered">New Exam📝</h1>
       <form class="form-area" @submit.prevent="addExam">
         <div class="field">
@@ -124,7 +124,7 @@ function onBackdropClick() {
   right: 1rem;
   width: 1rem;
   height: 1rem;
-  cursor: pointer;  
+  cursor: pointer;
   background: black;
   border: none;
   font-size: 3rem;
@@ -144,8 +144,8 @@ function onBackdropClick() {
 
 .frosted-container {
   width: 100%;
-  max-width: 520px;    
-  overflow-y: auto;   
+  max-width: 520px;
+  overflow-y: auto;
 }
 
 #add-exam-button {
@@ -167,7 +167,6 @@ input,
 select {
   background-color: var(--input-bg);
   color: var(--text);
-
 }
 
 input::placeholder {
@@ -202,7 +201,7 @@ input::placeholder {
 
 .input,
 select {
-  min-height: 44px; 
+  min-height: 44px;
   font-size: 1rem;
 }
 </style>

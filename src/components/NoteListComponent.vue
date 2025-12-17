@@ -162,10 +162,10 @@ async function deleteSelectedNotes() {
         <option value="titleDesc">Sort: Title Z-A</option>
       </select>
 
-      <button class="button" :class="{show: selected.length !== 0}" @click="pinSelectedNotes">
+      <button class="button" :class="{ show: selected.length !== 0 }" @click="pinSelectedNotes">
         <PinFillIcon class="is-small" color="red" /> Pin Selected Notes
       </button>
-      <button class="button" :class="{show: selected.length !== 0}" @click="deleteSelectedNotes">
+      <button class="button" :class="{ show: selected.length !== 0 }" @click="deleteSelectedNotes">
         <TrashIcon class="is-small" /> Delete Selected Notes
       </button>
     </section>
@@ -173,11 +173,15 @@ async function deleteSelectedNotes() {
     <!-- Notes List -->
     <section class="notes-list">
       <article v-for="note in filteredNotes" :key="note.id" class="note-row">
-        <button v-if="selected.includes(note.id)" class="select-circle selected" @click="
-          () => {
-            selected = selected.filter((n) => n !== note.id);
-          }
-        " />
+        <button
+          v-if="selected.includes(note.id)"
+          class="select-circle selected"
+          @click="
+            () => {
+              selected = selected.filter((n) => n !== note.id);
+            }
+          "
+        />
         <button v-else class="select-circle" @click="selected.push(note.id)" />
 
         <div class="note-main" @click="router.push({ name: 'note', params: { id: note.id } })">
@@ -189,7 +193,11 @@ async function deleteSelectedNotes() {
               {{ note.subject }}
             </span>
 
-            <span v-for="(tag, idx) in note.tags" :key="`${tag}-${idx}`" :class="idx === 0 ? 'tag-pill' : 'tag-pill'">
+            <span
+              v-for="(tag, idx) in note.tags"
+              :key="`${tag}-${idx}`"
+              :class="idx === 0 ? 'tag-pill' : 'tag-pill'"
+            >
               <TagIcon class="is-small" /> {{ tag }}
             </span>
           </div>
@@ -212,13 +220,21 @@ async function deleteSelectedNotes() {
             <TrashIcon />
           </button>
 
-          <button class="button" title="More" @click="isPreview = (isPreview === note.id ? '' : note.id)">
+          <button
+            class="button"
+            title="More"
+            @click="isPreview = isPreview === note.id ? '' : note.id"
+          >
             <DownIcon />
           </button>
         </div>
 
         <transition name="slide-fade">
-          <div v-if="note.htmlContent" class="note-preview-row" :class="{open: isPreview === note.id}">
+          <div
+            v-if="note.htmlContent"
+            class="note-preview-row"
+            :class="{ open: isPreview === note.id }"
+          >
             <div class="note-preview" v-html="note.htmlContent"></div>
           </div>
 
@@ -327,7 +343,9 @@ async function deleteSelectedNotes() {
   height: 0;
   visibility: hidden;
   opacity: 0;
-  transition: visibility 0s, opacity 0.5s linear;
+  transition:
+    visibility 0s,
+    opacity 0.5s linear;
 }
 .controls-row .button.show {
   height: initial;
@@ -336,7 +354,7 @@ async function deleteSelectedNotes() {
 }
 
 .controls-row .button .icon {
- margin-right: 0.3rem;
+  margin-right: 0.3rem;
 }
 
 .selected-text-functionality {

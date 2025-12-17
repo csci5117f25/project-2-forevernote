@@ -4,11 +4,11 @@ const isDark = ref(false);
 export function useTheme() {
   const setLightMode = () => {
     isDark.value = false;
-  }
+  };
 
   const setDarkMode = () => {
     isDark.value = true;
-  }
+  };
 
   const toggle = () => {
     const isDarkMode = isDark.value;

@@ -33,7 +33,8 @@ async function logout() {
 <template>
   <main class="container">
     <p class="title">
-      Hey <span id="user-name">{{ user.displayName }}</span>!
+      Hey <span id="user-name">{{ user.displayName }}</span
+      >!
     </p>
 
     <p>You currently have {{ countNotes }} notes!</p>

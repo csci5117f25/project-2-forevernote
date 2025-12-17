@@ -75,11 +75,7 @@ function gradeAnswers() {
           </option>
         </select> -->
         <div class="choices">
-          <label
-            v-for="choice in examDetail.choices"
-            :key="choice"
-            class="choice"
-          >
+          <label v-for="choice in examDetail.choices" :key="choice" class="choice">
             <input
               type="radio"
               :name="examDetail.question"
@@ -225,7 +221,6 @@ h1 {
 }
 
 @media (max-width: 480px) {
-
   .exam-container {
     max-width: 100%;
     margin: 0;
@@ -239,10 +234,10 @@ h1 {
   }
 
   .gen-exam-form input,
-.gen-exam-form select {
-  min-height: 44px; /* Apple guideline */
-  font-size: 1rem;
-  padding: 0.4rem 0.6rem;
-}
+  .gen-exam-form select {
+    min-height: 44px; /* Apple guideline */
+    font-size: 1rem;
+    padding: 0.4rem 0.6rem;
+  }
 }
 </style>

@@ -62,7 +62,6 @@ const tinyMCEConfig = {
     'advlist anchor autolink autoresize charmap code fullscreen image insertdatetime link lists media preview searchreplace table visualblocks wordcount',
   toolbar:
     'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
-  // skin: document.documentElement.classList.contains('dark') ? 'oxide-dark' : 'oxide',
   resize: false,
   promotion: false,
   branding: false,
