@@ -7,7 +7,7 @@ CSCI 5117, Fall 2025
 ## App Info
 
 - Team Name: The Hot Takers
-- App Name: For-Evernote
+- App Name: ForeverNote
 - App Link: <https://forevernote-6244a.web.app>
 - App Link (Alternate): <https://forevernote-6244a.firebaseapp.com>
 
