@@ -40,6 +40,14 @@ async function login() {
   router.push({ name: 'dashboard' });
 }
 
+function closeNavBarMobile() {
+  const navBurger = document.getElementById('nav-burger');
+  const navBar = document.getElementById('navbar');
+
+  navBurger.classList.remove('is-active');
+  navBar?.classList.remove('is-active');
+}
+
 onMounted(() => {
   const navBurger = document.getElementById('nav-burger');
   const navBar = document.getElementById('navbar');
@@ -69,14 +77,14 @@ onMounted(() => {
 
       <div id="navbar" class="navbar-menu">
         <div class="navbar-start">
-          <RouterLink to="/dashboard" class="navbar-item">Home</RouterLink>
-          <RouterLink to="/notes" class="navbar-item">Notes</RouterLink>
-          <RouterLink to="/practiceexams" class="navbar-item">✨ Practice</RouterLink>
+          <RouterLink to="/dashboard" class="navbar-item" @click="closeNavBarMobile()">Home</RouterLink>
+          <RouterLink to="/notes" class="navbar-item" @click="closeNavBarMobile()">Notes</RouterLink>
+          <RouterLink to="/practiceexams" class="navbar-item" @click="closeNavBarMobile()">✨ Practice</RouterLink>
         </div>
 
         <div class="navbar-end">
           <div v-if="user" class="nav-footer">
-            <button class="profile-pill" @click="router.push({ name: 'profile' })">
+            <button class="profile-pill" @click="closeNavBarMobile(); router.push({ name: 'profile' })">
               👤 Profile
             </button>
 
