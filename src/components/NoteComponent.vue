@@ -11,10 +11,10 @@ import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { useCollection, useCurrentUser, useDocument, useFirestore } from 'vuefire';
 import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
-import PlayIcon from './icons/IconPlay.vue';
-import StopIcon from './icons/IconStop.vue';
-import CancelIcon from './icons/IconCross.vue';
-import TagIcon from './icons/IconTag.vue';
+// import PlayIcon from './icons/IconPlay.vue';
+// import StopIcon from './icons/IconStop.vue';
+// import CancelIcon from './icons/IconCross.vue';
+// import TagIcon from './icons/IconTag.vue';
 
 // AUDIO TRANSCRIPTION ENGINE IMPORT
 import AudioEngine from '@/components/AudioEngine.vue';
@@ -394,8 +394,8 @@ onUnmounted(() => {
             @click="startRecording"
             :disabled="!transcriptionSupport"
           >
-            <PlayIcon />
-            <span>Start Transcription</span>
+            <!-- <PlayIcon /> -->
+            ▶️&nbsp;<span>Start Transcription</span>
           </button>
           <button
             v-else
@@ -403,9 +403,8 @@ onUnmounted(() => {
             @click="stopRecording"
             :disabled="!transcriptionSupport"
           >
-            <StopIcon />
-            <!-- TOOD: Put Frequencey Plot Here -->
-            <span>Stop Transcription</span>
+            <!-- <StopIcon /> -->
+            ⏹️&nbsp;<span>Stop Transcription</span>
           </button>
 
           <!-- <div class="mode-switch">
@@ -436,10 +435,11 @@ onUnmounted(() => {
 
             <button
               v-if="noteId ? currTitle !== note.title : currTitle !== ''"
-              class="button"
+              class="button reset"
               @click="currTitle = note.title"
             >
-              <CancelIcon />
+              <!-- <CancelIcon /> -->
+              ❌
             </button>
           </div>
           <span v-else id="title-edit" @click="isEditing = 1">
@@ -474,11 +474,13 @@ onUnmounted(() => {
             class="tag-pill"
             @click="(e) => onEditClick(3, e)"
           >
-            <TagIcon class="is-small" /> {{ tag }}
+            <!-- <TagIcon class="is-small" /> {{ tag }} -->
+            🏷️&nbsp;{{ tag }}
           </span>
 
           <span v-if="currTags.length === 0" class="tag-pill" @click="(e) => onEditClick(3, e)">
-            <TagIcon size="is-small" /> No Tags
+            <!-- <TagIcon size="is-small" /> No Tags -->
+            🏷️&nbsp;No Tags
           </span>
         </div>
       </div>
@@ -541,7 +543,8 @@ onUnmounted(() => {
       class="button reset"
       @click="currSubject = note.subject"
     >
-      <CancelIcon />
+    <!-- <CancelIcon /> -->
+    ❌
     </button>
   </div>
   <div
@@ -567,7 +570,8 @@ onUnmounted(() => {
       class="button reset"
       @click="currTags = note.tags"
     >
-      <CancelIcon />
+      <!-- <CancelIcon /> -->
+      ❌
     </button>
   </div>
 </template>
