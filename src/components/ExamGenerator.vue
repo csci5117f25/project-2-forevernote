@@ -1,5 +1,4 @@
 <script setup>
-import { number } from 'motion';
 import { ref } from 'vue';
 
 const FUNCTION_URL = 'https://on-request-api-key-zixtq6tzqq-uc.a.run.app';

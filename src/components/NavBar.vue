@@ -1,7 +1,6 @@
 <script>
 import { GoogleAuthProvider } from 'firebase/auth';
 
-
 const googleAuthProvider = new GoogleAuthProvider();
 </script>
 
@@ -20,7 +19,7 @@ const auth = useFirebaseAuth();
 const user = useCurrentUser();
 const db = useFirestore();
 
-const {isDark, toggle} = useTheme();
+const { isDark, toggle } = useTheme();
 
 async function login() {
   await signInWithPopup(auth, googleAuthProvider);
@@ -77,20 +76,17 @@ onMounted(() => {
 
         <div class="navbar-end">
           <div v-if="user" class="nav-footer">
-            <button class="profile-pill"
-              @click="router.push({ name: 'profile' })">
+            <button class="profile-pill" @click="router.push({ name: 'profile' })">
               👤 Profile
             </button>
-          
+
             <button class="theme-toggle" @click="toggle">
-              {{ isDark ? "☀️" : "🌙" }}
+              {{ isDark ? '☀️' : '🌙' }}
             </button>
           </div>
-        
+
           <div v-else class="nav-footer">
-            <button class="profile-pill" @click="login">
-              Get Started
-            </button>
+            <button class="profile-pill" @click="login">Get Started</button>
           </div>
         </div>
       </div>
@@ -118,7 +114,9 @@ nav {
 .navbar-start,
 .navbar-end {
   background-color: var(--navbar-bg);
+  z-index: 9999;
 }
+
 .navbar {
   border-bottom: 1pt solid gray;
   padding-inline: 0.5rem;
@@ -127,17 +125,17 @@ nav {
   color: white;
 }
 
-.navbar-item{
+.navbar-item {
   font-weight: 600;
   color: white;
 }
 
-.navbar-start{
+.navbar-start {
   background-color: var(--navbar-bg);
   color: var(--text);
 }
 
-.navbar-end{
+.navbar-end {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -180,7 +178,6 @@ nav {
   background-color: rgba(255, 255, 255, 0.12);
   color: white;
 }
-
 
 @media (max-width: 768px) {
   #logo {

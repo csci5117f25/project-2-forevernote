@@ -4,7 +4,7 @@ import NavBar from '@/components/NavBar.vue';
 
 <template>
   <header>
-    <NavBar @open-login="openLoginModal" />
+    <NavBar />
   </header>
 
   <body>
