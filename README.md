@@ -20,18 +20,19 @@ CSCI 5117, Fall 2025
 
 ## Key Features
 
-**Describe the most challenging features you implemented
-(one sentence per bullet, maximum 4 bullets):**
+**Describe the most challenging features you implemented (one sentence per bullet, maximum 4 bullets);**
 
-- ...
+- Utilizing Gemini AI to implement practice exam generation
+- Used TinyMCE to add a multi-featured text editor
+- Using Web Speech API and/or a locally-hosted model to perform speech-to-text transcription
 
 Which (if any) device integration(s) does your app support?
 
-- ...
+- Using the device microphone to perform speech-to-text transcription
 
 Which (if any) progressive web app feature(s) does your app support?
 
-- ...
+- None
 
 ## Mockup images
 
@@ -56,8 +57,10 @@ along with a very brief caption:**
 **Document integrations with 3rd Party code or services here.
 Please do not document required libraries (e.g., VUE, Firebase, vuefire).**
 
-- Library or service name: description of use
-- ...
+- Google Gemini
+- Hugging Face/Xenova Transformers for Audio Transcription
+- TinyMCE for Rich Text Editor
+- Bulma for CSS Styling
 
 **If there's anything else you would like to disclose about how your project
 relied on external code, expertise, or anything else, please disclose that
