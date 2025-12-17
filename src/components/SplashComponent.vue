@@ -202,7 +202,7 @@ import geminiImgSrc from '@/assets/img/gemini.jpg';
 .audio-feature-desc-div p {
   font-size: 1.15rem;
   line-height: 1.6;
-  color: #222;
+  color: var(--text);
 }
 
 .footer-div {

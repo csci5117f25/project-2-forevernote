@@ -90,7 +90,6 @@ function onBackdropClick() {
             </v-select>
           </div>
         </div>
-        {{ newExamTopics }}
 
         <div class="field has-text-centered mt-5">
           <button class="button is-primary is-fullwidth rounded-btn" @click="addExam">
@@ -147,12 +146,13 @@ function onBackdropClick() {
 
 #add-exam-button {
   touch-action: manipulation;
-  max-width: 520px;
+
   /* desktop */
-  max-height: 90vh;
+  max-width: 520px;
   /* critical for phones */
-  overflow-y: auto;
+  max-height: 90vh;
   /* allow scrolling */
+  overflow-y: auto;
 }
 
 .title {
@@ -192,8 +192,15 @@ input::placeholder {
 }
 
 @media (max-width: 480px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
   .frosted-container {
-    padding: 1.5rem;
+    border-radius: 16px 16px 0 0;
+    padding: 1.25rem;
+    max-height: 85vh;
   }
 }
 

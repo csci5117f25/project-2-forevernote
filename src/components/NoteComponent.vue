@@ -150,7 +150,6 @@ const tinyMCEConfig = {
     'advlist anchor autolink autoresize charmap code fullscreen image insertdatetime link lists media preview searchreplace table visualblocks wordcount',
   toolbar:
     'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
-  // height: 500,
   resize: false,
   promotion: false,
   branding: false,
@@ -223,10 +222,12 @@ const isLoaded = ref(noteId.value ? false : true);
 
 const notesRef = collection(db, 'users', user.value.uid, 'notes');
 const notes = useCollection(notesRef);
-const subjects = computed(() =>
-  notes.value.filter((note) => note.subject).map((note) => note.subject),
-);
-const tags = computed(() => notes.value.filter((note) => note.tags).flatMap((note) => note.tags));
+const subjects = computed(() => [
+  ...new Set(notes.value.filter((note) => note.subject).map((note) => note.subject)),
+]);
+const tags = computed(() => [
+  ...new Set(notes.value.filter((note) => note.tags).flatMap((note) => note.tags)),
+]);
 
 const noteRef = noteId.value ? doc(db, 'users', user.value.uid, 'notes', noteId.value) : undefined;
 const note = useDocument(noteRef);
@@ -292,8 +293,10 @@ async function submitNote() {
 
   const data = {
     title: currTitle.value,
-    notes: tinymce.activeEditor.getContent({ format: 'text' }),
     htmlContent: tinymce.activeEditor.getContent(),
+    notes: tinymce.activeEditor.getContent({ format: 'text' }),
+    subject: currSubject.value,
+    tags: currTags.value,
     createdAt: serverTimestamp(),
     lastEdited: serverTimestamp(),
   };
@@ -316,10 +319,10 @@ async function updateNote() {
 
   const data = {
     title: currTitle.value,
+    htmlContent: tinymce.activeEditor.getContent(),
     notes: tinymce.activeEditor.getContent({ format: 'text' }),
     subject: currSubject.value,
     tags: currTags.value,
-    htmlContent: tinymce.activeEditor.getContent(),
     lastEdited: serverTimestamp(),
   };
 
@@ -382,101 +385,102 @@ onUnmounted(() => {
 
 <template>
   <main v-if="isLoaded">
-    <div id="button-set">
-      <div>
-        <button
-          v-if="!isTranscribing"
-          class="button is-success"
-          @click="startRecording"
-          :disabled="!transcriptionSupport"
-        >
-          <PlayIcon />
-          <span>Start Transcription</span>
-        </button>
-        <button
-          v-else
-          class="button is-danger"
-          @click="stopRecording"
-          :disabled="!transcriptionSupport"
-        >
-          <StopIcon />
-          <!-- TOOD: Put Frequencey Plot Here -->
-          <span>Stop Transcription</span>
-        </button>
-
-        <!-- <div class="mode-switch">
+    <div id="header">
+      <div id="button-set">
+        <div>
           <button
-            class="button is-small"
-            :disabled="!apiSupport"
-            :class="transcriptionMode === 'google' ? 'is-info is-selected' : ''"
-            @click="setTranscriptionMode('google')"
+            v-if="!isTranscribing"
+            class="button is-success"
+            @click="startRecording"
+            :disabled="!transcriptionSupport"
           >
-            Online
+            <PlayIcon />
+            <span>Start Transcription</span>
+          </button>
+          <button
+            v-else
+            class="button is-danger"
+            @click="stopRecording"
+            :disabled="!transcriptionSupport"
+          >
+            <StopIcon />
+            <!-- TOOD: Put Frequencey Plot Here -->
+            <span>Stop Transcription</span>
           </button>
 
-          <button
-            class="button is-small"
-            :class="transcriptionMode === 'private' ? 'is-info is-selected' : ''"
-            @click="setTranscriptionMode('private')"
-          >
-            Local
-          </button>
-        </div> -->
+          <!-- <div class="mode-switch">
+            <button class="button is-small" :disabled="!apiSupport"
+              :class="transcriptionMode === 'google' ? 'is-info is-selected' : ''"
+              @click="setTranscriptionMode('google')">
+              Online
+            </button>
 
-        <div class="engine-wrapper" v-show="isTranscribing">
-          <AudioEngine
-            :isRecording="isTranscribing"
-            :mode="transcriptionMode"
-            @newTranscript="handleTranscribed"
-          />
+            <button class="button is-small" :class="transcriptionMode === 'private' ? 'is-info is-selected' : ''"
+              @click="setTranscriptionMode('private')">
+              Local
+            </button>
+          </div> -->
+
+          <div class="engine-wrapper" v-show="isTranscribing">
+            <AudioEngine
+              :isRecording="isTranscribing"
+              :mode="transcriptionMode"
+              @newTranscript="handleTranscribed"
+            />
+          </div>
+        </div>
+
+        <div class="button-set-center">
+          <div id="title-edit" v-if="isEditing === 1">
+            <input class="input" type="text" v-model="currTitle" />
+
+            <button
+              v-if="noteId ? currTitle !== note.title : currTitle !== ''"
+              class="button"
+              @click="currTitle = note.title"
+            >
+              <CancelIcon />
+            </button>
+          </div>
+          <span v-else id="title-edit" @click="isEditing = 1">
+            {{ currTitle.length !== 0 ? currTitle : 'Untitled Note' }}
+          </span>
+        </div>
+
+        <div id="desktop-buttons">
+          <button
+            v-if="noteId"
+            class="button is-warning"
+            @click="updateNote"
+            :disabled="!isChanged"
+          >
+            Update
+          </button>
+          <button v-else class="button is-primary" @click="submitNote">Submit</button>
         </div>
       </div>
 
-      <div class="button-set-center">
-        <div id="title-edit" v-if="isEditing === 1">
-          <input class="input" type="text" v-model="currTitle" />
-
-          <button
-            v-if="noteId ? currTitle !== note.title : currTitle !== ''"
-            class="button"
-            @click="currTitle = note.title"
-          >
-            <CancelIcon />
-          </button>
+      <div id="label-set">
+        <div id="subject-set" @click="(e) => onEditClick(2, e)">
+          <span class="course-pill">
+            {{ currSubject ? currSubject : 'No Subject' }}
+          </span>
         </div>
-        <span v-else id="title-edit" @click="isEditing = 1">
-          {{ currTitle.length !== 0 ? currTitle : 'Untitled Note' }}
-        </span>
-      </div>
 
-      <div id="desktop-buttons">
-        <button v-if="noteId" class="button is-warning" @click="updateNote" :disabled="!isChanged">
-          Update
-        </button>
-        <button v-else class="button is-primary" @click="submitNote">Submit</button>
-      </div>
-    </div>
+        <div id="tag-set">
+          <span
+            v-for="(tag, idx) in currTags.sort()"
+            :key="`${tag}-${idx}`"
+            class="tag-pill"
+            @click="(e) => onEditClick(3, e)"
+          >
+            <TagIcon class="is-small" /> {{ tag }}
+          </span>
 
-    <div id="label-set">
-      <div id="subject-set" @click="(e) => onEditClick(2, e)">
-        <span class="course-pill">
-          {{ currSubject ? currSubject : 'No Subject' }}
-        </span>
-      </div>
-
-      <div id="tag-set">
-        <span
-          v-for="(tag, idx) in currTags.sort()"
-          :key="`${tag}-${idx}`"
-          class="tag-pill"
-          @click="(e) => onEditClick(3, e)"
-        >
-          <TagIcon class="is-small" /> {{ tag }}
-        </span>
-
-        <span v-if="currTags.length === 0" class="tag-pill" @click="(e) => onEditClick(3, e)">
-          <TagIcon size="is-small" /> No Tags
-        </span>
+          <span v-if="currTags.length === 0" class="tag-pill" @click="(e) => onEditClick(3, e)">
+            <TagIcon size="is-small" /> No Tags
+          </span>
+        </div>
       </div>
     </div>
 
@@ -659,6 +663,10 @@ main {
   height: 100vh;
 }
 
+#header {
+  margin-bottom: 1rem;
+}
+
 #button-set {
   display: flex;
   flex-direction: row;
@@ -666,7 +674,7 @@ main {
   align-items: center;
   gap: 1rem;
 
-  margin-bottom: 0.5em;
+  margin-bottom: 0.5rem;
 }
 
 .button-set-center {
@@ -709,8 +717,6 @@ span#title-edit {
 
 #label-set {
   width: 100%;
-
-  margin-bottom: 1rem;
 }
 
 #subject-set {

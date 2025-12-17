@@ -33,7 +33,7 @@ async function logout() {
 <template>
   <main class="container">
     <p class="title">
-      Hey <span id="user-name">{{ user.displayName }}</span
+      Hey <span id="user-name">{{ user.displayName ? user.displayName : 'Loading' }}</span
       >!
     </p>
 
